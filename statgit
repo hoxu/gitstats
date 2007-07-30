@@ -1,0 +1,58 @@
+#!/usr/bin/python
+# Copyright (c) 2007 Heikki Hokkanen <hoxu@users.sf.net>
+# GPLv2
+import os
+import re
+import sys
+
+class DataCollector:
+	def __init__(self):
+		pass
+	
+	def collect(self, dir):
+		self.dir = dir
+
+class GitDataCollector(DataCollector):
+	pass
+
+class ReportCreator:
+	def __init__(self):
+		pass
+	
+	def create(self, data, path):
+		self.data = data
+		self.path = path
+
+class ConsoleReportCreator(ReportCreator):
+	def create(self, data, path):
+		ReportCreator.create(data, path)
+
+	pass
+
+class HTMLReportCreator(ReportCreator):
+	pass
+
+usage = """
+Usage: statgit [options] <gitpath> <outputpath>
+
+Options:
+  -o html
+"""
+
+if len(sys.argv) <  3:
+	print usage
+	sys.exit(0)
+
+gitpath = sys.argv[1]
+outputpath = sys.argv[2]
+
+print 'Git path: %s' % gitpath
+print 'Output path: %s' % outputpath
+
+data = GitDataCollector()
+data.collect(gitpath)
+
+report = ConsoleReportCreator()
+report.create(data, outputpath)
+
+
