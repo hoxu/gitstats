@@ -1,0 +1,49 @@
+- development statistics generator for git
+	- should be as versatile as statcvs / statsvn
+
+- language?
+	- perl or python?
+
+- make git data collection part separate so that portage to other DVCS's is easier
+
+[Stats in StatSVN]
+- General
+	- Report Period (first/last date of commits)
+	- Total files?
+	- Total LOC?
+	- Developers
+
+- Main stats
+	- Lines of Code: x = date, y = lines, releases/tags as vertical lines
+	- Table: Top 10 Authors: author, LOC (%)
+	- Table: Repository tags: name, date, lines, LOC Churn, Developers
+	- Tree: Directories: dir (N files, N lines)
+
+- Developers
+	- Number of developers
+	- Table: author, changes (%), LOC (%), LOC/change
+	- Graph: Lines of Code: x = date, y = lines, colored lines for each author
+	- Table: Developer of the Month: month, author, lines
+	- Graph: Developer Activity
+	- Graph: Author Activity (bar for each author, showing modifying/adding percentages) (could be table)
+	- Graphs: Activity by Clock Time
+		- Hour of Day
+		- Day of Week
+
+- Commit logs
+- Lines of Code (same as main graph)
+
+- File Statistics
+	- Graph: File Sizes and File Counts: x = date, y = files
+	- Graph: Average File Size (x = date, y = LOC/file)
+	- Table: File Types
+	- Table: Largest Files
+	- Table: Files With Most Revisions
+
+- Directory sizes
+- "Repo heatmap"?
+- LOC and Churn
+
+[Graphics]
+- Use gnuplot, graphviz etc ?
+
