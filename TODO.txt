@@ -5,6 +5,33 @@
 	- perl or python?
 
 - make git data collection part separate so that portage to other DVCS's is easier
+- make output thingies modular as well (HTML first, plain text later etc)
+
+[Information]
+- git-log
+- git-ls-files
+	- Current list of files
+- git-log --stat or --shortstat - N files changed, N insertions, N deletions
+- git-log --name-status - svn-like list of modifications for each commit
+- git-rev-list --all
+	- first and last commit
+- git-show-ref --tags
+- git-log |git-shortlog -s
+	- author: number of commits
+- git-what-changed
+
+[Stats]
+- General
+	- Report Period (git-log)
+	- Total Files (git-ls-files)
+	- Total LOC?
+	- Authors
+
+- Authors
+	- Total number of authors
+	- List of names
+	- (T): author, commits (%), LOC?, first commit, last commit
+	- (T): Developer of the Month: month, author, commits, LOC?
 
 [Stats in StatSVN]
 - General
