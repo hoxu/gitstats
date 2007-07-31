@@ -47,7 +47,18 @@ class GitDataCollector(DataCollector):
 		DataCollector.collect(self, dir)
 	
 	def getAuthorInfo(self, author):
-		res = { 'commits' : -1, 'commits_frac' : 1.5, 'date_first' : '0000-00-00', 'date_last' : '0000-00-00' }
+		commits = int(commands.getoutput('git-rev-list --all --author="%s" |wc -l' % author))
+		commits_frac = (100 * float(commits)) / self.getTotalCommits()
+		date_first = '0000-00-00'
+		date_last = '0000-00-00'
+		rev_last = commands.getoutput('git-rev-list --all --author="%s" -n 1' % author)
+		rev_first = commands.getoutput('git-rev-list --all --author="%s" |tail -n 1' % author)
+		stamp_last = int(commands.getoutput('git-log --pretty=format:%%at "%s" -n 1' % rev_last))
+		stamp_first = int(commands.getoutput('git-log --pretty=format:%%at "%s" -n 1' % rev_first))
+		date_first = datetime.datetime.fromtimestamp(stamp_first).strftime('%Y-%m-%d')
+		date_last = datetime.datetime.fromtimestamp(stamp_last).strftime('%Y-%m-%d')
+
+		res = { 'commits': commits, 'commits_frac': commits_frac, 'date_first': date_first, 'date_last': date_last }
 		return res
 	
 	def getAuthors(self):
@@ -105,10 +116,15 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<tr><th>Author</th><th>Commits (%)</th><th>First commit</th><th>Last commit</th></tr>')
 		for author in data.getAuthors():
 			info = data.getAuthorInfo(author)
-			f.write('<tr><td>%s</td><td>%d (%.2f)</td><td>%s</td><td>%s</td></tr>' % (author, info['commits'], info['commits_frac'], info['date_first'], info['date_last']))
+			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%s</td><td>%s</td></tr>' % (author, info['commits'], info['commits_frac'], info['date_first'], info['date_last']))
 		f.write('</table>')
 
 		f.write('<h2>Tags</h2>')
+
+		f.write('<table>')
+		f.write('<tr><th>Name</th><th>Date</th><th>Developers</th></tr>')
+
+		f.write('</table>')
 
 		f.write('</body>\n</html>');
 		f.close()

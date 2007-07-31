@@ -33,7 +33,7 @@
 
 - Authors
 	- List of authors
-	- (T): author, commits (%), LOC?, first commit, last commit
+	- DONE (T): author, commits (%), LOC?, first commit, last commit
 	- (T): Developer of the Month: month, author, commits, LOC?
 
 - (G) Lines of Code: x = date, y = lines
