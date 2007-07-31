@@ -24,6 +24,12 @@ class DataCollector:
 	def getAuthors(self):
 		return []
 	
+	def getFirstCommitDate(self):
+		return datetime.datetime.now()
+	
+	def getLastCommitDate(self):
+		return datetime.datetime.now()
+	
 	def getTotalAuthors(self):
 		return -1
 	
@@ -57,7 +63,9 @@ class GitDataCollector(DataCollector):
 	def getTotalFiles(self):
 		files = commands.getoutput('git-ls-files |wc -l')
 		return int(files)
-	pass
+	
+	def getTotalLOC(self):
+		return int(commands.getoutput('git-ls-files |xargs cat |wc -l'))
 
 class ReportCreator:
 	def __init__(self):
@@ -78,12 +86,13 @@ class HTMLReportCreator(ReportCreator):
 </head>
 <body>
 """)
+		format = '%Y-%m-%d %H:%m:%S'
 
 		f.write('<h1>StatGit</h1>')
 
 		f.write('<dl>');
-		f.write('<dt>Generated</dt><dd>%s</dd>' % datetime.datetime.now().strftime('%Y-%m-%d %H:%m:%S'));
-		f.write('<dt>Report Period</dt><dd>%s to %s</dd>' % ('0000-00-00', '0000-00-00'))
+		f.write('<dt>Generated</dt><dd>%s</dd>' % datetime.datetime.now().strftime(format));
+		f.write('<dt>Report Period</dt><dd>%s to %s</dd>' % (data.getFirstCommitDate().strftime(format), data.getLastCommitDate().strftime(format)))
 		f.write('<dt>Total Files</dt><dd>%s</dd>' % data.getTotalFiles())
 		f.write('<dt>Total Lines of Code</dt><dd>%s</dd>' % data.getTotalLOC())
 		f.write('<dt>Total Commits</dt><dd>%s</dd>' % data.getTotalCommits())
@@ -98,6 +107,8 @@ class HTMLReportCreator(ReportCreator):
 			info = data.getAuthorInfo(author)
 			f.write('<tr><td>%s</td><td>%d (%.2f)</td><td>%s</td><td>%s</td></tr>' % (author, info['commits'], info['commits_frac'], info['date_first'], info['date_last']))
 		f.write('</table>')
+
+		f.write('<h2>Tags</h2>')
 
 		f.write('</body>\n</html>');
 		f.close()
