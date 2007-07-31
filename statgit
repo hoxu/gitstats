@@ -11,6 +11,8 @@ class DataCollector:
 	def __init__(self):
 		pass
 	
+	##
+	# This should be the main function to extract data from the repository.
 	def collect(self, dir):
 		self.dir = dir
 	
@@ -45,6 +47,11 @@ class DataCollector:
 class GitDataCollector(DataCollector):
 	def collect(self, dir):
 		DataCollector.collect(self, dir)
+
+		self.total_authors = int(commands.getoutput('git-log |git-shortlog -s |wc -l'))
+		self.total_commits = int(commands.getoutput('git-rev-list --all |wc -l'))
+		self.total_files = int(commands.getoutput('git-ls-files |wc -l'))
+		self.total_lines = int(commands.getoutput('git-ls-files |xargs cat |wc -l'))
 	
 	def getAuthorInfo(self, author):
 		commits = int(commands.getoutput('git-rev-list --all --author="%s" |wc -l' % author))
@@ -53,10 +60,8 @@ class GitDataCollector(DataCollector):
 		date_last = '0000-00-00'
 		rev_last = commands.getoutput('git-rev-list --all --author="%s" -n 1' % author)
 		rev_first = commands.getoutput('git-rev-list --all --author="%s" |tail -n 1' % author)
-		stamp_last = int(commands.getoutput('git-log --pretty=format:%%at "%s" -n 1' % rev_last))
-		stamp_first = int(commands.getoutput('git-log --pretty=format:%%at "%s" -n 1' % rev_first))
-		date_first = datetime.datetime.fromtimestamp(stamp_first).strftime('%Y-%m-%d')
-		date_last = datetime.datetime.fromtimestamp(stamp_last).strftime('%Y-%m-%d')
+		date_first = self.revToDate(rev_first)
+		date_last = self.revToDate(rev_last)
 
 		res = { 'commits': commits, 'commits_frac': commits_frac, 'date_first': date_first, 'date_last': date_last }
 		return res
@@ -66,17 +71,20 @@ class GitDataCollector(DataCollector):
 		return lines.split('\n')
 	
 	def getTotalAuthors(self):
-		return int(commands.getoutput('git-log |git-shortlog -s |wc -l'))
+		return self.total_authors
 	
 	def getTotalCommits(self):
-		return int(commands.getoutput('git-rev-list --all |wc -l'))
+		return self.total_commits
 
 	def getTotalFiles(self):
-		files = commands.getoutput('git-ls-files |wc -l')
-		return int(files)
+		return self.total_files
 	
 	def getTotalLOC(self):
-		return int(commands.getoutput('git-ls-files |xargs cat |wc -l'))
+		return self.total_lines
+	
+	def revToDate(self, rev):
+		stamp = int(commands.getoutput('git-log --pretty=format:%%at "%s" -n 1' % rev))
+		return datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d')
 
 class ReportCreator:
 	def __init__(self):
@@ -149,9 +157,11 @@ print 'Output path: %s' % outputpath
 
 os.chdir(gitpath)
 
+print 'Collecting data...'
 data = GitDataCollector()
 data.collect(gitpath)
 
+print 'Generating report...'
 report = HTMLReportCreator()
 report.create(data, outputpath)
 
