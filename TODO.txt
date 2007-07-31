@@ -5,7 +5,10 @@
 	- perl or python?
 
 - make git data collection part separate so that portage to other DVCS's is easier
+	- DataCollector
+
 - make output thingies modular as well (HTML first, plain text later etc)
+	- ReportCreator
 
 [Information]
 - git-log
@@ -28,10 +31,24 @@
 	- Authors
 
 - Authors
-	- Total number of authors
-	- List of names
+	- List of authors
 	- (T): author, commits (%), LOC?, first commit, last commit
 	- (T): Developer of the Month: month, author, commits, LOC?
+
+- Tags
+	- (T): Name, Date, LOC?, Developers
+
+- Author page for each author
+	- Name, mail
+	- Total commits (%)
+	- LOC (%)
+	- Last commit: date
+	- First commit: date
+	- Activity by Clock Time
+		- (G) Hour of Day
+		- (G) Day of Week
+	- (T) Activity in Directories: Directory, Changes, LOC, LOC/change
+	- (Most Recent Commits?)
 
 [Stats in StatSVN]
 - General
@@ -74,3 +91,11 @@
 [Graphics]
 - Use gnuplot, graphviz etc ?
 
+[Usage]
+- $ statgit [-o html] /path/to/git /output/dir
+
+[name]
+- statgit or gitstats (no google hits for either)
+
+[Misc]
+- use sortable.js ?

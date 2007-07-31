@@ -1,6 +1,8 @@
 #!/usr/bin/python
 # Copyright (c) 2007 Heikki Hokkanen <hoxu@users.sf.net>
 # GPLv2
+import commands
+import datetime
 import os
 import re
 import sys
@@ -11,8 +13,50 @@ class DataCollector:
 	
 	def collect(self, dir):
 		self.dir = dir
+	
+	##
+	# TODO: get a dictionary of author
+	def getAuthorInfo(self, author):
+		return None
+	
+	##
+	# Get a list of authors
+	def getAuthors(self):
+		return []
+	
+	def getTotalAuthors(self):
+		return -1
+	
+	def getTotalCommits(self):
+		return -1
+		
+	def getTotalFiles(self):
+		return -1
+	
+	def getTotalLOC(self):
+		return -1
 
 class GitDataCollector(DataCollector):
+	def collect(self, dir):
+		DataCollector.collect(self, dir)
+	
+	def getAuthorInfo(self, author):
+		res = { 'commits' : -1, 'commits_frac' : 1.5, 'date_first' : '0000-00-00', 'date_last' : '0000-00-00' }
+		return res
+	
+	def getAuthors(self):
+		lines = commands.getoutput('git-rev-list --all --pretty=format:%an |grep -v ^commit |sort |uniq')
+		return lines.split('\n')
+	
+	def getTotalAuthors(self):
+		return int(commands.getoutput('git-log |git-shortlog -s |wc -l'))
+	
+	def getTotalCommits(self):
+		return int(commands.getoutput('git-rev-list --all |wc -l'))
+
+	def getTotalFiles(self):
+		files = commands.getoutput('git-ls-files |wc -l')
+		return int(files)
 	pass
 
 class ReportCreator:
@@ -23,13 +67,40 @@ class ReportCreator:
 		self.data = data
 		self.path = path
 
-class ConsoleReportCreator(ReportCreator):
-	def create(self, data, path):
-		ReportCreator.create(data, path)
-
-	pass
-
 class HTMLReportCreator(ReportCreator):
+	def create(self, data, path):
+		ReportCreator.create(self, data, path)
+
+		f = open(path + "/index.html", 'w')
+		f.write("""<html>
+<head>
+	<title>StatGit</title>
+</head>
+<body>
+""")
+
+		f.write('<h1>StatGit</h1>')
+
+		f.write('<dl>');
+		f.write('<dt>Generated</dt><dd>%s</dd>' % datetime.datetime.now().strftime('%Y-%m-%d %H:%m:%S'));
+		f.write('<dt>Report Period</dt><dd>%s to %s</dd>' % ('0000-00-00', '0000-00-00'))
+		f.write('<dt>Total Files</dt><dd>%s</dd>' % data.getTotalFiles())
+		f.write('<dt>Total Lines of Code</dt><dd>%s</dd>' % data.getTotalLOC())
+		f.write('<dt>Total Commits</dt><dd>%s</dd>' % data.getTotalCommits())
+		f.write('<dt>Authors</dt><dd>%s</dd>' % data.getTotalAuthors())
+		f.write('</dl>');
+
+		f.write('<h2>Authors</h2>')
+
+		f.write('<table class="authors">')
+		f.write('<tr><th>Author</th><th>Commits (%)</th><th>First commit</th><th>Last commit</th></tr>')
+		for author in data.getAuthors():
+			info = data.getAuthorInfo(author)
+			f.write('<tr><td>%s</td><td>%d (%.2f)</td><td>%s</td><td>%s</td></tr>' % (author, info['commits'], info['commits_frac'], info['date_first'], info['date_last']))
+		f.write('</table>')
+
+		f.write('</body>\n</html>');
+		f.close()
 	pass
 
 usage = """
@@ -49,10 +120,12 @@ outputpath = sys.argv[2]
 print 'Git path: %s' % gitpath
 print 'Output path: %s' % outputpath
 
+os.chdir(gitpath)
+
 data = GitDataCollector()
 data.collect(gitpath)
 
-report = ConsoleReportCreator()
+report = HTMLReportCreator()
 report.create(data, outputpath)
 
 
