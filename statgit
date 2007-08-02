@@ -7,6 +7,11 @@ import os
 import re
 import sys
 
+def getoutput(cmd):
+	print '>> %s' % cmd
+	output = commands.getoutput(cmd)
+	return output
+
 class DataCollector:
 	def __init__(self):
 		pass
@@ -17,7 +22,7 @@ class DataCollector:
 		self.dir = dir
 	
 	##
-	# TODO: get a dictionary of author
+	# : get a dictionary of author
 	def getAuthorInfo(self, author):
 		return None
 	
@@ -31,6 +36,9 @@ class DataCollector:
 	
 	def getLastCommitDate(self):
 		return datetime.datetime.now()
+	
+	def getTags(self):
+		return []
 	
 	def getTotalAuthors(self):
 		return -1
@@ -48,18 +56,18 @@ class GitDataCollector(DataCollector):
 	def collect(self, dir):
 		DataCollector.collect(self, dir)
 
-		self.total_authors = int(commands.getoutput('git-log |git-shortlog -s |wc -l'))
-		self.total_commits = int(commands.getoutput('git-rev-list --all |wc -l'))
-		self.total_files = int(commands.getoutput('git-ls-files |wc -l'))
-		self.total_lines = int(commands.getoutput('git-ls-files |xargs cat |wc -l'))
+		self.total_authors = int(getoutput('git-log |git-shortlog -s |wc -l'))
+		self.total_commits = int(getoutput('git-rev-list --all |wc -l'))
+		self.total_files = int(getoutput('git-ls-files |wc -l'))
+		self.total_lines = int(getoutput('git-ls-files |xargs cat |wc -l'))
 	
 	def getAuthorInfo(self, author):
-		commits = int(commands.getoutput('git-rev-list --all --author="%s" |wc -l' % author))
+		commits = int(getoutput('git-rev-list --all --author="%s" |wc -l' % author))
 		commits_frac = (100 * float(commits)) / self.getTotalCommits()
 		date_first = '0000-00-00'
 		date_last = '0000-00-00'
-		rev_last = commands.getoutput('git-rev-list --all --author="%s" -n 1' % author)
-		rev_first = commands.getoutput('git-rev-list --all --author="%s" |tail -n 1' % author)
+		rev_last = getoutput('git-rev-list --all --author="%s" -n 1' % author)
+		rev_first = getoutput('git-rev-list --all --author="%s" |tail -n 1' % author)
 		date_first = self.revToDate(rev_first)
 		date_last = self.revToDate(rev_last)
 
@@ -67,8 +75,15 @@ class GitDataCollector(DataCollector):
 		return res
 	
 	def getAuthors(self):
-		lines = commands.getoutput('git-rev-list --all --pretty=format:%an |grep -v ^commit |sort |uniq')
+		lines = getoutput('git-rev-list --all --pretty=format:%an |grep -v ^commit |sort |uniq')
 		return lines.split('\n')
+	
+	def getTags(self):
+		lines = getoutput('git-show-ref --tags |cut -d/ -f3')
+		return lines.split('\n')
+	
+	def getTagDate(self, tag):
+		return self.revToDate('tags/' + tag)
 	
 	def getTotalAuthors(self):
 		return self.total_authors
@@ -83,7 +98,7 @@ class GitDataCollector(DataCollector):
 		return self.total_lines
 	
 	def revToDate(self, rev):
-		stamp = int(commands.getoutput('git-log --pretty=format:%%at "%s" -n 1' % rev))
+		stamp = int(getoutput('git-log --pretty=format:%%at "%s" -n 1' % rev))
 		return datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d')
 
 class ReportCreator:
@@ -102,6 +117,7 @@ class HTMLReportCreator(ReportCreator):
 		f.write("""<html>
 <head>
 	<title>StatGit</title>
+	<link rel="stylesheet" href="statgit.css" type="text/css" />
 </head>
 <body>
 """)
@@ -118,6 +134,13 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<dt>Authors</dt><dd>%s</dd>' % data.getTotalAuthors())
 		f.write('</dl>');
 
+		f.write("""<ul>
+<li><a href="activity.html">Activity</a></li>
+<li><a href="authors.html">Authors</a></li>
+<li><a href="files.html">Files</a></li>
+</ul>
+""")
+
 		f.write('<h2>Authors</h2>')
 
 		f.write('<table class="authors">')
@@ -128,10 +151,10 @@ class HTMLReportCreator(ReportCreator):
 		f.write('</table>')
 
 		f.write('<h2>Tags</h2>')
-
 		f.write('<table>')
 		f.write('<tr><th>Name</th><th>Date</th><th>Developers</th></tr>')
-
+		for tag in data.getTags():
+			f.write('<tr><td>%s</td><td></td></tr>' % tag)
 		f.write('</table>')
 
 		f.write('</body>\n</html>');

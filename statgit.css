@@ -1,0 +1,20 @@
+body {
+	color: black;
+	background-color: #cc9;
+}
+
+dt {
+	font-weight: bold;
+	float: left;
+	margin-right: 1em;
+}
+
+dt:after {
+	content: ': ';
+}
+
+dd {
+	display: block;
+	clear: right;
+}
+

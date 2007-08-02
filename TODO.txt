@@ -1,15 +1,6 @@
 - development statistics generator for git
 	- should be as versatile as statcvs / statsvn
 
-- language?
-	- perl or python?
-
-- make git data collection part separate so that portage to other DVCS's is easier
-	- DataCollector
-
-- make output thingies modular as well (HTML first, plain text later etc)
-	- ReportCreator
-
 [Information]
 - git-log
 - git-ls-files
@@ -19,6 +10,7 @@
 - git-rev-list --all
 	- first and last commit
 - git-show-ref --tags
+	- not all tags are tags on refs?
 - git-log |git-shortlog -s
 	- author: number of commits
 - git-what-changed
@@ -33,8 +25,26 @@
 
 - Authors
 	- List of authors
+		- show only first 10 and rest on separate page?
 	- DONE (T): author, commits (%), LOC?, first commit, last commit
 	- (T): Developer of the Month: month, author, commits, LOC?
+
+- Files
+	- Total Files
+	- Average file size
+	- Average revisions per file
+	- (G) File Count: x = date, y = files
+	- (G) Average file size: x = date, y = lines/file
+	- (T) File Extensions (or mime types from "file"?): extension, files (%), lines (%), lines/file
+	- (T) Largest Files?
+	- (T) Files With Most Revisions?
+
+- Activity by Time?
+	- Hour of Day
+	- Day of Week (+ Hour of weekday -> 7x24)
+	- Month of Year
+	- (G?) Last 30 days
+	- (G?) Last 12 months
 
 - (G) Lines of Code: x = date, y = lines
 
@@ -102,3 +112,4 @@
 
 [Misc]
 - use sortable.js ?
+- could show some statistics from last year, month, etc... pisg-like?
