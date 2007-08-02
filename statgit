@@ -96,12 +96,18 @@ class GitDataCollector(DataCollector):
 		self.author_of_month = {} # month -> author -> commits
 		self.author_of_year = {} # year -> author -> commits
 		self.commits_by_month = {} # month -> commits
+		self.first_commit_stamp = 0
+		self.last_commit_stamp = 0
 
 		lines = getoutput('git-rev-list --pretty=format:"%at %an" HEAD |grep -v ^commit').split('\n')
 		for line in lines:
 			parts = line.split(' ')
 			stamp = int(parts[0])
 			author = ' '.join(parts[1:])
+
+			if self.last_commit_stamp == 0:
+				self.last_commit_stamp = stamp
+			self.first_commit_stamp = stamp
 
 			yymm = datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m')
 			if yymm in self.author_of_month:
@@ -126,8 +132,6 @@ class GitDataCollector(DataCollector):
 			else:
 				self.author_of_year[yy] = {}
 				self.author_of_year[yy][author] = 1
-
-		print self.author_of_month
 	
 	def getActivityByDayOfWeek(self):
 		return self.activity_by_day_of_week
@@ -151,6 +155,12 @@ class GitDataCollector(DataCollector):
 	def getAuthors(self):
 		lines = getoutput('git-rev-list --all --pretty=format:%an |grep -v ^commit |sort |uniq')
 		return lines.split('\n')
+	
+	def getFirstCommitDate(self):
+		return datetime.datetime.fromtimestamp(self.first_commit_stamp)
+	
+	def getLastCommitDate(self):
+		return datetime.datetime.fromtimestamp(self.last_commit_stamp)
 	
 	def getTags(self):
 		lines = getoutput('git-show-ref --tags |cut -d/ -f3')

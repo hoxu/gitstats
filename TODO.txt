@@ -1,5 +1,6 @@
 - development statistics generator for git
 	- should be as versatile as statcvs / statsvn
+- XXX optimize author's first/last rev getting
 
 [Information]
 - git-log
@@ -30,6 +31,7 @@
 		- show only first 10 and rest on separate page?
 	- DONE (T): author, commits (%), LOC?, first commit, last commit
 	- DONE (T): Developer of the Month: month, author, commits, LOC?
+	- DONE (T): Author of Year
 
 - Files
 	- Total Files
