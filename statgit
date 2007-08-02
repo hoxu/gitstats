@@ -12,6 +12,9 @@ def getoutput(cmd):
 	output = commands.getoutput(cmd)
 	return output
 
+def getkeyssortedbyvalues(dict):
+	return map(lambda el : el[1], sorted(map(lambda el : (el[1], el[0]), dict.items())))
+
 class DataCollector:
 	def __init__(self):
 		pass
@@ -63,7 +66,7 @@ class GitDataCollector(DataCollector):
 		DataCollector.collect(self, dir)
 
 		self.total_authors = int(getoutput('git-log |git-shortlog -s |wc -l'))
-		self.total_commits = int(getoutput('git-rev-list --all |wc -l'))
+		self.total_commits = int(getoutput('git-rev-list HEAD |wc -l'))
 		self.total_files = int(getoutput('git-ls-files |wc -l'))
 		self.total_lines = int(getoutput('git-ls-files |xargs cat |wc -l'))
 
@@ -71,7 +74,7 @@ class GitDataCollector(DataCollector):
 		self.activity_by_day_of_week = {} # day -> commits
 
 		# activity
-		lines = getoutput('git-rev-list --all --pretty=format:%at |grep -v ^commit').split('\n')
+		lines = getoutput('git-rev-list HEAD --pretty=format:%at |grep -v ^commit').split('\n')
 		for stamp in lines:
 			date = datetime.datetime.fromtimestamp(float(stamp))
 
@@ -89,6 +92,31 @@ class GitDataCollector(DataCollector):
 			else:
 				self.activity_by_day_of_week[day] = 1
 
+		# TODO author of the month
+		self.author_of_month = {} # month -> author -> commits
+		self.commits_by_month = {} # month -> commits
+
+		lines = getoutput('git-rev-list --pretty=format:"%at %an" HEAD |grep -v ^commit').split('\n')
+		for line in lines:
+			parts = line.split(' ')
+			stamp = int(parts[0])
+			author = ' '.join(parts[1:])
+
+			yymm = datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m')
+			if yymm in self.author_of_month and author in self.author_of_month[yymm]:
+				if author in self.author_of_month[yymm]:
+					self.author_of_month[yymm][author] += 1
+				else:
+					self.author_of_month[yymm][author] = 1
+			else:
+				self.author_of_month[yymm] = {}
+				self.author_of_month[yymm][author] = 1
+			if yymm in self.commits_by_month:
+				self.commits_by_month[yymm] += 1
+			else:
+				self.commits_by_month[yymm] = 1
+
+		print self.author_of_month
 	
 	def getActivityByDayOfWeek(self):
 		return self.activity_by_day_of_week
@@ -97,7 +125,7 @@ class GitDataCollector(DataCollector):
 		return self.activity_by_hour_of_day
 
 	def getAuthorInfo(self, author):
-		commits = int(getoutput('git-rev-list --all --author="%s" |wc -l' % author))
+		commits = int(getoutput('git-rev-list HEAD --author="%s" |wc -l' % author))
 		commits_frac = (100 * float(commits)) / self.getTotalCommits()
 		date_first = '0000-00-00'
 		date_last = '0000-00-00'
@@ -171,15 +199,6 @@ class HTMLReportCreator(ReportCreator):
 </ul>
 """)
 
-		f.write('<h2>Authors</h2>')
-
-		f.write('<table class="authors">')
-		f.write('<tr><th>Author</th><th>Commits (%)</th><th>First commit</th><th>Last commit</th></tr>')
-		for author in data.getAuthors():
-			info = data.getAuthorInfo(author)
-			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%s</td><td>%s</td></tr>' % (author, info['commits'], info['commits_frac'], info['date_first'], info['date_last']))
-		f.write('</table>')
-
 		f.write('<h2>Tags</h2>')
 		f.write('<table>')
 		f.write('<tr><th>Name</th><th>Date</th><th>Developers</th></tr>')
@@ -235,6 +254,39 @@ class HTMLReportCreator(ReportCreator):
 			f.write('</tr>')
 		f.write('</table>')
 
+		f.close()
+
+		# authors.html
+		f = open(path + '/authors.html', 'w')
+		self.printHeader(f)
+
+		f.write('<h1>Authors</h1>')
+
+		f.write('\n<h2>List of authors</h2>\n\n')
+
+		f.write('<table class="authors">')
+		f.write('<tr><th>Author</th><th>Commits (%)</th><th>First commit</th><th>Last commit</th></tr>')
+		for author in data.getAuthors():
+			info = data.getAuthorInfo(author)
+			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%s</td><td>%s</td></tr>' % (author, info['commits'], info['commits_frac'], info['date_first'], info['date_last']))
+		f.write('</table>')
+
+		f.write('\n<h2>Author of Month</h2>\n\n')
+		f.write('<table>')
+		f.write('<tr><th>Month</th><th>Author</th><th>Commits (%)</th></tr>')
+		for yymm in reversed(sorted(data.author_of_month.keys())):
+			authordict = data.author_of_month[yymm]
+			authors = getkeyssortedbyvalues(authordict)
+			authors.reverse()
+			commits = data.author_of_month[yymm][authors[0]]
+			f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td></tr>' % (yymm, authors[0], commits, (100 * commits) / data.commits_by_month[yymm], data.commits_by_month[yymm]))
+
+		f.write('</table>')
+
+		f.write('\n<h2>Author of Year</h2>\n\n')
+		# TODO
+
+		f.write('</body></html>')
 		f.close()
 	pass
 

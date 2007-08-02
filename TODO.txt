@@ -14,6 +14,8 @@
 - git-log |git-shortlog -s
 	- author: number of commits
 - git-what-changed
+- XXX git-log --pretty=oneline |wc -l != git-rev-list --all |wc -l
+	- git-rev-list HEAD == git-log --pretty=oneline
 
 [Stats]
 - General
@@ -40,8 +42,9 @@
 	- (T) Files With Most Revisions?
 
 - Activity by Time?
-	- Hour of Day
-	- Day of Week (+ Hour of weekday -> 7x24)
+	- DONE Hour of Day
+	- DONE Day of Week
+		- Hour of weekday -> 7x25?
 	- Month of Year
 	- (G?) Last 30 days
 	- (G?) Last 12 months
@@ -113,3 +116,4 @@
 [Misc]
 - use sortable.js ?
 - could show some statistics from last year, month, etc... pisg-like?
+- style: tabs at top for different pages
