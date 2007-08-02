@@ -29,7 +29,7 @@
 	- List of authors
 		- show only first 10 and rest on separate page?
 	- DONE (T): author, commits (%), LOC?, first commit, last commit
-	- (T): Developer of the Month: month, author, commits, LOC?
+	- DONE (T): Developer of the Month: month, author, commits, LOC?
 
 - Files
 	- Total Files

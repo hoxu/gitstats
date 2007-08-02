@@ -18,3 +18,26 @@ dd {
 	clear: right;
 }
 
+table {
+	border: 1px solid black;
+	border-collapse: collapse;
+}
+
+tr {
+}
+
+th {
+	background-color: #eeb;
+}
+
+tr:hover {
+	background-color: #dda;
+}
+
+td {
+	border: 1px solid black;
+	padding: 0.2em;
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+}
+

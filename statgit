@@ -94,6 +94,7 @@ class GitDataCollector(DataCollector):
 
 		# TODO author of the month
 		self.author_of_month = {} # month -> author -> commits
+		self.author_of_year = {} # year -> author -> commits
 		self.commits_by_month = {} # month -> commits
 
 		lines = getoutput('git-rev-list --pretty=format:"%at %an" HEAD |grep -v ^commit').split('\n')
@@ -103,7 +104,7 @@ class GitDataCollector(DataCollector):
 			author = ' '.join(parts[1:])
 
 			yymm = datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m')
-			if yymm in self.author_of_month and author in self.author_of_month[yymm]:
+			if yymm in self.author_of_month:
 				if author in self.author_of_month[yymm]:
 					self.author_of_month[yymm][author] += 1
 				else:
@@ -115,6 +116,16 @@ class GitDataCollector(DataCollector):
 				self.commits_by_month[yymm] += 1
 			else:
 				self.commits_by_month[yymm] = 1
+
+			yy = datetime.datetime.fromtimestamp(stamp).year
+			if yy in self.author_of_year:
+				if author in self.author_of_year[yy]:
+					self.author_of_year[yy][author] += 1
+				else:
+					self.author_of_year[yy][author] = 1
+			else:
+				self.author_of_year[yy] = {}
+				self.author_of_year[yy][author] = 1
 
 		print self.author_of_month
 	
@@ -284,7 +295,14 @@ class HTMLReportCreator(ReportCreator):
 		f.write('</table>')
 
 		f.write('\n<h2>Author of Year</h2>\n\n')
-		# TODO
+		f.write('<table><tr><th>Year</th><th>Author</th><th>Commits (%)</th></tr>')
+		for yy in reversed(sorted(data.author_of_year.keys())):
+			authordict = data.author_of_year[yy]
+			authors = getkeyssortedbyvalues(authordict)
+			authors.reverse()
+			commits = data.author_of_year[yy][authors[0]]
+			f.write('<tr><td>%s</td><td>%s</td><td>%d</td></tr>' % (yy, authors[0], commits))
+		f.write('</table>')
 
 		f.write('</body></html>')
 		f.close()
