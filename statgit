@@ -26,6 +26,9 @@ class DataCollector:
 	def getAuthorInfo(self, author):
 		return None
 	
+	def getActivityByHourOfDay(self):
+		return {}
+
 	##
 	# Get a list of authors
 	def getAuthors(self):
@@ -60,7 +63,33 @@ class GitDataCollector(DataCollector):
 		self.total_commits = int(getoutput('git-rev-list --all |wc -l'))
 		self.total_files = int(getoutput('git-ls-files |wc -l'))
 		self.total_lines = int(getoutput('git-ls-files |xargs cat |wc -l'))
+
+		self.activity_by_hour_of_day = {} # hour -> commits
+		self.activity_by_day_of_week = {} # day -> commits
+
+		# activity
+		lines = getoutput('git-rev-list --all --pretty=format:%at |grep -v ^commit').split('\n')
+		for stamp in lines:
+			date = datetime.datetime.fromtimestamp(float(stamp))
+
+			# hour
+			hour = date.hour
+			if hour in self.activity_by_hour_of_day:
+				self.activity_by_hour_of_day[hour] += 1
+			else:
+				self.activity_by_hour_of_day[hour] = 1
+
+			# day
+			day = date.weekday()
+			if day in self.activity_by_day_of_week:
+				self.activity_by_day_of_week[day] += 1
+			else:
+				self.activity_by_day_of_week[day] = 1
+
 	
+	def getActivityByHourOfDay(self):
+		return self.activity_by_hour_of_day
+
 	def getAuthorInfo(self, author):
 		commits = int(getoutput('git-rev-list --all --author="%s" |wc -l' % author))
 		commits_frac = (100 * float(commits)) / self.getTotalCommits()
@@ -114,14 +143,8 @@ class HTMLReportCreator(ReportCreator):
 		ReportCreator.create(self, data, path)
 
 		f = open(path + "/index.html", 'w')
-		f.write("""<html>
-<head>
-	<title>StatGit</title>
-	<link rel="stylesheet" href="statgit.css" type="text/css" />
-</head>
-<body>
-""")
 		format = '%Y-%m-%d %H:%m:%S'
+		self.printHeader(f)
 
 		f.write('<h1>StatGit</h1>')
 
@@ -138,6 +161,7 @@ class HTMLReportCreator(ReportCreator):
 <li><a href="activity.html">Activity</a></li>
 <li><a href="authors.html">Authors</a></li>
 <li><a href="files.html">Files</a></li>
+<li><a href="lines.html">Lines</a></li>
 </ul>
 """)
 
@@ -159,7 +183,51 @@ class HTMLReportCreator(ReportCreator):
 
 		f.write('</body>\n</html>');
 		f.close()
+
+		# activity.html
+		f = open(path + '/activity.html', 'w')
+		self.printHeader(f)
+		f.write('<h1>Activity</h1>')
+
+		f.write('<h2>Last 30 days</h2>')
+
+		f.write('<h2>Last 12 months</h2>')
+
+		f.write('\n<h2>Hour of Day</h2>\n\n')
+		hour_of_day = data.getActivityByHourOfDay()
+		f.write('<table><tr><th>Hour</th>')
+		for i in range(1, 25):
+			f.write('<th>%d</th>' % i)
+		f.write('</tr>\n<tr><th>Commits</th>')
+		for i in range(1, 25):
+			if i in hour_of_day:
+				f.write('<td>%d</td>' % hour_of_day[i])
+			else:
+				f.write('<td>0</td>')
+		f.write('</tr>\n<tr><th>%</th>')
+		totalcommits = data.getTotalCommits()
+		for i in range(1, 25):
+			if i in hour_of_day:
+				f.write('<td>%.2f</td>' % ((100.0 * hour_of_day[i]) / totalcommits))
+			else:
+				f.write('<td>0.00</td>')
+		f.write('</tr></table>')
+
+		f.write('\n\n<h2>Day of Week</h2>')
+		# TODO 7x(24+1)
+
+		f.close()
 	pass
+
+	def printHeader(self, f):
+		f.write("""<html>
+<head>
+	<title>StatGit</title>
+	<link rel="stylesheet" href="statgit.css" type="text/css" />
+</head>
+<body>
+""")
+		
 
 usage = """
 Usage: statgit [options] <gitpath> <outputpath>
