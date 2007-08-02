@@ -73,6 +73,9 @@ class GitDataCollector(DataCollector):
 		self.activity_by_hour_of_day = {} # hour -> commits
 		self.activity_by_day_of_week = {} # day -> commits
 
+		# TODO
+		self.authors = {} # name -> {commits, first_commit_stamp, last_commit_stamp}
+
 		# activity
 		lines = getoutput('git-rev-list HEAD --pretty=format:%at |grep -v ^commit').split('\n')
 		for stamp in lines:
@@ -105,10 +108,24 @@ class GitDataCollector(DataCollector):
 			stamp = int(parts[0])
 			author = ' '.join(parts[1:])
 
+			# First and last commit stamp
 			if self.last_commit_stamp == 0:
 				self.last_commit_stamp = stamp
 			self.first_commit_stamp = stamp
 
+			# author stats
+			if author not in self.authors:
+				self.authors[author] = {}
+			# TODO commits
+			if 'last_commit_stamp' not in self.authors[author]:
+				self.authors[author]['last_commit_stamp'] = stamp
+			self.authors[author]['first_commit_stamp'] = stamp
+			if 'commits' in self.authors[author]:
+				self.authors[author]['commits'] += 1
+			else:
+				self.authors[author]['commits'] = 1
+
+			# author of the month/year
 			yymm = datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m')
 			if yymm in self.author_of_month:
 				if author in self.author_of_month[yymm]:
@@ -140,14 +157,12 @@ class GitDataCollector(DataCollector):
 		return self.activity_by_hour_of_day
 
 	def getAuthorInfo(self, author):
-		commits = int(getoutput('git-rev-list HEAD --author="%s" |wc -l' % author))
+		a = self.authors[author]
+
+		commits = a['commits']
 		commits_frac = (100 * float(commits)) / self.getTotalCommits()
-		date_first = '0000-00-00'
-		date_last = '0000-00-00'
-		rev_last = getoutput('git-rev-list --all --author="%s" -n 1' % author)
-		rev_first = getoutput('git-rev-list --all --author="%s" |tail -n 1' % author)
-		date_first = self.revToDate(rev_first)
-		date_last = self.revToDate(rev_last)
+		date_first = datetime.datetime.fromtimestamp(a['first_commit_stamp']).strftime('%Y-%m-%d')
+		date_last = datetime.datetime.fromtimestamp(a['last_commit_stamp']).strftime('%Y-%m-%d')
 
 		res = { 'commits': commits, 'commits_frac': commits_frac, 'date_first': date_first, 'date_last': date_last }
 		return res

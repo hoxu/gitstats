@@ -1,6 +1,5 @@
 - development statistics generator for git
 	- should be as versatile as statcvs / statsvn
-- XXX optimize author's first/last rev getting
 
 [Information]
 - git-log
