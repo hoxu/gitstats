@@ -221,6 +221,8 @@ class HTMLReportCreator(ReportCreator):
 
 		f.write('<h1>StatGit</h1>')
 
+		self.printNav(f)
+
 		f.write('<dl>');
 		f.write('<dt>Generated</dt><dd>%s</dd>' % datetime.datetime.now().strftime(format));
 		f.write('<dt>Report Period</dt><dd>%s to %s</dd>' % (data.getFirstCommitDate().strftime(format), data.getLastCommitDate().strftime(format)))
@@ -230,20 +232,13 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<dt>Authors</dt><dd>%s</dd>' % data.getTotalAuthors())
 		f.write('</dl>');
 
-		f.write("""<ul>
-<li><a href="activity.html">Activity</a></li>
-<li><a href="authors.html">Authors</a></li>
-<li><a href="files.html">Files</a></li>
-<li><a href="lines.html">Lines</a></li>
-</ul>
-""")
 
-		f.write('<h2>Tags</h2>')
-		f.write('<table>')
-		f.write('<tr><th>Name</th><th>Date</th><th>Developers</th></tr>')
-		for tag in data.getTags():
-			f.write('<tr><td>%s</td><td></td></tr>' % tag)
-		f.write('</table>')
+		#f.write('<h2>Tags</h2>')
+		#f.write('<table>')
+		#f.write('<tr><th>Name</th><th>Date</th><th>Developers</th></tr>')
+		#for tag in data.getTags():
+		#	f.write('<tr><td>%s</td><td></td></tr>' % tag)
+		#f.write('</table>')
 
 		f.write('</body>\n</html>');
 		f.close()
@@ -252,6 +247,7 @@ class HTMLReportCreator(ReportCreator):
 		f = open(path + '/activity.html', 'w')
 		self.printHeader(f)
 		f.write('<h1>Activity</h1>')
+		self.printNav(f)
 
 		f.write('<h2>Last 30 days</h2>')
 
@@ -300,6 +296,7 @@ class HTMLReportCreator(ReportCreator):
 		self.printHeader(f)
 
 		f.write('<h1>Authors</h1>')
+		self.printNav(f)
 
 		f.write('\n<h2>List of authors</h2>\n\n')
 
@@ -343,6 +340,18 @@ class HTMLReportCreator(ReportCreator):
 	<link rel="stylesheet" href="statgit.css" type="text/css" />
 </head>
 <body>
+""")
+
+	def printNav(self, f):
+		f.write("""
+<div class="nav">
+<li><a href="index.html">General</a></li>
+<li><a href="activity.html">Activity</a></li>
+<li><a href="authors.html">Authors</a></li>
+<li><a href="files.html">Files</a></li>
+<li><a href="lines.html">Lines</a></li>
+</ul>
+</div>
 """)
 		
 
