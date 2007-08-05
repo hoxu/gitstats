@@ -413,7 +413,7 @@ if len(sys.argv) <  3:
 	sys.exit(0)
 
 gitpath = sys.argv[1]
-outputpath = sys.argv[2]
+outputpath = os.path.abspath(sys.argv[2])
 
 print 'Git path: %s' % gitpath
 print 'Output path: %s' % outputpath
