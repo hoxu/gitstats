@@ -327,6 +327,7 @@ class HTMLReportCreator(ReportCreator):
 			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td></tr>' % (yy, data.commits_by_year[yy], (100.0 * data.commits_by_year[yy]) / data.getTotalCommits()))
 		f.write('</table>')
 
+		f.write('</body></html>')
 		f.close()
 
 		###
