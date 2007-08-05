@@ -171,8 +171,7 @@ class GitDataCollector(DataCollector):
 		return res
 	
 	def getAuthors(self):
-		lines = getoutput('git-rev-list --all --pretty=format:%an |grep -v ^commit |sort |uniq')
-		return lines.split('\n')
+		return self.authors.keys()
 	
 	def getFirstCommitDate(self):
 		return datetime.datetime.fromtimestamp(self.first_commit_stamp)
