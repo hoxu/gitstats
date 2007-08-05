@@ -322,9 +322,9 @@ class HTMLReportCreator(ReportCreator):
 
 		# Commits by year
 		f.write('<h2>Commits by year</h2>')
-		f.write('<table><tr><th>Year</th><th>Commits</th></tr>')
+		f.write('<table><tr><th>Year</th><th>Commits (% of all)</th></tr>')
 		for yy in reversed(sorted(data.commits_by_year.keys())):
-			f.write('<tr><td>%s</td><td>%d</td></tr>' % (yy, data.commits_by_year[yy]))
+			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td></tr>' % (yy, data.commits_by_year[yy], (100.0 * data.commits_by_year[yy]) / data.getTotalCommits()))
 		f.write('</table>')
 
 		f.close()
