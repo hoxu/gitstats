@@ -313,9 +313,24 @@ class HTMLReportCreator(ReportCreator):
 		f.write('</table>')
 		fp.close()
 
+		# Commits by year/month
+		f.write('<h2>Commits by year/month</h2>')
+		f.write('<table><tr><th>Month</th><th>Commits</th></tr>')
+		for yymm in reversed(sorted(data.commits_by_month.keys())):
+			f.write('<tr><td>%s</td><td>%d</td></tr>' % (yymm, data.commits_by_month[yymm]))
+		f.write('</table>')
+
+		# Commits by year
+		f.write('<h2>Commits by year</h2>')
+		f.write('<table><tr><th>Year</th><th>Commits</th></tr>')
+		for yy in reversed(sorted(data.commits_by_year.keys())):
+			f.write('<tr><td>%s</td><td>%d</td></tr>' % (yy, data.commits_by_year[yy]))
+		f.write('</table>')
+
 		f.close()
 
-		# authors.html
+		###
+		# Authors
 		f = open(path + '/authors.html', 'w')
 		self.printHeader(f)
 

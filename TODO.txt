@@ -27,6 +27,16 @@
 	- DONE Total Commits
 	- DONE Authors
 
+- Activity by Time?
+	- (G?) Last 30 days
+	- (G?) Last 12 months
+	- DONE Hour of Day
+	- DONE Day of Week
+		- Hour of weekday -> 7x25?
+	- Month of Year
+	- DONE Commits by year/month
+	- DONE Commits by year
+
 - Authors
 	- List of authors
 		- show only first 10 and rest on separate page?
@@ -43,14 +53,6 @@
 	- (T) File Extensions (or mime types from "file"?): extension, files (%), lines (%), lines/file
 	- (T) Largest Files?
 	- (T) Files With Most Revisions?
-
-- Activity by Time?
-	- DONE Hour of Day
-	- DONE Day of Week
-		- Hour of weekday -> 7x25?
-	- Month of Year
-	- (G?) Last 30 days
-	- (G?) Last 12 months
 
 - (G) Lines of Code: x = date, y = lines
 
