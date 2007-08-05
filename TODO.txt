@@ -5,6 +5,8 @@
 - git-log
 - git-ls-files
 	- Current list of files
+- git-ls-tree -r <revision>
+	- get a list of files in each revision
 - git-log --stat or --shortstat - N files changed, N insertions, N deletions
 - git-log --name-status - svn-like list of modifications for each commit
 - git-rev-list --all
@@ -21,7 +23,7 @@
 - General
 	- Report Period (git-log)
 	- DONE Total Files (git-ls-files)
-	- WIP Total LOC?
+	- DONE Total LOC?
 	- DONE Total Commits
 	- DONE Authors
 
@@ -53,7 +55,9 @@
 - (G) Lines of Code: x = date, y = lines
 
 - Tags
-	- (T): Name, Date, LOC?, Developers
+	- DONE (T): Name, Date
+	- Lines
+	- Authors (count of people contributing after last version)?
 
 - Author page for each author
 	- Name, mail

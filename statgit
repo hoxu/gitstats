@@ -82,6 +82,23 @@ class GitDataCollector(DataCollector):
 		self.first_commit_stamp = 0
 		self.last_commit_stamp = 0
 
+		# tags
+		self.tags = {}
+		lines = getoutput('git-show-ref --tags').split('\n')
+		for line in lines:
+			(hash, tag) = line.split(' ')
+			tag = tag.replace('refs/tags/', '')
+			output = getoutput('git-log "%s" --pretty=format:"%%at %%an" -n 1' % hash)
+			if len(output) > 0:
+				parts = output.split(' ')
+				stamp = 0
+				try:
+					stamp = int(parts[0])
+				except ValueError:
+					stamp = 0
+				self.tags[tag] = { 'stamp': stamp, 'hash' : hash, 'date' : datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d') }
+			pass
+
 		# TODO also collect statistics for "last 30 days"/"last 12 months"
 		lines = getoutput('git-rev-list --pretty=format:"%at %an" HEAD |grep -v ^commit').split('\n')
 		for line in lines:
@@ -231,18 +248,11 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<dt>Authors</dt><dd>%s</dd>' % data.getTotalAuthors())
 		f.write('</dl>');
 
-
-		#f.write('<h2>Tags</h2>')
-		#f.write('<table>')
-		#f.write('<tr><th>Name</th><th>Date</th><th>Developers</th></tr>')
-		#for tag in data.getTags():
-		#	f.write('<tr><td>%s</td><td></td></tr>' % tag)
-		#f.write('</table>')
-
 		f.write('</body>\n</html>');
 		f.close()
 
-		# activity.html
+		###
+		# Activity
 		f = open(path + '/activity.html', 'w')
 		self.printHeader(f)
 		f.write('<h1>Activity</h1>')
@@ -252,17 +262,22 @@ class HTMLReportCreator(ReportCreator):
 
 		f.write('<h2>Last 12 months</h2>')
 
+		# Hour of Day
 		f.write('\n<h2>Hour of Day</h2>\n\n')
 		hour_of_day = data.getActivityByHourOfDay()
 		f.write('<table><tr><th>Hour</th>')
 		for i in range(1, 25):
 			f.write('<th>%d</th>' % i)
 		f.write('</tr>\n<tr><th>Commits</th>')
+		fp = open(path + '/hour_of_day.dat', 'w')
 		for i in range(0, 24):
 			if i in hour_of_day:
 				f.write('<td>%d</td>' % hour_of_day[i])
+				fp.write('%d %d\n' % (i, hour_of_day[i]))
 			else:
 				f.write('<td>0</td>')
+				fp.write('%d 0\n' % i)
+		fp.close()
 		f.write('</tr>\n<tr><th>%</th>')
 		totalcommits = data.getTotalCommits()
 		for i in range(0, 24):
@@ -272,13 +287,15 @@ class HTMLReportCreator(ReportCreator):
 				f.write('<td>0.00</td>')
 		f.write('</tr></table>')
 
-		### Day of Week
+		# Day of Week
 		# TODO show also by hour of weekday?
 		f.write('\n<h2>Day of Week</h2>\n\n')
 		day_of_week = data.getActivityByDayOfWeek()
 		f.write('<table>')
 		f.write('<tr><th>Day</th><th>Total (%)</th></tr>')
+		fp = open(path + '/day_of_week.dat', 'w')
 		for d in range(0, 7):
+			fp.write('%d %d\n' % (d + 1, day_of_week[d]))
 			f.write('<tr>')
 			f.write('<th>%d</th>' % (d + 1))
 			if d in day_of_week:
@@ -287,6 +304,7 @@ class HTMLReportCreator(ReportCreator):
 				f.write('<td>0</td>')
 			f.write('</tr>')
 		f.write('</table>')
+		fp.close()
 
 		f.close()
 
@@ -330,6 +348,22 @@ class HTMLReportCreator(ReportCreator):
 
 		f.write('</body></html>')
 		f.close()
+
+		###
+		# tags.html
+		f = open(path + '/tags.html', 'w')
+		self.printHeader(f)
+		f.write('<h1>Tags</h1>')
+		self.printNav(f)
+
+		f.write('<table>')
+		f.write('<tr><th>Name</th><th>Date</th></tr>')
+		for tag in data.tags.keys():
+			f.write('<tr><td>%s</td><td>%s</td></tr>' % (tag, data.tags[tag]['date']))
+		f.write('</table>')
+
+		f.write('</body></html>')
+		f.close()
 	pass
 
 	def printHeader(self, f):
@@ -349,6 +383,7 @@ class HTMLReportCreator(ReportCreator):
 <li><a href="authors.html">Authors</a></li>
 <li><a href="files.html">Files</a></li>
 <li><a href="lines.html">Lines</a></li>
+<li><a href="tags.html">Tags</a></li>
 </ul>
 </div>
 """)
