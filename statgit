@@ -15,6 +15,8 @@ def getoutput(cmd):
 def getkeyssortedbyvalues(dict):
 	return map(lambda el : el[1], sorted(map(lambda el : (el[1], el[0]), dict.items())))
 
+# TODO getdictkeyssortedbyvaluekey(dict, key) - eg. dict['author'] = { 'commits' : 512 } - ...key(dict, 'commits')
+
 class DataCollector:
 	def __init__(self):
 		pass
@@ -324,7 +326,7 @@ class HTMLReportCreator(ReportCreator):
 
 		f.write('<table class="authors">')
 		f.write('<tr><th>Author</th><th>Commits (%)</th><th>First commit</th><th>Last commit</th></tr>')
-		for author in data.getAuthors():
+		for author in sorted(data.getAuthors()):
 			info = data.getAuthorInfo(author)
 			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%s</td><td>%s</td></tr>' % (author, info['commits'], info['commits_frac'], info['date_first'], info['date_last']))
 		f.write('</table>')
