@@ -297,6 +297,14 @@ class HTMLReportCreator(ReportCreator):
 			else:
 				f.write('<td>0.00</td>')
 		f.write('</tr></table>')
+		f.write('<img src="hour_of_day.png" />')
+		fg = open(path + '/hour_of_day.dat', 'w')
+		for i in range(0, 24):
+			if i in hour_of_day:
+				fg.write('%d %d\n' % (i + 1, hour_of_day[i]))
+			else:
+				fg.write('%d 0\n' % (i + 1))
+		fg.close()
 
 		# Day of Week
 		# TODO show also by hour of weekday?
@@ -428,6 +436,19 @@ class HTMLReportCreator(ReportCreator):
 	def createGraphs(self, path):
 		print 'Generating graphs...'
 
+		# hour of day
+		f = open(path + '/hour_of_day.plot', 'w')
+		f.write(GNUPLOT_COMMON)
+		f.write(
+"""
+set output 'hour_of_day.png'
+unset key
+set xrange [0.5:24.5]
+set xtics 4
+plot 'hour_of_day.dat' using 1:2:(0.5) w boxes fs solid
+""")
+		f.close()
+
 		# commits_by_year_month
 		f = open(path + '/commits_by_year_month.plot', 'w')
 		f.write(GNUPLOT_COMMON)
@@ -456,7 +477,7 @@ plot 'commits_by_year.dat' using 1:2:(0.5) w boxes fs solid
 		f.close()
 
 		os.chdir(path)
-		for i in ('commits_by_year_month', 'commits_by_year'):
+		for i in ('hour_of_day', 'commits_by_year_month', 'commits_by_year'):
 			os.system('gnuplot %s.plot' % i)
 
 		pass
