@@ -323,6 +323,11 @@ class HTMLReportCreator(ReportCreator):
 		for yymm in reversed(sorted(data.commits_by_month.keys())):
 			f.write('<tr><td>%s</td><td>%d</td></tr>' % (yymm, data.commits_by_month[yymm]))
 		f.write('</table>')
+		f.write('<img src="commits_by_year_month.png" />')
+		fg = open(path + '/commits_by_year_month.dat', 'w')
+		for yymm in sorted(data.commits_by_month.keys()):
+			fg.write('%s %s\n' % (yymm, data.commits_by_month[yymm]))
+		fg.close()
 
 		# Commits by year
 		f.write('<h2>Commits by year</h2>')
@@ -421,17 +426,29 @@ class HTMLReportCreator(ReportCreator):
 	pass
 	
 	def createGraphs(self, path):
+		print 'Generating graphs...'
+
+		# commits_by_year_month
+		f = open(path + '/commits_by_year_month.plot', 'w')
+		f.write(GNUPLOT_COMMON)
+		f.write('set output \'commits_by_year_month.png\'\n')
+		f.write('unset key\n')
+		f.write('set xdata time\nset timefmt "%Y-%m"\nset format x "%Y-%m"\n')
+		f.write('plot \'commits_by_year_month.dat\' using 1:2:(0.5) w boxes fs solid')
+		f.close()
+
 		# commits_by_year
 		f = open(path + '/commits_by_year.plot', 'w')
 		f.write(GNUPLOT_COMMON)
 		f.write('set output \'commits_by_year.png\'\n')
 		f.write('unset key\n')
 		f.write('set xtics 1\n')
-		f.write('plot \'commits_by_year.dat\' using 1:2 w lp')
+		f.write('plot \'commits_by_year.dat\' using 1:2:(0.5) w boxes fs solid')
 		f.close()
 
 		os.chdir(path)
-		os.system('gnuplot commits_by_year.plot')
+		for i in ('commits_by_year_month', 'commits_by_year'):
+			os.system('gnuplot %s.plot' % i)
 
 		pass
 

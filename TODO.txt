@@ -1,7 +1,6 @@
 []
 - copy/link statgit.css to target dir
 - Activity: gnuplot graphs of tables
-	- Commits by year/month
 
 - development statistics generator for git
 	- should be as versatile as statcvs / statsvn
