@@ -1,9 +1,17 @@
 []
-- copy/link statgit.css to target dir
-- Activity: gnuplot graphs of tables
+- Files
+	- (T) File count by date
+- index: generated in N secs
 
-- development statistics generator for git
-	- should be as versatile as statcvs / statsvn
+- save gnuplot files in inline code, or in current dir as 
+	- ability to change the gnuplot instructions run-time would be nice, though
+- style class for images (<div class="graph">)?
+- better style for images & tables (keep next to each other?)
+
+[0.0.1]
+- copy/link statgit.css to target dir
+
+[Unsorted]
 
 [Information]
 - git-log
@@ -22,6 +30,8 @@
 - git-what-changed
 - XXX git-log --pretty=oneline |wc -l != git-rev-list --all |wc -l
 	- git-rev-list HEAD == git-log --pretty=oneline
+- for rev in $(git-rev-list HEAD); do echo "$rev" $(git-ls-tree -r "$rev" |wc -l); done
+	- number of files in each revision
 
 [Stats]
 - General
@@ -49,8 +59,9 @@
 	- DONE (T): Author of Year
 
 - Files
-	- Total Files
-	- Average file size
+	- DONE Total Files
+	- DONE Total Lines
+	- DONE Average file size
 	- Average revisions per file
 	- (G) File Count by Date: x = date, y = files
 	- (G) Average file size: x = date, y = lines/file
