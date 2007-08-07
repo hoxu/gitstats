@@ -323,6 +323,7 @@ class HTMLReportCreator(ReportCreator):
 				f.write('<td>0</td>')
 			f.write('</tr>')
 		f.write('</table>')
+		f.write('<img src="day_of_week.png" />')
 		fp.close()
 
 		# Commits by year/month
@@ -445,7 +446,22 @@ set output 'hour_of_day.png'
 unset key
 set xrange [0.5:24.5]
 set xtics 4
+set ylabel "Commits"
 plot 'hour_of_day.dat' using 1:2:(0.5) w boxes fs solid
+""")
+		f.close()
+
+		# day of week
+		f = open(path + '/day_of_week.plot', 'w')
+		f.write(GNUPLOT_COMMON)
+		f.write(
+"""
+set output 'day_of_week.png'
+unset key
+set xrange [0.5:7.5]
+set xtics 1
+set ylabel "Commits"
+plot 'day_of_week.dat' using 1:2:(0.5) w boxes fs solid
 """)
 		f.close()
 
@@ -460,6 +476,8 @@ unset key
 set xdata time
 set timefmt "%Y-%m"
 set format x "%Y-%m"
+set xtics 15768000
+set ylabel "Commits"
 plot 'commits_by_year_month.dat' using 1:2:(0.5) w boxes fs solid
 """)
 		f.close()
@@ -472,12 +490,13 @@ plot 'commits_by_year_month.dat' using 1:2:(0.5) w boxes fs solid
 set output 'commits_by_year.png'
 unset key
 set xtics 1
+set ylabel "Commits"
 plot 'commits_by_year.dat' using 1:2:(0.5) w boxes fs solid
 """)
 		f.close()
 
 		os.chdir(path)
-		for i in ('hour_of_day', 'commits_by_year_month', 'commits_by_year'):
+		for i in ('hour_of_day', 'day_of_week', 'commits_by_year_month', 'commits_by_year'):
 			os.system('gnuplot %s.plot' % i)
 
 		pass
