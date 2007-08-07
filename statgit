@@ -431,19 +431,28 @@ class HTMLReportCreator(ReportCreator):
 		# commits_by_year_month
 		f = open(path + '/commits_by_year_month.plot', 'w')
 		f.write(GNUPLOT_COMMON)
-		f.write('set output \'commits_by_year_month.png\'\n')
-		f.write('unset key\n')
-		f.write('set xdata time\nset timefmt "%Y-%m"\nset format x "%Y-%m"\n')
-		f.write('plot \'commits_by_year_month.dat\' using 1:2:(0.5) w boxes fs solid')
+		f.write(
+		# TODO rotate xtic labels by 90 degrees
+"""
+set output 'commits_by_year_month.png'
+unset key
+set xdata time
+set timefmt "%Y-%m"
+set format x "%Y-%m"
+plot 'commits_by_year_month.dat' using 1:2:(0.5) w boxes fs solid
+""")
 		f.close()
 
 		# commits_by_year
 		f = open(path + '/commits_by_year.plot', 'w')
 		f.write(GNUPLOT_COMMON)
-		f.write('set output \'commits_by_year.png\'\n')
-		f.write('unset key\n')
-		f.write('set xtics 1\n')
-		f.write('plot \'commits_by_year.dat\' using 1:2:(0.5) w boxes fs solid')
+		f.write(
+"""
+set output 'commits_by_year.png'
+unset key
+set xtics 1
+plot 'commits_by_year.dat' using 1:2:(0.5) w boxes fs solid
+""")
 		f.close()
 
 		os.chdir(path)
