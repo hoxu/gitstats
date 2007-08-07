@@ -6,6 +6,7 @@ import datetime
 import os
 import re
 import sys
+import time
 
 GNUPLOT_COMMON = 'set terminal png transparent\nset size 0.5,0.5\n'
 
@@ -21,6 +22,7 @@ def getkeyssortedbyvalues(dict):
 
 class DataCollector:
 	def __init__(self):
+		self.stamp_created = time.time()
 		pass
 	
 	##
@@ -49,6 +51,9 @@ class DataCollector:
 	
 	def getLastCommitDate(self):
 		return datetime.datetime.now()
+	
+	def getStampCreated(self):
+		return self.stamp_created
 	
 	def getTags(self):
 		return []
@@ -251,7 +256,7 @@ class HTMLReportCreator(ReportCreator):
 		self.printNav(f)
 
 		f.write('<dl>');
-		f.write('<dt>Generated</dt><dd>%s</dd>' % datetime.datetime.now().strftime(format));
+		f.write('<dt>Generated</dt><dd>%s (in %d seconds)</dd>' % (datetime.datetime.now().strftime(format), time.time() - data.getStampCreated()));
 		f.write('<dt>Report Period</dt><dd>%s to %s</dd>' % (data.getFirstCommitDate().strftime(format), data.getLastCommitDate().strftime(format)))
 		f.write('<dt>Total Files</dt><dd>%s</dd>' % data.getTotalFiles())
 		f.write('<dt>Total Lines of Code</dt><dd>%s</dd>' % data.getTotalLOC())
