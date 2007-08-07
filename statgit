@@ -402,7 +402,15 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<h1>Files</h1>')
 		self.printNav(f)
 
+		f.write('<dl>\n')
+		f.write('<dt>Total files</dt><dd>%d</dd>' % data.getTotalFiles())
+		f.write('<dt>Total lines</dt><dd>%d</dd>' % data.getTotalLOC())
+		f.write('<dt>Average file size</dt><dd>%.2f bytes</dd>' % ((100.0 * data.getTotalLOC()) / data.getTotalFiles()))
+		f.write('</dl>\n')
+
 		f.write('<h2>File count by date</h2>')
+
+		f.write('<h2>Average file size by date</h2>')
 
 		f.write('</body></html>')
 		f.close()
