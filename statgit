@@ -310,7 +310,7 @@ class HTMLReportCreator(ReportCreator):
 		# TODO show also by hour of weekday?
 		f.write('\n<h2>Day of Week</h2>\n\n')
 		day_of_week = data.getActivityByDayOfWeek()
-		f.write('<table>')
+		f.write('<div class="vtable"><table>')
 		f.write('<tr><th>Day</th><th>Total (%)</th></tr>')
 		fp = open(path + '/day_of_week.dat', 'w')
 		for d in range(0, 7):
@@ -322,16 +322,16 @@ class HTMLReportCreator(ReportCreator):
 			else:
 				f.write('<td>0</td>')
 			f.write('</tr>')
-		f.write('</table>')
+		f.write('</table></div>')
 		f.write('<img src="day_of_week.png" />')
 		fp.close()
 
 		# Commits by year/month
 		f.write('<h2>Commits by year/month</h2>')
-		f.write('<table><tr><th>Month</th><th>Commits</th></tr>')
+		f.write('<div class="vtable"><table><tr><th>Month</th><th>Commits</th></tr>')
 		for yymm in reversed(sorted(data.commits_by_month.keys())):
 			f.write('<tr><td>%s</td><td>%d</td></tr>' % (yymm, data.commits_by_month[yymm]))
-		f.write('</table>')
+		f.write('</table></div>')
 		f.write('<img src="commits_by_year_month.png" />')
 		fg = open(path + '/commits_by_year_month.dat', 'w')
 		for yymm in sorted(data.commits_by_month.keys()):
@@ -340,10 +340,10 @@ class HTMLReportCreator(ReportCreator):
 
 		# Commits by year
 		f.write('<h2>Commits by year</h2>')
-		f.write('<table><tr><th>Year</th><th>Commits (% of all)</th></tr>')
+		f.write('<div class="vtable"><table><tr><th>Year</th><th>Commits (% of all)</th></tr>')
 		for yy in reversed(sorted(data.commits_by_year.keys())):
 			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td></tr>' % (yy, data.commits_by_year[yy], (100.0 * data.commits_by_year[yy]) / data.getTotalCommits()))
-		f.write('</table>')
+		f.write('</table></div>')
 		f.write('<img src="commits_by_year.png" />')
 		fg = open(path + '/commits_by_year.dat', 'w')
 		for yy in sorted(data.commits_by_year.keys()):

@@ -80,3 +80,9 @@ img {
 	padding: 0.5em;
 	background-color: white;
 }
+
+.vtable {
+	float: right;
+	clear: both;
+	font-size: 90%;
+}
