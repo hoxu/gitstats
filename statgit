@@ -7,6 +7,8 @@ import os
 import re
 import sys
 
+GNUPLOT_COMMON = 'set terminal png\nset size 0.5,0.5\n'
+
 def getoutput(cmd):
 	print '>> %s' % cmd
 	output = commands.getoutput(cmd)
@@ -89,6 +91,8 @@ class GitDataCollector(DataCollector):
 		self.tags = {}
 		lines = getoutput('git-show-ref --tags').split('\n')
 		for line in lines:
+			if len(line) == 0:
+				continue
 			(hash, tag) = line.split(' ')
 			tag = tag.replace('refs/tags/', '')
 			output = getoutput('git-log "%s" --pretty=format:"%%at %%an" -n 1' % hash)
@@ -326,6 +330,11 @@ class HTMLReportCreator(ReportCreator):
 		for yy in reversed(sorted(data.commits_by_year.keys())):
 			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td></tr>' % (yy, data.commits_by_year[yy], (100.0 * data.commits_by_year[yy]) / data.getTotalCommits()))
 		f.write('</table>')
+		f.write('<img src="commits_by_year.png" />')
+		fg = open(path + '/commits_by_year.dat', 'w')
+		for yy in sorted(data.commits_by_year.keys()):
+			fg.write('%d %d\n' % (yy, data.commits_by_year[yy]))
+		fg.close()
 
 		f.write('</body></html>')
 		f.close()
@@ -373,6 +382,18 @@ class HTMLReportCreator(ReportCreator):
 		f.close()
 
 		###
+		# Files
+		f = open(path + '/files.html', 'w')
+		self.printHeader(f)
+		f.write('<h1>Files</h1>')
+		self.printNav(f)
+
+		f.write('<h2>File count by date</h2>')
+
+		f.write('</body></html>')
+		f.close()
+
+		###
 		# tags.html
 		f = open(path + '/tags.html', 'w')
 		self.printHeader(f)
@@ -381,7 +402,8 @@ class HTMLReportCreator(ReportCreator):
 
 		f.write('<dl>')
 		f.write('<dt>Total tags</dt><dd>%d</dd>' % len(data.tags))
-		f.write('<dt>Average commits per tag</dt><dd>%.2f</dd>' % (data.getTotalCommits() / len(data.tags)))
+		if len(data.tags) > 0:
+			f.write('<dt>Average commits per tag</dt><dd>%.2f</dd>' % (data.getTotalCommits() / len(data.tags)))
 		f.write('</dl>')
 
 		f.write('<table>')
@@ -394,7 +416,24 @@ class HTMLReportCreator(ReportCreator):
 
 		f.write('</body></html>')
 		f.close()
+
+		self.createGraphs(path)
 	pass
+	
+	def createGraphs(self, path):
+		# commits_by_year
+		f = open(path + '/commits_by_year.plot', 'w')
+		f.write(GNUPLOT_COMMON)
+		f.write('set output \'commits_by_year.png\'\n')
+		f.write('unset key\n')
+		f.write('set xtics 1\n')
+		f.write('plot \'commits_by_year.dat\' using 1:2 w lp')
+		f.close()
+
+		os.chdir(path)
+		os.system('gnuplot commits_by_year.plot')
+
+		pass
 
 	def printHeader(self, f):
 		f.write("""<html>
