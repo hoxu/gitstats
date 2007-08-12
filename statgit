@@ -339,16 +339,20 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<img src="day_of_week.png" />')
 		fp.close()
 
-		# TODO Month of Year
+		# Month of Year
 		f.write('\n<h2>Month of Year</h2>\n\n')
 		f.write('<div class="vtable"><table>')
 		f.write('<tr><th>Month</th><th>Commits (%)</th></tr>')
+		fp = open (path + '/month_of_year.dat', 'w')
 		for mm in range(1, 13):
 			commits = 0
 			if mm in data.activity_by_month_of_year:
 				commits = data.activity_by_month_of_year[mm]
 			f.write('<tr><td>%d</td><td>%d (%.2f %%)</td></tr>' % (mm, commits, (100.0 * commits) / data.getTotalCommits()))
+			fp.write('%d %d\n' % (mm, commits))
+		fp.close()
 		f.write('</table></div>')
+		f.write('<img src="month_of_year.png" />')
 
 		# Commits by year/month
 		f.write('<h2>Commits by year/month</h2>')
@@ -497,6 +501,20 @@ plot 'day_of_week.dat' using 1:2:(0.5) w boxes fs solid
 """)
 		f.close()
 
+		# Month of Year
+		f = open(path + '/month_of_year.plot', 'w')
+		f.write(GNUPLOT_COMMON)
+		f.write(
+"""
+set output 'month_of_year.png'
+unset key
+set xrange [0.5:12.5]
+set xtics 1
+set ylabel "Commits"
+plot 'month_of_year.dat' using 1:2:(0.5) w boxes fs solid
+""")
+		f.close()
+
 		# commits_by_year_month
 		f = open(path + '/commits_by_year_month.plot', 'w')
 		f.write(GNUPLOT_COMMON)
@@ -528,10 +546,9 @@ plot 'commits_by_year.dat' using 1:2:(0.5) w boxes fs solid
 		f.close()
 
 		os.chdir(path)
-		for i in ('hour_of_day', 'day_of_week', 'commits_by_year_month', 'commits_by_year'):
+		for i in ('hour_of_day', 'day_of_week', 'month_of_year', 'commits_by_year_month', 'commits_by_year'):
+			print '>> gnuplot %s.plot' % i
 			os.system('gnuplot %s.plot' % i)
-
-		pass
 
 	def printHeader(self, f):
 		f.write("""<html>

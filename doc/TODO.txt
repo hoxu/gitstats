@@ -48,7 +48,7 @@
 	- DONE Hour of Day
 	- DONE Day of Week
 		- Hour of weekday -> 7x25?
-	- Month of Year
+	- DONE Month of Year
 	- DONE Commits by year/month
 	- DONE Commits by year
 
