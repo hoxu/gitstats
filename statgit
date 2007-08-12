@@ -3,6 +3,7 @@
 # GPLv2
 import commands
 import datetime
+import glob
 import os
 import re
 import sys
@@ -193,6 +194,16 @@ class GitDataCollector(DataCollector):
 				self.commits_by_year[yy] += 1
 			else:
 				self.commits_by_year[yy] = 1
+
+		# outputs "<stamp> <files>" for each revision
+		self.files_by_stamp = {} # stamp -> files
+		lines = getoutput('git-rev-list --pretty=format:"%at %H" HEAD |grep -v ^commit |while read line; do set $line; echo "$1 $(git-ls-tree -r "$2" |wc -l)"; done').split('\n')
+		for line in lines:
+			parts = line.split(' ')
+			if len(parts) != 2:
+				continue
+			(stamp, files) = parts[0:2]
+			self.files_by_stamp[int(stamp)] = int(files)
 	
 	def getActivityByDayOfWeek(self):
 		return self.activity_by_day_of_week
@@ -438,6 +449,13 @@ class HTMLReportCreator(ReportCreator):
 
 		f.write('<h2>File count by date</h2>')
 
+		fg = open(path + '/files_by_date.dat', 'w')
+		for stamp in sorted(data.files_by_stamp.keys()):
+			fg.write('%s %d\n' % (datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d'), data.files_by_stamp[stamp]))
+		fg.close()
+			
+		f.write('<img src="files_by_date.png" />')
+
 		f.write('<h2>Average file size by date</h2>')
 
 		f.write('</body></html>')
@@ -545,10 +563,27 @@ plot 'commits_by_year.dat' using 1:2:(0.5) w boxes fs solid
 """)
 		f.close()
 
+		# Files by date
+		f = open(path + '/files_by_date.plot', 'w')
+		f.write(GNUPLOT_COMMON)
+		f.write(
+"""
+set output 'files_by_date.png'
+unset key
+set xdata time
+set timefmt "%Y-%m-%d"
+set format x "%Y-%m-%d"
+set ylabel "Files"
+set xtics rotate by 90
+plot 'files_by_date.dat' using 1:2 smooth csplines
+""")
+		f.close()
+
 		os.chdir(path)
-		for i in ('hour_of_day', 'day_of_week', 'month_of_year', 'commits_by_year_month', 'commits_by_year'):
-			print '>> gnuplot %s.plot' % i
-			os.system('gnuplot %s.plot' % i)
+		files = glob.glob(path + '/*.plot')
+		for f in files:
+			print '>> gnuplot %s' % os.path.basename(f)
+			os.system('gnuplot %s' % f)
 
 	def printHeader(self, f):
 		f.write("""<html>

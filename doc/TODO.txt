@@ -64,7 +64,7 @@
 	- DONE Total Lines
 	- DONE Average file size
 	- Average revisions per file
-	- (G) File Count by Date: x = date, y = files
+	- DONE (G) File Count by Date: x = date, y = files
 	- (G) Average file size: x = date, y = lines/file
 	- (T) File Extensions (or mime types from "file"?): extension, files (%), lines (%), lines/file
 	- (T) Largest Files?
