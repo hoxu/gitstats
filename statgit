@@ -81,6 +81,7 @@ class GitDataCollector(DataCollector):
 
 		self.activity_by_hour_of_day = {} # hour -> commits
 		self.activity_by_day_of_week = {} # day -> commits
+		self.activity_by_month_of_year = {} # month [1-12] -> commits
 
 		self.authors = {} # name -> {commits, first_commit_stamp, last_commit_stamp}
 
@@ -144,6 +145,13 @@ class GitDataCollector(DataCollector):
 				self.activity_by_day_of_week[day] += 1
 			else:
 				self.activity_by_day_of_week[day] = 1
+
+			# month of year
+			month = date.month
+			if month in self.activity_by_month_of_year:
+				self.activity_by_month_of_year[month] += 1
+			else:
+				self.activity_by_month_of_year[month] = 1
 
 			# author stats
 			if author not in self.authors:
@@ -330,6 +338,17 @@ class HTMLReportCreator(ReportCreator):
 		f.write('</table></div>')
 		f.write('<img src="day_of_week.png" />')
 		fp.close()
+
+		# TODO Month of Year
+		f.write('\n<h2>Month of Year</h2>\n\n')
+		f.write('<div class="vtable"><table>')
+		f.write('<tr><th>Month</th><th>Commits (%)</th></tr>')
+		for mm in range(1, 13):
+			commits = 0
+			if mm in data.activity_by_month_of_year:
+				commits = data.activity_by_month_of_year[mm]
+			f.write('<tr><td>%d</td><td>%d (%.2f %%)</td></tr>' % (mm, commits, (100.0 * commits) / data.getTotalCommits()))
+		f.write('</table></div>')
 
 		# Commits by year/month
 		f.write('<h2>Commits by year/month</h2>')
