@@ -12,6 +12,7 @@
 - copy/link statgit.css to target dir
 
 [Unsorted]
+- use sortable.js
 
 [Information]
 - git-log
