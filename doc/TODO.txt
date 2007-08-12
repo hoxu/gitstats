@@ -1,4 +1,5 @@
 []
+- BUG broken for git repo
 - Files
 	- (T) File count by date
 - index: generated in N secs
@@ -10,6 +11,7 @@
 
 [0.0.1]
 - copy/link statgit.css to target dir
+- rename to gitstats ?
 
 [Unsorted]
 - use sortable.js
@@ -67,6 +69,8 @@
 	- DONE (G) File Count by Date: x = date, y = files
 	- (G) Average file size: x = date, y = lines/file
 	- (T) File Extensions (or mime types from "file"?): extension, files (%), lines (%), lines/file
+		- extensions: ext -> { files, lines? }
+			- git-ls-files -> basename -> check ext
 	- (T) Largest Files?
 	- (T) Files With Most Revisions?
 
