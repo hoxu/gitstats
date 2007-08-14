@@ -1,4 +1,5 @@
 []
+- BUG git repo broken again
 - Files
 	- (T) File count by date
 
@@ -33,46 +34,35 @@
 	- number of files in each revision
 
 [Stats]
-- General
-	- Report Period (git-log)
-	- DONE Total Files (git-ls-files)
-	- DONE Total LOC?
-	- DONE Total Commits
-	- DONE Authors
-
 - Activity by Time?
 	- (G?) Last 30 days
 	- (G?) Last 12 months
-	- DONE Hour of Day
-	- DONE Day of Week
-		- Hour of weekday -> 7x25?
-	- DONE Month of Year
-	- DONE Commits by year/month
-	- DONE Commits by year
+	- Day of Week: Hour of weekday -> 7x25?
 
 - Authors
-	- List of authors
-		- show only first 10 and rest on separate page?
-	- DONE (T): author, commits (%), LOC?, first commit, last commit
-		- TODO days/time as developer
-	- DONE (T): Developer of the Month: month, author, commits, LOC?
-	- DONE (T): Author of Year
+	- (T) List of authors
+		- Lines
+		- Position by nrof commits
+		- Days/time as developer
+	- (T) Author of Month
+		- Places 2-N ?
+		- Lines
+	- (T) Author of Year
+		- Places 2-N
+		- Lines
 
 - Files
-	- DONE Total Files
-	- DONE Total Lines
-	- DONE Average file size
 	- Average revisions per file
-	- DONE (G) File Count by Date: x = date, y = files
 	- (G) Average file size: x = date, y = lines/file
-	- DONE (T) File Extensions (or mime types from "file"?): extension, files (%), lines (%), lines/file
 	- (T) Largest Files?
 	- (T) Files With Most Revisions?
 
-- (G) Lines of Code: x = date, y = lines
+- Lines
+	- Average lines/file
+	- (G) Lines of Code: x = date, y = lines
+		- could show tags as vertical lines
 
 - Tags
-	- DONE (T): Name, Date
 	- Lines
 	- Authors (count of people contributing after last version)?
 
@@ -87,6 +77,8 @@
 		- (G) Day of Week
 	- (T) Activity in Directories: Directory, Changes, LOC, LOC/change
 	- (Most Recent Commits?)
+	- Author of Month(s):
+	- Author of Year(s):
 
 [Stats in StatSVN]
 - General
