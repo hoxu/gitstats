@@ -359,7 +359,6 @@ class HTMLReportCreator(ReportCreator):
 		fg.close()
 
 		# Day of Week
-		# TODO show also by hour of weekday?
 		f.write('\n<h2>Day of Week</h2>\n\n')
 		day_of_week = data.getActivityByDayOfWeek()
 		f.write('<div class="vtable"><table>')
@@ -615,14 +614,13 @@ plot 'month_of_year.dat' using 1:2:(0.5) w boxes fs solid
 		f = open(path + '/commits_by_year_month.plot', 'w')
 		f.write(GNUPLOT_COMMON)
 		f.write(
-		# TODO rotate xtic labels by 90 degrees
 """
 set output 'commits_by_year_month.png'
 unset key
 set xdata time
 set timefmt "%Y-%m"
 set format x "%Y-%m"
-set xtics 15768000
+set xtics rotate by 90 15768000
 set ylabel "Commits"
 plot 'commits_by_year_month.dat' using 1:2:(0.5) w boxes fs solid
 """)
@@ -704,7 +702,10 @@ if len(sys.argv) <  3:
 gitpath = sys.argv[1]
 outputpath = os.path.abspath(sys.argv[2])
 
-os.makedirs(outputpath)
+try:
+	os.makedirs(outputpath)
+except OSError:
+	pass
 if not os.path.isdir(outputpath):
 	print 'FATAL: Output path is not a directory or does not exist'
 	sys.exit(1)
