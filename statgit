@@ -321,7 +321,7 @@ class HTMLReportCreator(ReportCreator):
 			else:
 				f.write('<td>0.00</td>')
 		f.write('</tr></table>')
-		f.write('<img src="hour_of_day.png" />')
+		f.write('<img src="hour_of_day.png" alt="Hour of Day" />')
 		fg = open(path + '/hour_of_day.dat', 'w')
 		for i in range(0, 24):
 			if i in hour_of_day:
@@ -347,7 +347,7 @@ class HTMLReportCreator(ReportCreator):
 				f.write('<td>0</td>')
 			f.write('</tr>')
 		f.write('</table></div>')
-		f.write('<img src="day_of_week.png" />')
+		f.write('<img src="day_of_week.png" alt="Day of Week" />')
 		fp.close()
 
 		# Month of Year
@@ -363,7 +363,7 @@ class HTMLReportCreator(ReportCreator):
 			fp.write('%d %d\n' % (mm, commits))
 		fp.close()
 		f.write('</table></div>')
-		f.write('<img src="month_of_year.png" />')
+		f.write('<img src="month_of_year.png" alt="Month of Year" />')
 
 		# Commits by year/month
 		f.write('<h2>Commits by year/month</h2>')
@@ -371,7 +371,7 @@ class HTMLReportCreator(ReportCreator):
 		for yymm in reversed(sorted(data.commits_by_month.keys())):
 			f.write('<tr><td>%s</td><td>%d</td></tr>' % (yymm, data.commits_by_month[yymm]))
 		f.write('</table></div>')
-		f.write('<img src="commits_by_year_month.png" />')
+		f.write('<img src="commits_by_year_month.png" alt="Commits by year/month" />')
 		fg = open(path + '/commits_by_year_month.dat', 'w')
 		for yymm in sorted(data.commits_by_month.keys()):
 			fg.write('%s %s\n' % (yymm, data.commits_by_month[yymm]))
@@ -383,7 +383,7 @@ class HTMLReportCreator(ReportCreator):
 		for yy in reversed(sorted(data.commits_by_year.keys())):
 			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td></tr>' % (yy, data.commits_by_year[yy], (100.0 * data.commits_by_year[yy]) / data.getTotalCommits()))
 		f.write('</table></div>')
-		f.write('<img src="commits_by_year.png" />')
+		f.write('<img src="commits_by_year.png" alt="Commits by Year" />')
 		fg = open(path + '/commits_by_year.dat', 'w')
 		for yy in sorted(data.commits_by_year.keys()):
 			fg.write('%d %d\n' % (yy, data.commits_by_year[yy]))
@@ -454,7 +454,7 @@ class HTMLReportCreator(ReportCreator):
 			fg.write('%s %d\n' % (datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d'), data.files_by_stamp[stamp]))
 		fg.close()
 			
-		f.write('<img src="files_by_date.png" />')
+		f.write('<img src="files_by_date.png" alt="Files by Date" />')
 
 		f.write('<h2>Average file size by date</h2>')
 
@@ -587,9 +587,9 @@ plot 'files_by_date.dat' using 1:2 smooth csplines
 
 	def printHeader(self, f):
 		f.write(
-"""<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html>
+"""<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>StatGit</title>
 	<link rel="stylesheet" href="statgit.css" type="text/css" />
@@ -600,6 +600,7 @@ plot 'files_by_date.dat' using 1:2 smooth csplines
 	def printNav(self, f):
 		f.write("""
 <div class="nav">
+<ul>
 <li><a href="index.html">General</a></li>
 <li><a href="activity.html">Activity</a></li>
 <li><a href="authors.html">Authors</a></li>
@@ -615,7 +616,6 @@ usage = """
 Usage: statgit [options] <gitpath> <outputpath>
 
 Options:
-  -o html
 """
 
 if len(sys.argv) <  3:

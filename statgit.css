@@ -66,10 +66,6 @@ td {
 	margin: 0.5em;
 }
 
-.nav:hover li a {
-	background-color: #ddd;
-}
-
 .nav li a:hover {
 	background-color: #ddd;
 	border-bottom: 1px solid #cc9;
