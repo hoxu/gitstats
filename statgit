@@ -586,7 +586,10 @@ plot 'files_by_date.dat' using 1:2 smooth csplines
 			os.system('gnuplot %s' % f)
 
 	def printHeader(self, f):
-		f.write("""<html>
+		f.write(
+"""<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html>
 <head>
 	<title>StatGit</title>
 	<link rel="stylesheet" href="statgit.css" type="text/css" />
