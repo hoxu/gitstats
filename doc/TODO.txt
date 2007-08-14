@@ -37,12 +37,12 @@
 - Activity by Time?
 	- (G?) Last 30 days
 	- (G?) Last 12 months
+	- (T) Hour of Week: percentages / coloring?
 
 - Authors
 	- (T) List of authors
 		- Lines
 		- Position by nrof commits
-		- Days/time as developer
 	- (T) Author of Month
 		- Places 2-N ?
 		- Lines

@@ -243,10 +243,11 @@ class GitDataCollector(DataCollector):
 
 		commits = a['commits']
 		commits_frac = (100 * float(commits)) / self.getTotalCommits()
-		date_first = datetime.datetime.fromtimestamp(a['first_commit_stamp']).strftime('%Y-%m-%d')
-		date_last = datetime.datetime.fromtimestamp(a['last_commit_stamp']).strftime('%Y-%m-%d')
+		date_first = datetime.datetime.fromtimestamp(a['first_commit_stamp'])
+		date_last = datetime.datetime.fromtimestamp(a['last_commit_stamp'])
+		delta = date_last - date_first
 
-		res = { 'commits': commits, 'commits_frac': commits_frac, 'date_first': date_first, 'date_last': date_last }
+		res = { 'commits': commits, 'commits_frac': commits_frac, 'date_first': date_first.strftime('%Y-%m-%d'), 'date_last': date_last.strftime('%Y-%m-%d'), 'timedelta' : delta }
 		return res
 	
 	def getAuthors(self):
@@ -451,15 +452,17 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<h1>Authors</h1>')
 		self.printNav(f)
 
+		# Authors :: List of authors
 		f.write('\n<h2>List of authors</h2>\n\n')
 
 		f.write('<table class="authors">')
-		f.write('<tr><th>Author</th><th>Commits (%)</th><th>First commit</th><th>Last commit</th></tr>')
+		f.write('<tr><th>Author</th><th>Commits (%)</th><th>First commit</th><th>Last commit</th><th>Age</th></tr>')
 		for author in sorted(data.getAuthors()):
 			info = data.getAuthorInfo(author)
-			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%s</td><td>%s</td></tr>' % (author, info['commits'], info['commits_frac'], info['date_first'], info['date_last']))
+			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%s</td><td>%s</td><td>%s</td></tr>' % (author, info['commits'], info['commits_frac'], info['date_first'], info['date_last'], info['timedelta']))
 		f.write('</table>')
 
+		# Authors :: Author of Month
 		f.write('\n<h2>Author of Month</h2>\n\n')
 		f.write('<table>')
 		f.write('<tr><th>Month</th><th>Author</th><th>Commits (%)</th></tr>')
