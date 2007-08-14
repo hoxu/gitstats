@@ -37,7 +37,6 @@
 - Activity by Time?
 	- (G?) Last 30 days
 	- (G?) Last 12 months
-	- Day of Week: Hour of weekday -> 7x25?
 
 - Authors
 	- (T) List of authors

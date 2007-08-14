@@ -84,6 +84,7 @@ class GitDataCollector(DataCollector):
 		self.activity_by_hour_of_day = {} # hour -> commits
 		self.activity_by_day_of_week = {} # day -> commits
 		self.activity_by_month_of_year = {} # month [1-12] -> commits
+		self.activity_by_hour_of_week = {} # weekday -> hour -> commits
 
 		self.authors = {} # name -> {commits, first_commit_stamp, last_commit_stamp}
 
@@ -114,7 +115,8 @@ class GitDataCollector(DataCollector):
 				self.tags[tag] = { 'stamp': stamp, 'hash' : hash, 'date' : datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d') }
 			pass
 
-		# TODO also collect statistics for "last 30 days"/"last 12 months"
+		# Collect revision statistics
+		# Outputs "<stamp> <author>"
 		lines = getoutput('git-rev-list --pretty=format:"%at %an" HEAD |grep -v ^commit').split('\n')
 		for line in lines:
 			# linux-2.6 says "<unknown>" for one line O_o
@@ -141,12 +143,20 @@ class GitDataCollector(DataCollector):
 			else:
 				self.activity_by_hour_of_day[hour] = 1
 
-			# day
+			# day of week
 			day = date.weekday()
 			if day in self.activity_by_day_of_week:
 				self.activity_by_day_of_week[day] += 1
 			else:
 				self.activity_by_day_of_week[day] = 1
+
+			# hour of week
+			if day not in self.activity_by_hour_of_week:
+				self.activity_by_hour_of_week[day] = {}
+			if hour not in self.activity_by_hour_of_week[day]:
+				self.activity_by_hour_of_week[day][hour] = 1
+			else:
+				self.activity_by_hour_of_week[day][hour] += 1
 
 			# month of year
 			month = date.month
@@ -366,6 +376,30 @@ class HTMLReportCreator(ReportCreator):
 		f.write('</table></div>')
 		f.write('<img src="day_of_week.png" alt="Day of Week" />')
 		fp.close()
+
+		# Hour of Week
+		f.write('\n<h2>Hour of Week</h2>\n\n')
+		f.write('<table>')
+
+		f.write('<tr><th>Weekday</th>')
+		for hour in range(0, 24):
+			f.write('<th>%d</th>' % (hour + 1))
+		f.write('</tr>')
+
+		for weekday in range(0, 7):
+			f.write('<tr><th>%d</th>' % (weekday + 1))
+			for hour in range(0, 24):
+				try:
+					commits = data.activity_by_hour_of_week[weekday][hour]
+				except KeyError:
+					commits = 0
+				if commits != 0:
+					f.write('<td>%d</td>' % commits)
+				else:
+					f.write('<td></td>')
+			f.write('</tr>')
+
+		f.write('</table>')
 
 		# Month of Year
 		f.write('\n<h2>Month of Year</h2>\n\n')
