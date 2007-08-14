@@ -704,6 +704,11 @@ if len(sys.argv) <  3:
 gitpath = sys.argv[1]
 outputpath = os.path.abspath(sys.argv[2])
 
+os.makedirs(outputpath)
+if not os.path.isdir(outputpath):
+	print 'FATAL: Output path is not a directory or does not exist'
+	sys.exit(1)
+
 print 'Git path: %s' % gitpath
 print 'Output path: %s' % outputpath
 
