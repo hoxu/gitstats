@@ -54,6 +54,7 @@
 	- List of authors
 		- show only first 10 and rest on separate page?
 	- DONE (T): author, commits (%), LOC?, first commit, last commit
+		- TODO days/time as developer
 	- DONE (T): Developer of the Month: month, author, commits, LOC?
 	- DONE (T): Author of Year
 
@@ -64,9 +65,7 @@
 	- Average revisions per file
 	- DONE (G) File Count by Date: x = date, y = files
 	- (G) Average file size: x = date, y = lines/file
-	- (T) File Extensions (or mime types from "file"?): extension, files (%), lines (%), lines/file
-		- extensions: ext -> { files, lines? }
-			- git-ls-files -> basename -> check ext
+	- DONE (T) File Extensions (or mime types from "file"?): extension, files (%), lines (%), lines/file
 	- (T) Largest Files?
 	- (T) Files With Most Revisions?
 
@@ -127,16 +126,9 @@
 - "Repo heatmap"?
 - LOC and Churn
 
-[Graphics]
-- Use gnuplot, graphviz etc ?
-
-[Usage]
-- $ statgit [-o html] /path/to/git /output/dir
-
 [name]
 - statgit or gitstats (no google hits for either)
 
 [Misc]
 - use sortable.js ?
 - could show some statistics from last year, month, etc... pisg-like?
-- style: tabs at top for different pages

@@ -11,8 +11,9 @@ import time
 
 GNUPLOT_COMMON = 'set terminal png transparent\nset size 0.5,0.5\n'
 
-def getoutput(cmd):
-	print '>> %s' % cmd
+def getoutput(cmd, quiet = False):
+	if not quiet:
+		print '>> %s' % cmd
 	output = commands.getoutput(cmd)
 	return output
 
@@ -204,6 +205,22 @@ class GitDataCollector(DataCollector):
 				continue
 			(stamp, files) = parts[0:2]
 			self.files_by_stamp[int(stamp)] = int(files)
+
+		# extensions
+		self.extensions = {} # extension -> files, lines
+		lines = getoutput('git-ls-files').split('\n')
+		for line in lines:
+			base = os.path.basename(line)
+			if base.find('.') == -1:
+				ext = ''
+			else:
+				ext = base[(base.rfind('.') + 1):]
+
+			if ext not in self.extensions:
+				self.extensions[ext] = {'files': 0, 'lines': 0}
+
+			self.extensions[ext]['files'] += 1
+			self.extensions[ext]['lines'] += int(getoutput('wc -l < "%s"' % line, quiet = True))
 	
 	def getActivityByDayOfWeek(self):
 		return self.activity_by_day_of_week
@@ -447,6 +464,7 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<dt>Average file size</dt><dd>%.2f bytes</dd>' % ((100.0 * data.getTotalLOC()) / data.getTotalFiles()))
 		f.write('</dl>\n')
 
+		# Files :: File count by date
 		f.write('<h2>File count by date</h2>')
 
 		fg = open(path + '/files_by_date.dat', 'w')
@@ -457,6 +475,15 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<img src="files_by_date.png" alt="Files by Date" />')
 
 		f.write('<h2>Average file size by date</h2>')
+
+		# Files :: Extensions
+		f.write('\n<h2>Extensions</h2>\n\n')
+		f.write('<table><tr><th>Extension</th><th>Files (%)</th><th>Lines (%)</th><th>Lines/file</th></tr>')
+		for ext in sorted(data.extensions.keys()):
+			files = data.extensions[ext]['files']
+			lines = data.extensions[ext]['lines']
+			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d (%.2f%%)</td><td>%d</td></tr>' % (ext, files, (100.0 * files) / data.getTotalFiles(), lines, (100.0 * lines) / data.getTotalLOC(), lines / files))
+		f.write('</table>')
 
 		f.write('</body></html>')
 		f.close()
