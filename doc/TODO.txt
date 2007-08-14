@@ -1,11 +1,7 @@
 []
-- BUG broken for git repo
 - Files
 	- (T) File count by date
-- index: generated in N secs
 
-- save gnuplot files in inline code, or in current dir as 
-	- ability to change the gnuplot instructions run-time would be nice, though
 - style class for images (<div class="graph">)?
 - better style for images & tables (keep next to each other?)
 
