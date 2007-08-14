@@ -220,7 +220,7 @@ class GitDataCollector(DataCollector):
 				self.extensions[ext] = {'files': 0, 'lines': 0}
 
 			self.extensions[ext]['files'] += 1
-			self.extensions[ext]['lines'] += int(getoutput('wc -l < "%s"' % line, quiet = True))
+			self.extensions[ext]['lines'] += int(getoutput('wc -l < %s' % line, quiet = True))
 	
 	def getActivityByDayOfWeek(self):
 		return self.activity_by_day_of_week
@@ -474,7 +474,7 @@ class HTMLReportCreator(ReportCreator):
 			
 		f.write('<img src="files_by_date.png" alt="Files by Date" />')
 
-		f.write('<h2>Average file size by date</h2>')
+		#f.write('<h2>Average file size by date</h2>')
 
 		# Files :: Extensions
 		f.write('\n<h2>Extensions</h2>\n\n')
@@ -484,6 +484,20 @@ class HTMLReportCreator(ReportCreator):
 			lines = data.extensions[ext]['lines']
 			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d (%.2f%%)</td><td>%d</td></tr>' % (ext, files, (100.0 * files) / data.getTotalFiles(), lines, (100.0 * lines) / data.getTotalLOC(), lines / files))
 		f.write('</table>')
+
+		f.write('</body></html>')
+		f.close()
+
+		###
+		# Lines
+		f = open(path + '/lines.html', 'w')
+		self.printHeader(f)
+		f.write('<h1>Lines</h1>')
+		self.printNav(f)
+
+		f.write('<dl>\n')
+		f.write('<dt>Total lines</dt><dd>%d</dd>' % data.getTotalLOC())
+		f.write('</dl>\n')
 
 		f.write('</body></html>')
 		f.close()
@@ -620,6 +634,7 @@ plot 'files_by_date.dat' using 1:2 smooth csplines
 <head>
 	<title>StatGit</title>
 	<link rel="stylesheet" href="statgit.css" type="text/css" />
+	<meta name="generator" content="statgit" />
 </head>
 <body>
 """)
