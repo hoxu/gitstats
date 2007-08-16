@@ -21,10 +21,12 @@ dd {
 table {
 	border: 1px solid black;
 	border-collapse: collapse;
-	font-size: 90%;
+	font-size: 80%;
 }
 
-tr {
+.vtable {
+	float: right;
+	clear: both;
 }
 
 th {
@@ -38,8 +40,8 @@ tr:hover {
 td {
 	border: 1px solid black;
 	padding: 0.2em;
-	padding-left: 0.5em;
-	padding-right: 0.5em;
+	padding-left: 0.3em;
+	padding-right: 0.2em;
 }
 
 .nav {
@@ -76,12 +78,6 @@ img {
 	border: 1px solid black;
 	padding: 0.5em;
 	background-color: white;
-}
-
-.vtable {
-	float: right;
-	clear: both;
-	font-size: 90%;
 }
 
 h1 a, h2 a {
