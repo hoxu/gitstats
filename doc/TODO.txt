@@ -7,8 +7,9 @@
 - better style for images & tables (keep next to each other?)
 
 [0.0.1]
-- copy/link statgit.css to target dir
+- copy/link gitstats.css to target dir
 - rename to gitstats ?
+	- make $PROJECT_NAME a variable
 
 [Unsorted]
 - use sortable.js
@@ -116,9 +117,6 @@
 - Directory sizes
 - "Repo heatmap"?
 - LOC and Churn
-
-[name]
-- statgit or gitstats (no google hits for either)
 
 [Misc]
 - use sortable.js ?

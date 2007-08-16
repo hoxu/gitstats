@@ -298,7 +298,7 @@ class HTMLReportCreator(ReportCreator):
 		format = '%Y-%m-%d %H:%m:%S'
 		self.printHeader(f)
 
-		f.write('<h1>StatGit</h1>')
+		f.write('<h1>GitStats</h1>')
 
 		self.printNav(f)
 
@@ -667,9 +667,9 @@ plot 'files_by_date.dat' using 1:2 smooth csplines
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<title>StatGit</title>
-	<link rel="stylesheet" href="statgit.css" type="text/css" />
-	<meta name="generator" content="statgit" />
+	<title>GitStats</title>
+	<link rel="stylesheet" href="gitstats.css" type="text/css" />
+	<meta name="generator" content="GitStats" />
 </head>
 <body>
 """)
@@ -690,7 +690,7 @@ plot 'files_by_date.dat' using 1:2 smooth csplines
 		
 
 usage = """
-Usage: statgit [options] <gitpath> <outputpath>
+Usage: gitstats [options] <gitpath> <outputpath>
 
 Options:
 """
