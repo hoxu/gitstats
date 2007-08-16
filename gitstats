@@ -237,6 +237,29 @@ class GitDataCollector(DataCollector):
 				self.extensions[ext]['lines'] += int(getoutput('wc -l < %s' % line, quiet = True))
 			except:
 				print 'Warning: Could not count lines for file "%s"' % line
+
+		# line statistics
+		# outputs:
+		# <stamp> <author>
+		#  N files changed, N insertions (+), N deletions(-)
+		self.changes_by_date = {} # stamp -> { files, ins, del }
+		lines = getoutput('git-log --shortstat --pretty=format:"%at %an"').split('\n')
+		# TODO |tac this and go it through in reverse, to calculate total lines in each rev?
+		stamp = 0
+		author = ''
+		for line in lines:
+			# <stamp> <author>
+			if line.find(',') == -1:
+				pos = line.find(' ')
+				(stamp, author) = (line[:pos], line[pos+1:])
+			else:
+				numbers = re.findall('\d+', line)
+				if len(numbers) == 3:
+					(files, inserted, deleted) = numbers
+				else:
+					print 'Warning: failed to handle line "%s"' % line
+					(files, inserted, deleted) = (0, 0, 0)
+				self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted }
 	
 	def getActivityByDayOfWeek(self):
 		return self.activity_by_day_of_week

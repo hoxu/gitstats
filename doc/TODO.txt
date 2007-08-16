@@ -6,11 +6,18 @@
 - parameter --style default.css
 - styles/default.css
 
+- Lines
+	- get line counts from "git-log --numstat"?
+	- git log --shortstat --pretty=format:"%at %an"
+		<stamp> <author>
+		 N files changed, N insertions (+), N deletions(-)
+
 [0.0.1]
 - copy/link gitstats.css to target dir
 	- find out pwd or home dir?
 
 [Unsorted]
+- could show some statistics from last year, month, etc... pisg-like?
 - use sortable.js
 
 [Information]
@@ -84,6 +91,3 @@
 	- Author top ten
 	- Month statistics
 
-[Misc]
-- use sortable.js ?
-- could show some statistics from last year, month, etc... pisg-like?
