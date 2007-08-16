@@ -1,6 +1,6 @@
 body {
 	color: black;
-	background-color: #cc9;
+	background-color: #fff;
 }
 
 dt {
@@ -51,6 +51,7 @@ td {
 	list-style-type: none;
 	display: inline;
 	margin: none;
+	padding: 0;
 }
 
 .nav li {
@@ -58,17 +59,17 @@ td {
 }
 
 .nav li a {
-	background-color: white;
 	padding: 0.3em;
 	text-decoration: none;
 	color: black;
 	border: 1px solid black;
 	margin: 0.5em;
+	background-color: #ddf;
 }
 
 .nav li a:hover {
 	background-color: #ddd;
-	border-bottom: 1px solid #cc9;
+	border-bottom: 1px solid #ddf;
 }
 
 img {
