@@ -2,3 +2,13 @@ statgit is a statistics generator for revision control systems (for now, only
 git). It is mostly intended for developers, as a way to check some development
 statistics for a project.
 
+Requirements
+============
+- Complete git repository (bare or shallow will *not* do)
+- Python
+- Git (reasonably new version)
+
+Recommended
+===========
+- Lot of memory and fast disk for large projects
+
