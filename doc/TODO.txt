@@ -5,11 +5,11 @@
 
 - style class for images (<div class="graph">)?
 - better style for images & tables (keep next to each other?)
+- parameter --style default.css
 
 [0.0.1]
 - copy/link gitstats.css to target dir
-- rename to gitstats ?
-	- make $PROJECT_NAME a variable
+	- find out pwd or home dir?
 
 [Unsorted]
 - use sortable.js

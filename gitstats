@@ -6,6 +6,7 @@ import datetime
 import glob
 import os
 import re
+import shutil
 import sys
 import time
 
@@ -23,6 +24,7 @@ def getkeyssortedbyvalues(dict):
 # TODO getdictkeyssortedbyvaluekey(dict, key) - eg. dict['author'] = { 'commits' : 512 } - ...key(dict, 'commits')
 
 class DataCollector:
+	"""Manages data collection from a revision control repository."""
 	def __init__(self):
 		self.stamp_created = time.time()
 		pass
@@ -230,7 +232,10 @@ class GitDataCollector(DataCollector):
 				self.extensions[ext] = {'files': 0, 'lines': 0}
 
 			self.extensions[ext]['files'] += 1
-			self.extensions[ext]['lines'] += int(getoutput('wc -l < %s' % line, quiet = True))
+			try:
+				self.extensions[ext]['lines'] += int(getoutput('wc -l < %s' % line, quiet = True))
+			except:
+				print 'Warning: Could not count lines for file "%s"' % line
 	
 	def getActivityByDayOfWeek(self):
 		return self.activity_by_day_of_week
@@ -283,6 +288,7 @@ class GitDataCollector(DataCollector):
 		return datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d')
 
 class ReportCreator:
+	"""Creates the actual report based on given data."""
 	def __init__(self):
 		pass
 	
@@ -293,6 +299,11 @@ class ReportCreator:
 class HTMLReportCreator(ReportCreator):
 	def create(self, data, path):
 		ReportCreator.create(self, data, path)
+
+		# TODO copy the CSS if it does not exist
+		if not os.path.exists(path + '/gitstats.css'):
+			#shutil.copyfile('')
+			pass
 
 		f = open(path + "/index.html", 'w')
 		format = '%Y-%m-%d %H:%m:%S'
