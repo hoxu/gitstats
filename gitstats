@@ -340,9 +340,9 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<h1>Activity</h1>')
 		self.printNav(f)
 
-		f.write('<h2>Last 30 days</h2>')
+		#f.write('<h2>Last 30 days</h2>')
 
-		f.write('<h2>Last 12 months</h2>')
+		#f.write('<h2>Last 12 months</h2>')
 
 		# Hour of Day
 		f.write(html_header(2, 'Hour of Day'))

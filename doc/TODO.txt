@@ -2,9 +2,9 @@
 - Files
 	- (T) File count by date
 
-- style class for images (<div class="graph">)?
 - better style for images & tables (keep next to each other?)
 - parameter --style default.css
+- styles/default.css
 
 [0.0.1]
 - copy/link gitstats.css to target dir
@@ -78,6 +78,11 @@
 	- (Most Recent Commits?)
 	- Author of Month(s):
 	- Author of Year(s):
+
+- Pages for years?
+	- Commits (% of all)
+	- Author top ten
+	- Month statistics
 
 [Stats in StatSVN]
 - General
