@@ -4,9 +4,12 @@ statistics for a project.
 
 Requirements
 ============
-- Complete git repository (bare or shallow will *not* do)
-- Python
-- Git (reasonably new version)
+- Python (>= 2.4.4)
+- Git (>= 1.5.2.4)
+- Gnuplot (>= 4.0.0)
+- Complete, clean git repository (bare or shallow will *not* do)
+
+The above versions are not absolute requirements; older versions may work also.
 
 Recommended
 ===========
