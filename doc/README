@@ -2,6 +2,8 @@ gitstats is a statistics generator for revision control systems (for now, only
 git). It is mostly intended for developers, as a way to check some development
 statistics for a project.
 
+Currently it produces only HTML output with tables and graphs.
+
 Requirements
 ============
 - Python (>= 2.4.4)
