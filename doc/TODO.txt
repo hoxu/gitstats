@@ -1,5 +1,4 @@
 []
-- BUG git repo broken again
 - Files
 	- (T) File count by date
 

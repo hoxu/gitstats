@@ -233,6 +233,7 @@ class GitDataCollector(DataCollector):
 
 			self.extensions[ext]['files'] += 1
 			try:
+				# FIXME filenames with spaces or special characters are broken
 				self.extensions[ext]['lines'] += int(getoutput('wc -l < %s' % line, quiet = True))
 			except:
 				print 'Warning: Could not count lines for file "%s"' % line
@@ -296,6 +297,13 @@ class ReportCreator:
 		self.data = data
 		self.path = path
 
+def html_linkify(text):
+	return text.lower().replace(' ', '_')
+
+def html_header(level, text):
+	name = html_linkify(text)
+	return '\n<h%d><a href="#%s" name="%s">%s</a></h%d>\n\n' % (level, name, name, text, level)
+
 class HTMLReportCreator(ReportCreator):
 	def create(self, data, path):
 		ReportCreator.create(self, data, path)
@@ -337,7 +345,7 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<h2>Last 12 months</h2>')
 
 		# Hour of Day
-		f.write('\n<h2>Hour of Day</h2>\n\n')
+		f.write(html_header(2, 'Hour of Day'))
 		hour_of_day = data.getActivityByHourOfDay()
 		f.write('<table><tr><th>Hour</th>')
 		for i in range(1, 25):
@@ -370,7 +378,7 @@ class HTMLReportCreator(ReportCreator):
 		fg.close()
 
 		# Day of Week
-		f.write('\n<h2>Day of Week</h2>\n\n')
+		f.write(html_header(2, 'Day of Week'))
 		day_of_week = data.getActivityByDayOfWeek()
 		f.write('<div class="vtable"><table>')
 		f.write('<tr><th>Day</th><th>Total (%)</th></tr>')
@@ -389,7 +397,7 @@ class HTMLReportCreator(ReportCreator):
 		fp.close()
 
 		# Hour of Week
-		f.write('\n<h2>Hour of Week</h2>\n\n')
+		f.write(html_header(2, 'Hour of Week'))
 		f.write('<table>')
 
 		f.write('<tr><th>Weekday</th>')
@@ -413,7 +421,7 @@ class HTMLReportCreator(ReportCreator):
 		f.write('</table>')
 
 		# Month of Year
-		f.write('\n<h2>Month of Year</h2>\n\n')
+		f.write(html_header(2, 'Month of Year'))
 		f.write('<div class="vtable"><table>')
 		f.write('<tr><th>Month</th><th>Commits (%)</th></tr>')
 		fp = open (path + '/month_of_year.dat', 'w')
@@ -428,7 +436,7 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<img src="month_of_year.png" alt="Month of Year" />')
 
 		# Commits by year/month
-		f.write('<h2>Commits by year/month</h2>')
+		f.write(html_header(2, 'Commits by year/month'))
 		f.write('<div class="vtable"><table><tr><th>Month</th><th>Commits</th></tr>')
 		for yymm in reversed(sorted(data.commits_by_month.keys())):
 			f.write('<tr><td>%s</td><td>%d</td></tr>' % (yymm, data.commits_by_month[yymm]))
@@ -440,7 +448,7 @@ class HTMLReportCreator(ReportCreator):
 		fg.close()
 
 		# Commits by year
-		f.write('<h2>Commits by year</h2>')
+		f.write(html_header(2, 'Commits by Year'))
 		f.write('<div class="vtable"><table><tr><th>Year</th><th>Commits (% of all)</th></tr>')
 		for yy in reversed(sorted(data.commits_by_year.keys())):
 			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td></tr>' % (yy, data.commits_by_year[yy], (100.0 * data.commits_by_year[yy]) / data.getTotalCommits()))
@@ -463,7 +471,7 @@ class HTMLReportCreator(ReportCreator):
 		self.printNav(f)
 
 		# Authors :: List of authors
-		f.write('\n<h2>List of authors</h2>\n\n')
+		f.write(html_header(2, 'List of Authors'))
 
 		f.write('<table class="authors">')
 		f.write('<tr><th>Author</th><th>Commits (%)</th><th>First commit</th><th>Last commit</th><th>Age</th></tr>')
@@ -473,7 +481,7 @@ class HTMLReportCreator(ReportCreator):
 		f.write('</table>')
 
 		# Authors :: Author of Month
-		f.write('\n<h2>Author of Month</h2>\n\n')
+		f.write(html_header(2, 'Author of Month'))
 		f.write('<table>')
 		f.write('<tr><th>Month</th><th>Author</th><th>Commits (%)</th></tr>')
 		for yymm in reversed(sorted(data.author_of_month.keys())):
@@ -485,7 +493,7 @@ class HTMLReportCreator(ReportCreator):
 
 		f.write('</table>')
 
-		f.write('\n<h2>Author of Year</h2>\n\n')
+		f.write(html_header(2, 'Author of Year'))
 		f.write('<table><tr><th>Year</th><th>Author</th><th>Commits (%)</th></tr>')
 		for yy in reversed(sorted(data.author_of_year.keys())):
 			authordict = data.author_of_year[yy]
@@ -512,7 +520,7 @@ class HTMLReportCreator(ReportCreator):
 		f.write('</dl>\n')
 
 		# Files :: File count by date
-		f.write('<h2>File count by date</h2>')
+		f.write(html_header(2, 'File count by date'))
 
 		fg = open(path + '/files_by_date.dat', 'w')
 		for stamp in sorted(data.files_by_stamp.keys()):
@@ -524,7 +532,7 @@ class HTMLReportCreator(ReportCreator):
 		#f.write('<h2>Average file size by date</h2>')
 
 		# Files :: Extensions
-		f.write('\n<h2>Extensions</h2>\n\n')
+		f.write(html_header(2, 'Extensions'))
 		f.write('<table><tr><th>Extension</th><th>Files (%)</th><th>Lines (%)</th><th>Lines/file</th></tr>')
 		for ext in sorted(data.extensions.keys()):
 			files = data.extensions[ext]['files']
@@ -733,5 +741,4 @@ data.collect(gitpath)
 print 'Generating report...'
 report = HTMLReportCreator()
 report.create(data, outputpath)
-
 
