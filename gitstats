@@ -246,10 +246,13 @@ class GitDataCollector(DataCollector):
 		lines = getoutput('git-log --shortstat --pretty=format:"%at %an" |tac').split('\n')
 		files = 0; inserted = 0; deleted = 0; total_lines = 0
 		for line in lines:
+			if len(line) == 0:
+				continue
+
 			# <stamp> <author>
 			if line.find(',') == -1:
 				pos = line.find(' ')
-				(stamp, author) = (line[:pos], line[pos+1:])
+				(stamp, author) = (int(line[:pos]), line[pos+1:])
 				self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted, 'lines': total_lines }
 			else:
 				numbers = re.findall('\d+', line)
@@ -581,6 +584,14 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<dt>Total lines</dt><dd>%d</dd>' % data.getTotalLOC())
 		f.write('</dl>\n')
 
+		f.write(html_header(2, 'Lines of Code'))
+		f.write('<img src="lines_of_code.png" />')
+
+		fg = open(path + '/lines_of_code.dat', 'w')
+		for stamp in sorted(data.changes_by_date.keys()):
+			fg.write('%d %d\n' % (stamp, data.changes_by_date[stamp]['lines']))
+		fg.close()
+
 		f.write('</body></html>')
 		f.close()
 
@@ -698,6 +709,22 @@ set format x "%Y-%m-%d"
 set ylabel "Files"
 set xtics rotate by 90
 plot 'files_by_date.dat' using 1:2 smooth csplines
+""")
+		f.close()
+
+		# Lines of Code
+		f = open(path + '/lines_of_code.plot', 'w')
+		f.write(GNUPLOT_COMMON)
+		f.write(
+"""
+set output 'lines_of_code.png'
+unset key
+set xdata time
+set timefmt "%s"
+set format x "%Y-%m-%d"
+set ylabel "Lines"
+set xtics rotate by 90
+plot 'lines_of_code.dat' using 1:2 w lines
 """)
 		f.close()
 
