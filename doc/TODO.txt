@@ -1,15 +1,11 @@
 []
-- Files
-	- (T) File count by date
-
+- separate "web" branch for homepage
 - better style for images & tables (keep next to each other?)
 - parameter --style default.css
 - styles/default.css
 
 [0.0.1]
 - style: fix table colors
-- copy/link gitstats.css to target dir
-	- find out pwd or home dir?
 
 [Unsorted]
 - could show some statistics from last year, month, etc... pisg-like?

@@ -342,7 +342,7 @@ class HTMLReportCreator(ReportCreator):
 
 		# TODO copy the CSS if it does not exist
 		if not os.path.exists(path + '/gitstats.css'):
-			#shutil.copyfile('')
+			shutil.copyfile('gitstats.css', path + '/gitstats.css')
 			pass
 
 		f = open(path + "/index.html", 'w')
@@ -779,6 +779,7 @@ if len(sys.argv) <  3:
 
 gitpath = sys.argv[1]
 outputpath = os.path.abspath(sys.argv[2])
+rundir = os.getcwd()
 
 try:
 	os.makedirs(outputpath)
@@ -796,6 +797,8 @@ os.chdir(gitpath)
 print 'Collecting data...'
 data = GitDataCollector()
 data.collect(gitpath)
+
+os.chdir(rundir)
 
 print 'Generating report...'
 report = HTMLReportCreator()
