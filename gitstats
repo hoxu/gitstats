@@ -240,26 +240,27 @@ class GitDataCollector(DataCollector):
 
 		# line statistics
 		# outputs:
-		# <stamp> <author>
 		#  N files changed, N insertions (+), N deletions(-)
+		# <stamp> <author>
 		self.changes_by_date = {} # stamp -> { files, ins, del }
-		lines = getoutput('git-log --shortstat --pretty=format:"%at %an"').split('\n')
-		# TODO |tac this and go it through in reverse, to calculate total lines in each rev?
-		stamp = 0
-		author = ''
+		lines = getoutput('git-log --shortstat --pretty=format:"%at %an" |tac').split('\n')
+		files = 0; inserted = 0; deleted = 0; total_lines = 0
 		for line in lines:
 			# <stamp> <author>
 			if line.find(',') == -1:
 				pos = line.find(' ')
 				(stamp, author) = (line[:pos], line[pos+1:])
+				self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted, 'lines': total_lines }
 			else:
 				numbers = re.findall('\d+', line)
 				if len(numbers) == 3:
-					(files, inserted, deleted) = numbers
+					(files, inserted, deleted) = map(lambda el : int(el), numbers)
+					total_lines += inserted
+					total_lines -= deleted
 				else:
 					print 'Warning: failed to handle line "%s"' % line
 					(files, inserted, deleted) = (0, 0, 0)
-				self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted }
+				#self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted }
 	
 	def getActivityByDayOfWeek(self):
 		return self.activity_by_day_of_week
@@ -407,7 +408,10 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<tr><th>Day</th><th>Total (%)</th></tr>')
 		fp = open(path + '/day_of_week.dat', 'w')
 		for d in range(0, 7):
-			fp.write('%d %d\n' % (d + 1, day_of_week[d]))
+			commits = 0
+			if d in day_of_week:
+				commits = day_of_week[d]
+			fp.write('%d %d\n' % (d + 1, commits))
 			f.write('<tr>')
 			f.write('<th>%d</th>' % (d + 1))
 			if d in day_of_week:

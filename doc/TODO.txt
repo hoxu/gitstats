@@ -6,13 +6,8 @@
 - parameter --style default.css
 - styles/default.css
 
-- Lines
-	- get line counts from "git-log --numstat"?
-	- git log --shortstat --pretty=format:"%at %an"
-		<stamp> <author>
-		 N files changed, N insertions (+), N deletions(-)
-
 [0.0.1]
+- style: fix table colors
 - copy/link gitstats.css to target dir
 	- find out pwd or home dir?
 
