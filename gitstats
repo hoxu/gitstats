@@ -81,7 +81,7 @@ class GitDataCollector(DataCollector):
 		self.total_authors = int(getoutput('git-log |git-shortlog -s |wc -l'))
 		self.total_commits = int(getoutput('git-rev-list HEAD |wc -l'))
 		self.total_files = int(getoutput('git-ls-files |wc -l'))
-		self.total_lines = int(getoutput('git-ls-files -z |xargs -0 cat |wc -l'))
+		#self.total_lines = int(getoutput('git-ls-files -z |xargs -0 cat |wc -l'))
 
 		self.activity_by_hour_of_day = {} # hour -> commits
 		self.activity_by_day_of_week = {} # day -> commits
@@ -264,6 +264,7 @@ class GitDataCollector(DataCollector):
 					print 'Warning: failed to handle line "%s"' % line
 					(files, inserted, deleted) = (0, 0, 0)
 				#self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted }
+		self.total_lines = total_lines
 	
 	def getActivityByDayOfWeek(self):
 		return self.activity_by_day_of_week

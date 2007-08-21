@@ -60,8 +60,7 @@
 
 - Lines
 	- Average lines/file
-	- (G) Lines of Code: x = date, y = lines
-		- could show tags as vertical lines
+	- (G) Lines of Code: show tags as vertical lines?
 
 - Tags
 	- Lines
