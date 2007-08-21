@@ -14,8 +14,13 @@ GNUPLOT_COMMON = 'set terminal png transparent\nset size 0.5,0.5\n'
 
 def getoutput(cmd, quiet = False):
 	if not quiet:
-		print '>> %s' % cmd
+		start = time.time()
+		print '>> %s' % cmd,
+		sys.stdout.flush()
 	output = commands.getoutput(cmd)
+	if not quiet:
+		end = time.time()
+		print '\r[%.5f] >> %s' % (end - start, cmd)
 	return output
 
 def getkeyssortedbyvalues(dict):
@@ -736,8 +741,9 @@ plot 'lines_of_code.dat' using 1:2 w lines
 		os.chdir(path)
 		files = glob.glob(path + '/*.plot')
 		for f in files:
-			print '>> gnuplot %s' % os.path.basename(f)
-			os.system('gnuplot %s' % f)
+			out = getoutput('gnuplot %s' % f)
+			if len(out) > 0:
+				print out
 
 	def printHeader(self, f):
 		f.write(
