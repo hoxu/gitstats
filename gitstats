@@ -208,6 +208,7 @@ class GitDataCollector(DataCollector):
 			else:
 				self.commits_by_year[yy] = 1
 
+		# TODO Optimize this, it's the worst bottleneck
 		# outputs "<stamp> <files>" for each revision
 		self.files_by_stamp = {} # stamp -> files
 		lines = getoutput('git-rev-list --pretty=format:"%at %H" HEAD |grep -v ^commit |while read line; do set $line; echo "$1 $(git-ls-tree -r "$2" |wc -l)"; done').split('\n')
@@ -216,7 +217,10 @@ class GitDataCollector(DataCollector):
 			if len(parts) != 2:
 				continue
 			(stamp, files) = parts[0:2]
-			self.files_by_stamp[int(stamp)] = int(files)
+			try:
+				self.files_by_stamp[int(stamp)] = int(files)
+			except ValueError:
+				print 'Warning: failed to parse line "%s"' % line
 
 		# extensions
 		self.extensions = {} # extension -> files, lines
