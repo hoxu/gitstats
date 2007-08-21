@@ -1,5 +1,4 @@
 []
-- separate "web" branch for homepage
 - better style for images & tables (keep next to each other?)
 - parameter --style default.css
 - styles/default.css
