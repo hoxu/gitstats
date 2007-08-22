@@ -1,34 +1,11 @@
 []
-- better style for images & tables (keep next to each other?)
-- parameter --style default.css
-- styles/default.css
-
-[0.0.1]
-- style: fix table colors
 
 [Unsorted]
+- allow multiple stylesheets
+	- parameter --style
+	- styles/{default,...}.css
 - could show some statistics from last year, month, etc... pisg-like?
 - use sortable.js
-
-[Information]
-- git-log
-- git-ls-files
-	- Current list of files
-- git-ls-tree -r <revision>
-	- get a list of files in each revision
-- git-log --stat or --shortstat - N files changed, N insertions, N deletions
-- git-log --name-status - svn-like list of modifications for each commit
-- git-rev-list --all
-	- first and last commit
-- git-show-ref --tags
-	- not all tags are tags on refs?
-- git-log |git-shortlog -s
-	- author: number of commits
-- git-what-changed
-- XXX git-log --pretty=oneline |wc -l != git-rev-list --all |wc -l
-	- git-rev-list HEAD == git-log --pretty=oneline
-- for rev in $(git-rev-list HEAD); do echo "$rev" $(git-ls-tree -r "$rev" |wc -l); done
-	- number of files in each revision
 
 [Stats]
 - Activity by Time?
