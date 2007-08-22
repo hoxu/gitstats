@@ -1,0 +1,14 @@
+body {
+	background-color: white;
+	color: black;
+}
+
+p {
+	text-align: justify;
+}
+
+pre {
+	background-color: #ccc;
+	padding: 1em;
+	border: 1px solid #999;
+}
