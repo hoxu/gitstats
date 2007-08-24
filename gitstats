@@ -266,7 +266,7 @@ class GitDataCollector(DataCollector):
 				continue
 
 			# <stamp> <author>
-			if line.find(',') == -1:
+			if line.find('files changed,') == -1:
 				pos = line.find(' ')
 				(stamp, author) = (int(line[:pos]), line[pos+1:])
 				self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted, 'lines': total_lines }
