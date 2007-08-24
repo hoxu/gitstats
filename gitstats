@@ -91,7 +91,6 @@ class GitDataCollector(DataCollector):
 		DataCollector.collect(self, dir)
 
 		self.total_authors = int(getoutput('git-log |git-shortlog -s |wc -l'))
-		self.total_files = int(getoutput('git-ls-files |wc -l'))
 		#self.total_lines = int(getoutput('git-ls-files -z |xargs -0 cat |wc -l'))
 
 		self.activity_by_hour_of_day = {} # hour -> commits
@@ -237,6 +236,7 @@ class GitDataCollector(DataCollector):
 		# extensions
 		self.extensions = {} # extension -> files, lines
 		lines = getoutput('git-ls-files').split('\n')
+		self.total_files = len(lines)
 		for line in lines:
 			base = os.path.basename(line)
 			if base.find('.') == -1:
