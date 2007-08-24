@@ -11,6 +11,8 @@
 	- styles/{default,...}.css
 - could show some statistics from last year, month, etc... pisg-like?
 - use sortable.js
+- Commandline options
+	--title "Project name"
 
 [Stats]
 - Activity by Time?
