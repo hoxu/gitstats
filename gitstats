@@ -12,15 +12,21 @@ import time
 
 GNUPLOT_COMMON = 'set terminal png transparent\nset size 0.5,0.5\n'
 
+exectime_internal = 0.0
+exectime_external = 0.0
+time_start = time.time()
+
 def getoutput(cmd, quiet = False):
+	global exectime_external
+	start = time.time()
 	if not quiet:
-		start = time.time()
 		print '>> %s' % cmd,
 		sys.stdout.flush()
 	output = commands.getoutput(cmd)
+	end = time.time()
 	if not quiet:
-		end = time.time()
 		print '\r[%.5f] >> %s' % (end - start, cmd)
+	exectime_external += (end - start)
 	return output
 
 def getkeyssortedbyvalues(dict):
@@ -813,3 +819,6 @@ print 'Generating report...'
 report = HTMLReportCreator()
 report.create(data, outputpath)
 
+time_end = time.time()
+exectime_internal = time_end - time_start
+print 'Execution time %.5f secs, %.5f secs (%.2f %%) in external commands)' % (exectime_internal, exectime_external, (100.0 * exectime_external) / exectime_internal)
