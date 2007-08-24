@@ -38,6 +38,7 @@ class DataCollector:
 	# This should be the main function to extract data from the repository.
 	def collect(self, dir):
 		self.dir = dir
+		self.projectname = os.path.basename(os.path.abspath(dir))
 	
 	##
 	# : get a dictionary of author
@@ -344,6 +345,7 @@ def html_header(level, text):
 class HTMLReportCreator(ReportCreator):
 	def create(self, data, path):
 		ReportCreator.create(self, data, path)
+		self.title = data.projectname
 
 		# TODO copy the CSS if it does not exist
 		if not os.path.exists(path + '/gitstats.css'):
@@ -354,11 +356,12 @@ class HTMLReportCreator(ReportCreator):
 		format = '%Y-%m-%d %H:%m:%S'
 		self.printHeader(f)
 
-		f.write('<h1>GitStats</h1>')
+		f.write('<h1>GitStats - %s</h1>' % data.projectname)
 
 		self.printNav(f)
 
 		f.write('<dl>');
+		f.write('<dt>Project name</dt><dd>%s</dd>' % (data.projectname))
 		f.write('<dt>Generated</dt><dd>%s (in %d seconds)</dd>' % (datetime.datetime.now().strftime(format), time.time() - data.getStampCreated()));
 		f.write('<dt>Report Period</dt><dd>%s to %s</dd>' % (data.getFirstCommitDate().strftime(format), data.getLastCommitDate().strftime(format)))
 		f.write('<dt>Total Files</dt><dd>%s</dd>' % data.getTotalFiles())
@@ -745,18 +748,18 @@ plot 'lines_of_code.dat' using 1:2 w lines
 			if len(out) > 0:
 				print out
 
-	def printHeader(self, f):
+	def printHeader(self, f, title = ''):
 		f.write(
 """<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-	<title>GitStats</title>
+	<title>GitStats - %s</title>
 	<link rel="stylesheet" href="gitstats.css" type="text/css" />
 	<meta name="generator" content="GitStats" />
 </head>
 <body>
-""")
+""" % self.title)
 
 	def printNav(self, f):
 		f.write("""
