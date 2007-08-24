@@ -85,7 +85,6 @@ class GitDataCollector(DataCollector):
 		DataCollector.collect(self, dir)
 
 		self.total_authors = int(getoutput('git-log |git-shortlog -s |wc -l'))
-		self.total_commits = int(getoutput('git-rev-list HEAD |wc -l'))
 		self.total_files = int(getoutput('git-ls-files |wc -l'))
 		#self.total_lines = int(getoutput('git-ls-files -z |xargs -0 cat |wc -l'))
 
@@ -218,6 +217,7 @@ class GitDataCollector(DataCollector):
 		# outputs "<stamp> <files>" for each revision
 		self.files_by_stamp = {} # stamp -> files
 		lines = getoutput('git-rev-list --pretty=format:"%at %H" HEAD |grep -v ^commit |while read line; do set $line; echo "$1 $(git-ls-tree -r "$2" |wc -l)"; done').split('\n')
+		self.total_commits = len(lines)
 		for line in lines:
 			parts = line.split(' ')
 			if len(parts) != 2:
