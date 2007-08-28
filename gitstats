@@ -268,8 +268,11 @@ class GitDataCollector(DataCollector):
 			# <stamp> <author>
 			if line.find('files changed,') == -1:
 				pos = line.find(' ')
-				(stamp, author) = (int(line[:pos]), line[pos+1:])
-				self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted, 'lines': total_lines }
+				if pos != -1:
+					(stamp, author) = (int(line[:pos]), line[pos+1:])
+					self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted, 'lines': total_lines }
+				else:
+					print 'Warning: unexpected line "%s"' % line
 			else:
 				numbers = re.findall('\d+', line)
 				if len(numbers) == 3:
