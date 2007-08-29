@@ -1,6 +1,4 @@
 []
-- optimization: merge the two git-rev-list commands and use python instead of shell while loop
-	- %at %an, remove %H & grep -v
 - BUG linux-2.6 repository
 	- git-log --pretty=format:"%at %an" |grep -C3 unknown
 	- git-rev-list (for number of files in each revision) says "Warning: failed to parse line "<unknown> 17741"

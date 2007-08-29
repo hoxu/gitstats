@@ -128,9 +128,17 @@ class GitDataCollector(DataCollector):
 			pass
 
 		# Collect revision statistics
-		# Outputs "<stamp> <author>"
-		lines = getoutput('git-rev-list --pretty=format:"%at %an" HEAD |grep -v ^commit').split('\n')
+		# "commit <hash>"
+		# "<stamp> <author>"
+		self.files_by_stamp = {} # stamp -> files
+		lines = getoutput('git-rev-list --pretty=format:"%at %an" HEAD').split('\n')
+		self.total_commits = len(lines) / 2
+		commit = '0'
 		for line in lines:
+			if line[:6] == 'commit':
+				commit = line[7:]
+				continue
+			
 			# linux-2.6 says "<unknown>" for one line O_o
 			parts = line.split(' ')
 			author = ''
@@ -218,20 +226,14 @@ class GitDataCollector(DataCollector):
 			else:
 				self.commits_by_year[yy] = 1
 
-		# TODO Optimize this, it's the worst bottleneck
-		# outputs "<stamp> <files>" for each revision
-		self.files_by_stamp = {} # stamp -> files
-		lines = getoutput('git-rev-list --pretty=format:"%at %H" HEAD |grep -v ^commit |while read line; do set $line; echo "$1 $(git-ls-tree -r "$2" |wc -l)"; done').split('\n')
-		self.total_commits = len(lines)
-		for line in lines:
-			parts = line.split(' ')
-			if len(parts) != 2:
-				continue
-			(stamp, files) = parts[0:2]
+			# file statistics
+			# "<stamp> <files>"
 			try:
-				self.files_by_stamp[int(stamp)] = int(files)
+				files = int(getoutput('git-ls-tree -r "%s" |wc -l' % commit, quiet = True))
 			except ValueError:
-				print 'Warning: failed to parse line "%s"' % line
+				files = 0
+				print 'Warning: failed to collect file statistics for commit "%s"' % commit
+			self.files_by_stamp[stamp] = files
 
 		# extensions
 		self.extensions = {} # extension -> files, lines
