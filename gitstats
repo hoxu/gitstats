@@ -249,8 +249,8 @@ class GitDataCollector(DataCollector):
 
 			self.extensions[ext]['files'] += 1
 			try:
-				# FIXME filenames with spaces or special characters are broken
-				self.extensions[ext]['lines'] += int(getoutput('wc -l < %s' % line, quiet = True))
+				# Escaping could probably be improved here
+				self.extensions[ext]['lines'] += int(getoutput('wc -l < %s' % re.sub(r'(\W)', r'\\\1', line)))
 			except:
 				print 'Warning: Could not count lines for file "%s"' % line
 
