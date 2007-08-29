@@ -135,7 +135,7 @@ class GitDataCollector(DataCollector):
 		self.total_commits = len(lines) / 2
 		commit = '0'
 		for line in lines:
-			if line[:6] == 'commit':
+			if line[0] == 'c':
 				commit = line[7:]
 				continue
 			
