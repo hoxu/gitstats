@@ -5,9 +5,6 @@
 	- git-log --pretty=format:"%at %an" |grep -C3 unknown
 	- git-rev-list (for number of files in each revision) says "Warning: failed to parse line "<unknown> 17741"
 
-[Bugs]
-- Graphs: vertical x labels get cut off
-
 [Unsorted]
 - clean up after running gnuplot (option to keep .dat files around?)
 - show raw data in some way (the tables used currently aren't very nice)
