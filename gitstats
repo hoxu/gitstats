@@ -250,7 +250,7 @@ class GitDataCollector(DataCollector):
 			self.extensions[ext]['files'] += 1
 			try:
 				# Escaping could probably be improved here
-				self.extensions[ext]['lines'] += int(getoutput('wc -l < %s' % re.sub(r'(\W)', r'\\\1', line)))
+				self.extensions[ext]['lines'] += int(getoutput('wc -l < %s' % re.sub(r'(\W)', r'\\\1', line), quiet = True))
 			except:
 				print 'Warning: Could not count lines for file "%s"' % line
 
