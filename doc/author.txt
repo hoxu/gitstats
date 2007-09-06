@@ -1,1 +1,2 @@
-Author can be reached by sending e-mail to <hoxu@users.sf.net>
+Author can be reached by sending e-mail to <hoxu@users.sf.net>.
+Include "gitstats" in the subject or prepare to battle the spam filters.
