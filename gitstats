@@ -259,7 +259,8 @@ class GitDataCollector(DataCollector):
 		#  N files changed, N insertions (+), N deletions(-)
 		# <stamp> <author>
 		self.changes_by_date = {} # stamp -> { files, ins, del }
-		lines = getoutput('git-log --shortstat --pretty=format:"%at %an" |tac').split('\n')
+		lines = getoutput('git-log --shortstat --pretty=format:"%at %an"').split('\n')
+		lines.reverse()
 		files = 0; inserted = 0; deleted = 0; total_lines = 0
 		for line in lines:
 			if len(line) == 0:
