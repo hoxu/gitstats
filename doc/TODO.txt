@@ -16,6 +16,11 @@
 	--debug / --verbose
 - state saving/restoring?
 	- could save data that can not be recreated quickly (for example files/lines data)
+		- tags
+		- files_by_stamp could be cached
+	- would have to cope with cases where history is rewritten
+	- use pickle.dump() & pickle.load()
+	- where to save the state file? <repo>/.git/gitstats.dat ?
 
 [Stats]
 - General
