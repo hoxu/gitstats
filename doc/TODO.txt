@@ -18,6 +18,9 @@
 	- could save data that can not be recreated quickly (for example files/lines data)
 
 [Stats]
+- General
+	- Total repository size (slooooow)?
+
 - Activity by Time?
 	- (G?) Last 30 days
 	- (G?) Last 12 months
