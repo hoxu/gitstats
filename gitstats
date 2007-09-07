@@ -536,24 +536,26 @@ class HTMLReportCreator(ReportCreator):
 		# Authors :: Author of Month
 		f.write(html_header(2, 'Author of Month'))
 		f.write('<table>')
-		f.write('<tr><th>Month</th><th>Author</th><th>Commits (%)</th></tr>')
+		f.write('<tr><th>Month</th><th>Author</th><th>Commits (%)</th><th>Next top 5</th></tr>')
 		for yymm in reversed(sorted(data.author_of_month.keys())):
 			authordict = data.author_of_month[yymm]
 			authors = getkeyssortedbyvalues(authordict)
 			authors.reverse()
 			commits = data.author_of_month[yymm][authors[0]]
-			f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td></tr>' % (yymm, authors[0], commits, (100 * commits) / data.commits_by_month[yymm], data.commits_by_month[yymm]))
+			next = ', '.join(authors[1:5])
+			f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td></tr>' % (yymm, authors[0], commits, (100 * commits) / data.commits_by_month[yymm], data.commits_by_month[yymm], next))
 
 		f.write('</table>')
 
 		f.write(html_header(2, 'Author of Year'))
-		f.write('<table><tr><th>Year</th><th>Author</th><th>Commits (%)</th></tr>')
+		f.write('<table><tr><th>Year</th><th>Author</th><th>Commits (%)</th><th>Next top 5</th></tr>')
 		for yy in reversed(sorted(data.author_of_year.keys())):
 			authordict = data.author_of_year[yy]
 			authors = getkeyssortedbyvalues(authordict)
 			authors.reverse()
 			commits = data.author_of_year[yy][authors[0]]
-			f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td></tr>' % (yy, authors[0], commits, (100 * commits) / data.commits_by_year[yy], data.commits_by_year[yy]))
+			next = ', '.join(authors[1:5])
+			f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td></tr>' % (yy, authors[0], commits, (100 * commits) / data.commits_by_year[yy], data.commits_by_year[yy], next))
 		f.write('</table>')
 
 		f.write('</body></html>')

@@ -36,10 +36,8 @@
 		- Lines
 		- Position by nrof commits
 	- (T) Author of Month
-		- Places 2-N ?
 		- Lines
 	- (T) Author of Year
-		- Places 2-N
 		- Lines
 
 - Files
