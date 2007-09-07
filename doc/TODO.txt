@@ -21,6 +21,7 @@
 	- would have to cope with cases where history is rewritten
 	- use pickle.dump() & pickle.load()
 	- where to save the state file? <repo>/.git/gitstats.dat ?
+	- also save command line settings and use them next run if not overridden?
 
 [Stats]
 - General
