@@ -49,6 +49,11 @@ class DataCollector:
 		self.projectname = os.path.basename(os.path.abspath(dir))
 	
 	##
+	# Produce any additional statistics from the extracted data.
+	def refine(self):
+		pass
+
+	##
 	# : get a dictionary of author
 	def getAuthorInfo(self, author):
 		return None
@@ -288,6 +293,24 @@ class GitDataCollector(DataCollector):
 				#self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted }
 		self.total_lines = total_lines
 	
+	def refine(self):
+		# authors
+		# name -> {place_by_commits, commits_frac, date_first, date_last, timedelta}
+		authors_by_commits = getkeyssortedbyvaluekey(self.authors, 'commits')
+		authors_by_commits.reverse() # most first
+		for i, name in enumerate(authors_by_commits):
+			self.authors[name]['place_by_commits'] = i + 1
+
+		for name in self.authors.keys():
+			a = self.authors[name]
+			a['commits_frac'] = (100 * float(a['commits'])) / self.getTotalCommits()
+			date_first = datetime.datetime.fromtimestamp(a['first_commit_stamp'])
+			date_last = datetime.datetime.fromtimestamp(a['last_commit_stamp'])
+			delta = date_last - date_first
+			a['date_first'] = date_first.strftime('%Y-%m-%d')
+			a['date_last'] = date_last.strftime('%Y-%m-%d')
+			a['timedelta'] = delta
+	
 	def getActivityByDayOfWeek(self):
 		return self.activity_by_day_of_week
 
@@ -295,16 +318,7 @@ class GitDataCollector(DataCollector):
 		return self.activity_by_hour_of_day
 
 	def getAuthorInfo(self, author):
-		a = self.authors[author]
-
-		commits = a['commits']
-		commits_frac = (100 * float(commits)) / self.getTotalCommits()
-		date_first = datetime.datetime.fromtimestamp(a['first_commit_stamp'])
-		date_last = datetime.datetime.fromtimestamp(a['last_commit_stamp'])
-		delta = date_last - date_first
-
-		res = { 'commits': commits, 'commits_frac': commits_frac, 'date_first': date_first.strftime('%Y-%m-%d'), 'date_last': date_last.strftime('%Y-%m-%d'), 'timedelta' : delta }
-		return res
+		return self.authors[author]
 	
 	def getAuthors(self):
 		return self.authors.keys()
@@ -530,11 +544,9 @@ class HTMLReportCreator(ReportCreator):
 
 		f.write('<table class="authors">')
 		f.write('<tr><th>Author</th><th>Commits (%)</th><th>First commit</th><th>Last commit</th><th>Age</th><th># by commits</th></tr>')
-		authors_by_commits = getkeyssortedbyvaluekey(data.authors, 'commits')
-		authors_by_commits.reverse() # most first
 		for author in sorted(data.getAuthors()):
 			info = data.getAuthorInfo(author)
-			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>' % (author, info['commits'], info['commits_frac'], info['date_first'], info['date_last'], info['timedelta'], authors_by_commits.index(author) + 1))
+			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>' % (author, info['commits'], info['commits_frac'], info['date_first'], info['date_last'], info['timedelta'], info['place_by_commits']))
 		f.write('</table>')
 
 		# Authors :: Author of Month
@@ -825,6 +837,8 @@ os.chdir(gitpath)
 print 'Collecting data...'
 data = GitDataCollector()
 data.collect(gitpath)
+print 'Refining data...'
+data.refine()
 
 os.chdir(rundir)
 
