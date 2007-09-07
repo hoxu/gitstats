@@ -36,7 +36,6 @@
 - Authors
 	- (T) List of authors
 		- Lines
-		- Position by nrof commits
 	- (T) Author of Month
 		- Lines
 	- (T) Author of Year

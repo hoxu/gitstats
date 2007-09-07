@@ -32,7 +32,9 @@ def getoutput(cmd, quiet = False):
 def getkeyssortedbyvalues(dict):
 	return map(lambda el : el[1], sorted(map(lambda el : (el[1], el[0]), dict.items())))
 
-# TODO getdictkeyssortedbyvaluekey(dict, key) - eg. dict['author'] = { 'commits' : 512 } - ...key(dict, 'commits')
+# dict['author'] = { 'commits': 512 } - ...key(dict, 'commits')
+def getkeyssortedbyvaluekey(d, key):
+	return map(lambda el : el[1], sorted(map(lambda el : (d[el][key], el), d.keys())))
 
 class DataCollector:
 	"""Manages data collection from a revision control repository."""
@@ -527,10 +529,12 @@ class HTMLReportCreator(ReportCreator):
 		f.write(html_header(2, 'List of Authors'))
 
 		f.write('<table class="authors">')
-		f.write('<tr><th>Author</th><th>Commits (%)</th><th>First commit</th><th>Last commit</th><th>Age</th></tr>')
+		f.write('<tr><th>Author</th><th>Commits (%)</th><th>First commit</th><th>Last commit</th><th>Age</th><th># by commits</th></tr>')
+		authors_by_commits = getkeyssortedbyvaluekey(data.authors, 'commits')
+		authors_by_commits.reverse() # most first
 		for author in sorted(data.getAuthors()):
 			info = data.getAuthorInfo(author)
-			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%s</td><td>%s</td><td>%s</td></tr>' % (author, info['commits'], info['commits_frac'], info['date_first'], info['date_last'], info['timedelta']))
+			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>' % (author, info['commits'], info['commits_frac'], info['date_first'], info['date_last'], info['timedelta'], authors_by_commits.index(author) + 1))
 		f.write('</table>')
 
 		# Authors :: Author of Month
