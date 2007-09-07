@@ -31,6 +31,7 @@
 	- (G?) Last 30 days
 	- (G?) Last 12 months
 	- (T) Hour of Week: percentages / coloring?
+	- (G) Pace of Changes - number of line/other changes happening over time
 
 - Authors
 	- (T) List of authors
