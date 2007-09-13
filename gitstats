@@ -228,7 +228,7 @@ class GitDataCollector(DataCollector):
 		# TODO Optimize this, it's the worst bottleneck
 		# outputs "<stamp> <files>" for each revision
 		self.files_by_stamp = {} # stamp -> files
-		lines = getoutput('git-rev-list --pretty=format:"%at %H" HEAD |grep -v ^commit |while read line; do set $line; echo "$1 $(git-ls-tree -r "$2" |wc -l)"; done').split('\n')
+		lines = getoutput('git-rev-list --pretty=format:"%at %T" HEAD |grep -v ^commit |while read line; do set $line; echo "$1 $(git-ls-tree -r --name-only "$2" |wc -l)"; done').split('\n')
 		self.total_commits = len(lines)
 		for line in lines:
 			parts = line.split(' ')
