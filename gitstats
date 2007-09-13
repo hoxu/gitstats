@@ -277,8 +277,11 @@ class GitDataCollector(DataCollector):
 			if line.find('files changed,') == -1:
 				pos = line.find(' ')
 				if pos != -1:
-					(stamp, author) = (int(line[:pos]), line[pos+1:])
-					self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted, 'lines': total_lines }
+					try:
+						(stamp, author) = (int(line[:pos]), line[pos+1:])
+						self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted, 'lines': total_lines }
+					except ValueError:
+						print 'Warning: unexpected line "%s"' % line
 				else:
 					print 'Warning: unexpected line "%s"' % line
 			else:
