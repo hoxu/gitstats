@@ -109,7 +109,7 @@ class GitDataCollector(DataCollector):
 		DataCollector.collect(self, dir)
 
 		try:
-			self.total_authors = int(getpipeoutput(('git-log', 'git-shortlog -s', 'wc -l')))
+			self.total_authors = int(getpipeoutput(['git-log', 'git-shortlog -s', 'wc -l']))
 		except:
 			self.total_authors = 0
 		#self.total_lines = int(getoutput('git-ls-files -z |xargs -0 cat |wc -l'))
@@ -131,7 +131,7 @@ class GitDataCollector(DataCollector):
 
 		# tags
 		self.tags = {}
-		lines = getpipeoutput((('git-show-ref --tags'),)).split('\n')
+		lines = getpipeoutput(['git-show-ref --tags']).split('\n')
 		for line in lines:
 			if len(line) == 0:
 				continue
@@ -141,7 +141,7 @@ class GitDataCollector(DataCollector):
 			(hash, tag) = splitted_str
 
 			tag = tag.replace('refs/tags/', '')
-			output = getpipeoutput((('git-log "%s" --pretty=format:"%%at %%an" -n 1' % hash),))
+			output = getpipeoutput(['git-log "%s" --pretty=format:"%%at %%an" -n 1' % hash])
 			if len(output) > 0:
 				parts = output.split(' ')
 				stamp = 0
@@ -154,7 +154,7 @@ class GitDataCollector(DataCollector):
 
 		# Collect revision statistics
 		# Outputs "<stamp> <author>"
-		lines = getpipeoutput(('git-rev-list --pretty=format:"%at %an" HEAD', 'grep -v ^commit')).split('\n')
+		lines = getpipeoutput(['git-rev-list --pretty=format:"%at %an" HEAD', 'grep -v ^commit']).split('\n')
 		for line in lines:
 			# linux-2.6 says "<unknown>" for one line O_o
 			parts = line.split(' ')
@@ -249,13 +249,12 @@ class GitDataCollector(DataCollector):
 		# TODO Optimize this, it's the worst bottleneck
 		# outputs "<stamp> <files>" for each revision
 		self.files_by_stamp = {} # stamp -> files
-		lines = getpipeoutput(('git-rev-list --pretty=format:"%at %H" HEAD',
-				       'grep -v ^commit')).strip().split('\n')
+		lines = getpipeoutput(['git-rev-list --pretty=format:"%at %H" HEAD', 'grep -v ^commit']).strip().split('\n')
 		#'sh while read line; do set $line; echo "$1 $(git-ls-tree -r "$2" |wc -l)"; done')).split('\n')
 		tmp = [None] * len(lines)
 		for idx in xrange(len(lines)):
 			(a, b) = lines[idx].split(" ")
-			tmp[idx] = a + getpipeoutput(('git-ls-tree -r ' + b, 'wc -l')).strip('\n')
+			tmp[idx] = a + getpipeoutput(['git-ls-tree -r ' + b, 'wc -l']).strip('\n')
 		lines = tmp
 
 		self.total_commits = len(lines)
@@ -271,7 +270,7 @@ class GitDataCollector(DataCollector):
 
 		# extensions
 		self.extensions = {} # extension -> files, lines
-		lines = getpipeoutput(('git-ls-files',)).split('\n')
+		lines = getpipeoutput(['git-ls-files']).split('\n')
 		self.total_files = len(lines)
 		for line in lines:
 			base = os.path.basename(line)
@@ -286,7 +285,7 @@ class GitDataCollector(DataCollector):
 			self.extensions[ext]['files'] += 1
 			try:
 				# Escaping could probably be improved here
-				self.extensions[ext]['lines'] += int(getpipeoutput(('wc -l "%s"' % line,)).split()[0])
+				self.extensions[ext]['lines'] += int(getpipeoutput(['wc -l "%s"' % line]).split()[0])
 			except:
 				print 'Warning: Could not count lines for file "%s"' % line
 
@@ -295,7 +294,7 @@ class GitDataCollector(DataCollector):
 		#  N files changed, N insertions (+), N deletions(-)
 		# <stamp> <author>
 		self.changes_by_date = {} # stamp -> { files, ins, del }
-		lines = getpipeoutput(('git-log --shortstat --pretty=format:"%at %an"',)).split('\n')
+		lines = getpipeoutput(['git-log --shortstat --pretty=format:"%at %an"']).split('\n')
 		lines.reverse()
 		files = 0; inserted = 0; deleted = 0; total_lines = 0
 		for line in lines:
@@ -359,8 +358,7 @@ class GitDataCollector(DataCollector):
 		return datetime.datetime.fromtimestamp(self.last_commit_stamp)
 	
 	def getTags(self):
-		lines = getpipeoutput(('git-show-ref --tags',
-				       'cut -d/ -f3'))
+		lines = getpipeoutput(['git-show-ref --tags', 'cut -d/ -f3'])
 		return lines.split('\n')
 	
 	def getTagDate(self, tag):
@@ -379,7 +377,7 @@ class GitDataCollector(DataCollector):
 		return self.total_lines
 	
 	def revToDate(self, rev):
-		stamp = int(getpipeoutput(('git-log --pretty=format:%%at "%s" -n 1' % rev,)))
+		stamp = int(getpipeoutput(['git-log --pretty=format:%%at "%s" -n 1' % rev]))
 		return datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d')
 
 class ReportCreator:
@@ -806,7 +804,7 @@ plot 'lines_of_code.dat' using 1:2 w lines
 		os.chdir(path)
 		files = glob.glob(path + '/*.plot')
 		for f in files:
-			out = getpipeoutput((gnuplot_cmd + ' "%s"' % f,))
+			out = getpipeoutput([gnuplot_cmd + ' "%s"' % f])
 			if len(out) > 0:
 				print out
 
