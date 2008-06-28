@@ -134,10 +134,7 @@ class GitDataCollector(DataCollector):
 		for line in lines:
 			if len(line) == 0:
 				continue
-			print "line = ", line
-			splitted_str = line.split(' ')
-			print "splitted_str = ", splitted_str
-			(hash, tag) = splitted_str
+			(hash, tag) = line.split(' ')
 
 			tag = tag.replace('refs/tags/', '')
 			output = getpipeoutput(['git-log "%s" --pretty=format:"%%at %%an" -n 1' % hash])
@@ -160,9 +157,6 @@ class GitDataCollector(DataCollector):
 			try:
 				stamp = int(parts[0])
 			except ValueError:
-				print "lines = ", lines
-				print "line = ", line
-				raise
 				stamp = 0
 			if len(parts) > 1:
 				author = ' '.join(parts[1:])
