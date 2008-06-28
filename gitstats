@@ -40,7 +40,6 @@ class DataCollector:
 	"""Manages data collection from a revision control repository."""
 	def __init__(self):
 		self.stamp_created = time.time()
-		pass
 	
 	##
 	# This should be the main function to extract data from the repository.
@@ -132,7 +131,6 @@ class GitDataCollector(DataCollector):
 				except ValueError:
 					stamp = 0
 				self.tags[tag] = { 'stamp': stamp, 'hash' : hash, 'date' : datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d') }
-			pass
 
 		# Collect revision statistics
 		# Outputs "<stamp> <author>"
@@ -187,7 +185,7 @@ class GitDataCollector(DataCollector):
 			# author stats
 			if author not in self.authors:
 				self.authors[author] = {}
-			# TODO commits
+			# commits
 			if 'last_commit_stamp' not in self.authors[author]:
 				self.authors[author]['last_commit_stamp'] = stamp
 			self.authors[author]['first_commit_stamp'] = stamp
@@ -376,10 +374,9 @@ class HTMLReportCreator(ReportCreator):
 		ReportCreator.create(self, data, path)
 		self.title = data.projectname
 
-		# TODO copy the CSS if it does not exist
+		# copy the CSS if it does not exist
 		if not os.path.exists(path + '/gitstats.css'):
 			shutil.copyfile('gitstats.css', path + '/gitstats.css')
-			pass
 
 		f = open(path + "/index.html", 'w')
 		format = '%Y-%m-%d %H:%m:%S'
@@ -664,7 +661,6 @@ class HTMLReportCreator(ReportCreator):
 		f.close()
 
 		self.createGraphs(path)
-	pass
 	
 	def createGraphs(self, path):
 		print 'Generating graphs...'
