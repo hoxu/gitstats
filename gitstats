@@ -23,16 +23,10 @@ if 'GNUPLOT' in os.environ:
 	gnuplot_cmd = os.environ['GNUPLOT']
 
 def getpipeoutput(cmds, quiet = False):
-	def beautify_name(cmds):
-		ret = cmds[0]
-		for x in cmds[1:]:
-			ret += ' | ' + x
-		return ret
-		
 	global exectime_external
 	start = time.time()
 	if not quiet:
-		print '>> ', beautify_name(cmds)
+		print '>> ' + ' | '.join(cmds),
 		sys.stdout.flush()
 	p0 = subprocess.Popen(cmds[0], stdout = subprocess.PIPE, shell = True)
 	p = p0
@@ -42,7 +36,7 @@ def getpipeoutput(cmds, quiet = False):
 	output = p.communicate()[0]
 	end = time.time()
 	if not quiet:
-		print '\r[%.5f] >> %s' % (end - start, beautify_name(cmds))
+		print '\r[%.5f] >> %s' % (end - start, ' | '.join(cmds))
 	exectime_external += (end - start)
 	return output.rstrip('\n')
 
