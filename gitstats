@@ -29,10 +29,10 @@ def getpipeoutput(cmds, quiet = False):
 	if not quiet:
 		print '>> ', beautify_name(cmds)
 		sys.stdout.flush()
-	p0 = subprocess.Popen(cmds[0], stdout = subprocess.PIPE)
+	p0 = subprocess.Popen(cmds[0], stdout = subprocess.PIPE, shell = True)
 	p = p0
 	for x in cmds[1:]:
-		p = subprocess.Popen(x, stdin = p0.stdout, stdout = subprocess.PIPE)
+		p = subprocess.Popen(x, stdin = p0.stdout, stdout = subprocess.PIPE, shell = True)
 		p0 = p
 	output = p.communicate()[0]
 	end = time.time()
@@ -132,7 +132,7 @@ class GitDataCollector(DataCollector):
 
 		# tags
 		self.tags = {}
-		lines = getpipeoutput((('git-show-ref', '--tags'),)).split('\n')
+		lines = getpipeoutput((('git-show-ref --tags'),)).split('\n')
 		for line in lines:
 			if len(line) == 0:
 				continue
@@ -142,7 +142,7 @@ class GitDataCollector(DataCollector):
 			(hash, tag) = splitted_str
 
 			tag = tag.replace('refs/tags/', '')
-			output = getpipeoutput((('git-log', '"%s" --pretty=format:"%%at %%an" -n 1' % hash),))
+			output = getpipeoutput((('git-log "%s" --pretty=format:"%%at %%an" -n 1' % hash),))
 			if len(output) > 0:
 				parts = output.split(' ')
 				stamp = 0
