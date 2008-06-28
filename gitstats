@@ -249,13 +249,12 @@ class GitDataCollector(DataCollector):
 		# TODO Optimize this, it's the worst bottleneck
 		# outputs "<stamp> <files>" for each revision
 		self.files_by_stamp = {} # stamp -> files
-		lines = getpipeoutput(['git-rev-list --pretty=format:"%at %H" HEAD', 'grep -v ^commit']).strip().split('\n')
-		#'sh while read line; do set $line; echo "$1 $(git-ls-tree -r "$2" |wc -l)"; done')).split('\n')
-		tmp = [None] * len(lines)
-		for idx in xrange(len(lines)):
-			(a, b) = lines[idx].split(" ")
-			tmp[idx] = a + getpipeoutput(['git-ls-tree -r ' + b, 'wc -l']).strip('\n')
-		lines = tmp
+		revlines = getpipeoutput(['git-rev-list --pretty=format:"%at %H" HEAD', 'grep -v ^commit']).strip().split('\n')
+		lines = []
+		for revline in revlines:
+			time, rev = revline.split(' ')
+			linecount = int(getpipeoutput(['git-ls-tree -r "%s"' % rev, 'wc -l']).split('\n')[0])
+			lines.append('%d %d' % (int(time), linecount))
 
 		self.total_commits = len(lines)
 		for line in lines:
