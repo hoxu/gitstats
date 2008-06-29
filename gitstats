@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # Copyright (c) 2007-2008 Heikki Hokkanen <hoxu@users.sf.net>
-# GPLv2
+# GPLv2 / GPLv3
 import subprocess
 import datetime
 import glob
