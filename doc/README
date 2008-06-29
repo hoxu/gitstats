@@ -1,6 +1,5 @@
-gitstats is a statistics generator for revision control systems (for now, only
-git). It is mostly intended for developers, as a way to check some development
-statistics for a project.
+gitstats is a statistics generator for git repositories.  It is mostly intended
+for developers, as a way to check some development statistics for a project.
 
 Currently it produces only HTML output with tables and graphs.
 
@@ -15,5 +14,9 @@ The above versions are not absolute requirements; older versions may work also.
 
 Recommended
 ===========
-- Lot of memory and fast disk for large projects
+- Lots of memory and fast disk for large projects
 
+Contributions
+=============
+Patches should be sent under "GPLv2 or older" license - this will allow
+upgrading to newer GPL versions if they are sensible.
