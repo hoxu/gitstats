@@ -63,11 +63,11 @@ class DataCollector:
 	##
 	# Load cacheable data
 	def loadCache(self, dir):
-		cachefile = os.path.join(dir, 'gitstats.cache')
+		cachefile = os.path.join(dir, '.git', 'gitstats.cache')
 		if not os.path.exists(cachefile):
 			return
 		print 'Loading cache...'
-		f = open(os.path.join(dir, 'gitstats.cache'))
+		f = open(cachefile)
 		self.cache = pickle.load(f)
 		f.close()
 	
@@ -120,7 +120,7 @@ class DataCollector:
 	# Save cacheable data
 	def saveCache(self, dir):
 		print 'Saving cache...'
-		f = open(os.path.join(dir, 'gitstats.cache'), 'w')
+		f = open(os.path.join(dir, '.git', 'gitstats.cache'), 'w')
 		pickle.dump(self.cache, f)
 		f.close()
 
@@ -266,7 +266,8 @@ class GitDataCollector(DataCollector):
 		lines = []
 		for revline in revlines:
 			time, rev = revline.split(' ')
-			linecount = int(getpipeoutput(['git-ls-tree -r --name-only "%s"' % rev, 'wc -l']).split('\n')[0])
+			#linecount = int(getpipeoutput(['git-ls-tree -r --name-only "%s"' % rev, 'wc -l']).split('\n')[0])
+			linecount = self.getFilesInCommit(rev)
 			lines.append('%d %d' % (int(time), linecount))
 
 		self.total_commits = len(lines)
@@ -366,6 +367,17 @@ class GitDataCollector(DataCollector):
 	def getAuthors(self):
 		return self.authors.keys()
 	
+	def getFilesInCommit(self, rev):
+		try:
+			res = self.cache['files_in_tree'][rev]
+		except:
+			res = int(getpipeoutput(['git-ls-tree -r --name-only "%s"' % rev, 'wc -l']).split('\n')[0])
+			if 'files_in_tree' not in self.cache:
+				self.cache['files_in_tree'] = {}
+			self.cache['files_in_tree'][rev] = res
+
+		return res
+
 	def getFirstCommitDate(self):
 		return datetime.datetime.fromtimestamp(self.first_commit_stamp)
 	
