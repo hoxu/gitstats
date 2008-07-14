@@ -10,6 +10,7 @@ import re
 import shutil
 import sys
 import time
+import zlib
 
 GNUPLOT_COMMON = 'set terminal png transparent\nset size 0.5,0.5\n'
 
@@ -68,7 +69,12 @@ class DataCollector:
 			return
 		print 'Loading cache...'
 		f = open(cachefile)
-		self.cache = pickle.load(f)
+		try:
+			self.cache = pickle.loads(zlib.decompress(f.read()))
+		except:
+			# temporary hack to upgrade non-compressed caches
+			f.seek(0)
+			self.cache = pickle.load(f)
 		f.close()
 	
 	##
@@ -121,7 +127,9 @@ class DataCollector:
 	def saveCache(self, dir):
 		print 'Saving cache...'
 		f = open(os.path.join(dir, '.git', 'gitstats.cache'), 'w')
-		pickle.dump(self.cache, f)
+		#pickle.dump(self.cache, f)
+		data = zlib.compress(pickle.dumps(self.cache))
+		f.write(data)
 		f.close()
 
 class GitDataCollector(DataCollector):
