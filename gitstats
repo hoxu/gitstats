@@ -5,6 +5,7 @@ import subprocess
 import datetime
 import glob
 import os
+import pickle
 import re
 import shutil
 import sys
@@ -51,12 +52,24 @@ class DataCollector:
 	"""Manages data collection from a revision control repository."""
 	def __init__(self):
 		self.stamp_created = time.time()
+		self.cache = {}
 	
 	##
 	# This should be the main function to extract data from the repository.
 	def collect(self, dir):
 		self.dir = dir
 		self.projectname = os.path.basename(os.path.abspath(dir))
+	
+	##
+	# Load cacheable data
+	def loadCache(self, dir):
+		cachefile = os.path.join(dir, 'gitstats.cache')
+		if not os.path.exists(cachefile):
+			return
+		print 'Loading cache...'
+		f = open(os.path.join(dir, 'gitstats.cache'))
+		self.cache = pickle.load(f)
+		f.close()
 	
 	##
 	# Produce any additional statistics from the extracted data.
@@ -102,6 +115,14 @@ class DataCollector:
 	
 	def getTotalLOC(self):
 		return -1
+	
+	##
+	# Save cacheable data
+	def saveCache(self, dir):
+		print 'Saving cache...'
+		f = open(os.path.join(dir, 'gitstats.cache'), 'w')
+		pickle.dump(self.cache, f)
+		f.close()
 
 class GitDataCollector(DataCollector):
 	def collect(self, dir):
@@ -857,8 +878,10 @@ os.chdir(gitpath)
 
 print 'Collecting data...'
 data = GitDataCollector()
+data.loadCache(gitpath)
 data.collect(gitpath)
 print 'Refining data...'
+data.saveCache(gitpath)
 data.refine()
 
 os.chdir(rundir)
