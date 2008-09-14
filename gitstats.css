@@ -18,7 +18,7 @@ dt:after {
 
 dd {
 	display: block;
-	clear: right;
+	clear: left;
 }
 
 table {
