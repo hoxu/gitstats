@@ -9,10 +9,10 @@ Version 1.5.7
 */
 
 /* You can change these values */
-var image_path = "http://www.joostdevalk.nl/code/sortable-table/";
-var image_up = "arrowup.gif";
-var image_down = "arrowdown.gif";
-var image_none = "arrownone.gif";
+var image_path = "";
+var image_up = "arrow-up.gif";
+var image_down = "arrow-down.gif";
+var image_none = "arrow-none.gif";
 var europeandate = true;
 var alternate_row_colors = true;
 
@@ -91,7 +91,7 @@ function ts_resortTable(lnk, clid) {
 	// Work out a type for the column
 	if (t.rows.length <= 1) return;
 	var itm = "";
-	var i = 0;
+	var i = 1;
 	while (itm == "" && i < t.tBodies[0].rows.length) {
 		var itm = ts_getInnerText(t.tBodies[0].rows[i].cells[column]);
 		itm = trim(itm);
@@ -105,7 +105,8 @@ function ts_resortTable(lnk, clid) {
 	if (itm.match(/^\d\d[\/\.-][a-zA-z][a-zA-Z][a-zA-Z][\/\.-]\d\d\d\d$/)) sortfn = ts_sort_date;
 	if (itm.match(/^\d\d[\/\.-]\d\d[\/\.-]\d\d\d{2}?$/)) sortfn = ts_sort_date;
 	if (itm.match(/^-?[£$€Û¢´]\d/)) sortfn = ts_sort_numeric;
-	if (itm.match(/^-?(\d+[,\.]?)+(E[-+][\d]+)?%?$/)) sortfn = ts_sort_numeric;
+	// ignore stuff in () after the numbers.
+	if (itm.match(/^-?(\d+[,\.]?)+(E[-+][\d]+)?%?( \(.*\))?$/)) sortfn = ts_sort_numeric;
 	SORT_COLUMN_INDEX = column;
 	var firstRow = new Array();
 	var newRows = new Array();

@@ -436,10 +436,11 @@ class HTMLReportCreator(ReportCreator):
 		ReportCreator.create(self, data, path)
 		self.title = data.projectname
 
-		# copy the CSS if it does not exist
-		if not os.path.exists(path + '/gitstats.css'):
-			basedir = os.path.dirname(os.path.abspath(__file__))
-			shutil.copyfile(basedir + '/gitstats.css', path + '/gitstats.css')
+		# copy static files if they do not exist
+		for file in ('gitstats.css', 'sortable.js', 'arrow-up.gif', 'arrow-down.gif', 'arrow-none.gif'):
+			if not os.path.exists(path + '/' + file):
+				basedir = os.path.dirname(os.path.abspath(__file__))
+				shutil.copyfile(basedir + '/' + file, path + '/' + file)
 
 		f = open(path + "/index.html", 'w')
 		format = '%Y-%m-%d %H:%m:%S'
@@ -605,8 +606,8 @@ class HTMLReportCreator(ReportCreator):
 		# Authors :: List of authors
 		f.write(html_header(2, 'List of Authors'))
 
-		f.write('<table class="authors">')
-		f.write('<tr><th>Author</th><th>Commits (%)</th><th>First commit</th><th>Last commit</th><th>Age</th><th># by commits</th></tr>')
+		f.write('<table class="authors sortable" id="authors">')
+		f.write('<tr><th>Author</th><th>Commits (%)</th><th>First commit</th><th>Last commit</th><th class="unsortable">Age</th><th># by commits</th></tr>')
 		for author in sorted(data.getAuthors()):
 			info = data.getAuthorInfo(author)
 			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>' % (author, info['commits'], info['commits_frac'], info['date_first'], info['date_last'], info['timedelta'], info['place_by_commits']))
@@ -614,8 +615,8 @@ class HTMLReportCreator(ReportCreator):
 
 		# Authors :: Author of Month
 		f.write(html_header(2, 'Author of Month'))
-		f.write('<table>')
-		f.write('<tr><th>Month</th><th>Author</th><th>Commits (%)</th><th>Next top 5</th></tr>')
+		f.write('<table class="sortable" id="aom">')
+		f.write('<tr><th>Month</th><th>Author</th><th>Commits (%)</th><th class="unsortable">Next top 5</th></tr>')
 		for yymm in reversed(sorted(data.author_of_month.keys())):
 			authordict = data.author_of_month[yymm]
 			authors = getkeyssortedbyvalues(authordict)
@@ -627,7 +628,7 @@ class HTMLReportCreator(ReportCreator):
 		f.write('</table>')
 
 		f.write(html_header(2, 'Author of Year'))
-		f.write('<table><tr><th>Year</th><th>Author</th><th>Commits (%)</th><th>Next top 5</th></tr>')
+		f.write('<table class="sortable" id="aoy"><tr><th>Year</th><th>Author</th><th>Commits (%)</th><th class="unsortable">Next top 5</th></tr>')
 		for yy in reversed(sorted(data.author_of_year.keys())):
 			authordict = data.author_of_year[yy]
 			authors = getkeyssortedbyvalues(authordict)
@@ -667,7 +668,7 @@ class HTMLReportCreator(ReportCreator):
 
 		# Files :: Extensions
 		f.write(html_header(2, 'Extensions'))
-		f.write('<table><tr><th>Extension</th><th>Files (%)</th><th>Lines (%)</th><th>Lines/file</th></tr>')
+		f.write('<table class="sortable" id="ext"><tr><th>Extension</th><th>Files (%)</th><th>Lines (%)</th><th>Lines/file</th></tr>')
 		for ext in sorted(data.extensions.keys()):
 			files = data.extensions[ext]['files']
 			lines = data.extensions[ext]['lines']
@@ -850,6 +851,7 @@ plot 'lines_of_code.dat' using 1:2 w lines
 	<title>GitStats - %s</title>
 	<link rel="stylesheet" href="gitstats.css" type="text/css" />
 	<meta name="generator" content="GitStats" />
+	<script type="text/javascript" src="sortable.js"></script>
 </head>
 <body>
 """ % self.title)

@@ -37,6 +37,10 @@ th {
 	background-color: #ddf;
 }
 
+th a {
+	text-decoration: none;
+}
+
 tr:hover {
 	background-color: #ddf;
 }
@@ -83,6 +87,12 @@ img {
 	border: 1px solid black;
 	padding: 0.5em;
 	background-color: white;
+}
+
+th img {
+	border: 0px;
+	padding: 0px;
+	background-color: #ddf;
 }
 
 h1 a, h2 a {
