@@ -10,7 +10,6 @@
 	- parameter --style
 	- styles/{default,...}.css
 - could show some statistics from last year, month, etc... pisg-like?
-- use sortable.js
 - Commandline options
 	--title "Project name"
 	--debug / --verbose
