@@ -64,8 +64,7 @@ class DataCollector:
 	
 	##
 	# Load cacheable data
-	def loadCache(self, dir):
-		cachefile = os.path.join(dir, '.git', 'gitstats.cache')
+	def loadCache(self, cachefile):
 		if not os.path.exists(cachefile):
 			return
 		print 'Loading cache...'
@@ -125,9 +124,9 @@ class DataCollector:
 	
 	##
 	# Save cacheable data
-	def saveCache(self, dir):
+	def saveCache(self, filename):
 		print 'Saving cache...'
-		f = open(os.path.join(dir, '.git', 'gitstats.cache'), 'w')
+		f = open(cachefile, 'w')
 		#pickle.dump(self.cache, f)
 		data = zlib.compress(pickle.dumps(self.cache))
 		f.write(data)
@@ -901,12 +900,14 @@ print 'Output path: %s' % outputpath
 
 os.chdir(gitpath)
 
+cachefile = os.path.join(outputpath, 'gitstats.cache')
+
 print 'Collecting data...'
 data = GitDataCollector()
-data.loadCache(gitpath)
+data.loadCache(cachefile)
 data.collect(gitpath)
 print 'Refining data...'
-data.saveCache(gitpath)
+data.saveCache(cachefile)
 data.refine()
 
 os.chdir(rundir)
