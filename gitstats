@@ -13,6 +13,7 @@ import time
 import zlib
 
 GNUPLOT_COMMON = 'set terminal png transparent\nset size 0.5,0.5\n'
+MAX_EXT_LENGTH = 10 # maximum file extension length
 
 exectime_internal = 0.0
 exectime_external = 0.0
@@ -295,10 +296,13 @@ class GitDataCollector(DataCollector):
 		self.total_files = len(lines)
 		for line in lines:
 			base = os.path.basename(line)
-			if base.find('.') == -1:
+			# Ignore extensionless (including .hidden files)
+			if base.find('.') == -1 or base.rfind('.') == 0:
 				ext = ''
 			else:
 				ext = base[(base.rfind('.') + 1):]
+			if len(ext) > MAX_EXT_LENGTH:
+				ext = ''
 
 			if ext not in self.extensions:
 				self.extensions[ext] = {'files': 0, 'lines': 0}
