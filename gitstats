@@ -146,6 +146,7 @@ class GitDataCollector(DataCollector):
 		self.activity_by_day_of_week = {} # day -> commits
 		self.activity_by_month_of_year = {} # month [1-12] -> commits
 		self.activity_by_hour_of_week = {} # weekday -> hour -> commits
+		self.activity_by_hour_of_day_busiest = 0
 		self.activity_by_hour_of_week_busiest = 0
 
 		self.authors = {} # name -> {commits, first_commit_stamp, last_commit_stamp}
@@ -204,6 +205,9 @@ class GitDataCollector(DataCollector):
 				self.activity_by_hour_of_day[hour] += 1
 			else:
 				self.activity_by_hour_of_day[hour] = 1
+			# most active hour?
+			if self.activity_by_hour_of_day[hour] > self.activity_by_hour_of_day_busiest:
+				self.activity_by_hour_of_day_busiest = self.activity_by_hour_of_day[hour]
 
 			# day of week
 			day = date.weekday()
@@ -490,7 +494,8 @@ class HTMLReportCreator(ReportCreator):
 		fp = open(path + '/hour_of_day.dat', 'w')
 		for i in range(0, 24):
 			if i in hour_of_day:
-				f.write('<td>%d</td>' % hour_of_day[i])
+				r = 127 + int((float(hour_of_day[i]) / data.activity_by_hour_of_day_busiest) * 128)
+				f.write('<td style="background-color: rgb(%d, 0, 0)">%d</td>' % (r, hour_of_day[i]))
 				fp.write('%d %d\n' % (i, hour_of_day[i]))
 			else:
 				f.write('<td>0</td>')
@@ -500,7 +505,8 @@ class HTMLReportCreator(ReportCreator):
 		totalcommits = data.getTotalCommits()
 		for i in range(0, 24):
 			if i in hour_of_day:
-				f.write('<td>%.2f</td>' % ((100.0 * hour_of_day[i]) / totalcommits))
+				r = 127 + int((float(hour_of_day[i]) / data.activity_by_hour_of_day_busiest) * 128)
+				f.write('<td style="background-color: rgb(%d, 0, 0)">%.2f</td>' % (r, (100.0 * hour_of_day[i]) / totalcommits))
 			else:
 				f.write('<td>0.00</td>')
 		f.write('</tr></table>')
