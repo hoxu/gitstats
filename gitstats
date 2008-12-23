@@ -146,6 +146,7 @@ class GitDataCollector(DataCollector):
 		self.activity_by_day_of_week = {} # day -> commits
 		self.activity_by_month_of_year = {} # month [1-12] -> commits
 		self.activity_by_hour_of_week = {} # weekday -> hour -> commits
+		self.activity_by_hour_of_week_busiest = 0
 
 		self.authors = {} # name -> {commits, first_commit_stamp, last_commit_stamp}
 
@@ -218,6 +219,9 @@ class GitDataCollector(DataCollector):
 				self.activity_by_hour_of_week[day][hour] = 1
 			else:
 				self.activity_by_hour_of_week[day][hour] += 1
+			# most active hour?
+			if self.activity_by_hour_of_week[day][hour] > self.activity_by_hour_of_week_busiest:
+				self.activity_by_hour_of_week_busiest = self.activity_by_hour_of_week[day][hour]
 
 			# month of year
 			month = date.month
@@ -548,7 +552,10 @@ class HTMLReportCreator(ReportCreator):
 				except KeyError:
 					commits = 0
 				if commits != 0:
-					f.write('<td>%d</td>' % commits)
+					f.write('<td');
+					r = 127 + int((float(commits) / data.activity_by_hour_of_week_busiest) * 128)
+					f.write(' style="background-color: rgb(%d, 0, 0)"' % r);
+					f.write('>%d</td>' % commits);
 				else:
 					f.write('<td></td>')
 			f.write('</tr>')
