@@ -460,17 +460,17 @@ class HTMLReportCreator(ReportCreator):
 
 		self.printNav(f)
 
-		f.write('<dl>');
+		f.write('<dl>')
 		f.write('<dt>Project name</dt><dd>%s</dd>' % (data.projectname))
-		f.write('<dt>Generated</dt><dd>%s (in %d seconds)</dd>' % (datetime.datetime.now().strftime(format), time.time() - data.getStampCreated()));
+		f.write('<dt>Generated</dt><dd>%s (in %d seconds)</dd>' % (datetime.datetime.now().strftime(format), time.time() - data.getStampCreated()))
 		f.write('<dt>Report Period</dt><dd>%s to %s</dd>' % (data.getFirstCommitDate().strftime(format), data.getLastCommitDate().strftime(format)))
 		f.write('<dt>Total Files</dt><dd>%s</dd>' % data.getTotalFiles())
 		f.write('<dt>Total Lines of Code</dt><dd>%s</dd>' % data.getTotalLOC())
 		f.write('<dt>Total Commits</dt><dd>%s</dd>' % data.getTotalCommits())
 		f.write('<dt>Authors</dt><dd>%s</dd>' % data.getTotalAuthors())
-		f.write('</dl>');
+		f.write('</dl>')
 
-		f.write('</body>\n</html>');
+		f.write('</body>\n</html>')
 		f.close()
 
 		###
@@ -558,10 +558,10 @@ class HTMLReportCreator(ReportCreator):
 				except KeyError:
 					commits = 0
 				if commits != 0:
-					f.write('<td');
+					f.write('<td')
 					r = 127 + int((float(commits) / data.activity_by_hour_of_week_busiest) * 128)
-					f.write(' style="background-color: rgb(%d, 0, 0)"' % r);
-					f.write('>%d</td>' % commits);
+					f.write(' style="background-color: rgb(%d, 0, 0)"' % r)
+					f.write('>%d</td>' % commits)
 				else:
 					f.write('<td></td>')
 			f.write('</tr>')
