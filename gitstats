@@ -393,6 +393,9 @@ class GitDataCollector(DataCollector):
 	def getAuthors(self):
 		return self.authors.keys()
 	
+	def getCommitDeltaDays(self):
+		return (self.last_commit_stamp - self.first_commit_stamp) / 86400
+	
 	def getFilesInCommit(self, rev):
 		try:
 			res = self.cache['files_in_tree'][rev]
@@ -471,7 +474,7 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<dt>Project name</dt><dd>%s</dd>' % (data.projectname))
 		f.write('<dt>Generated</dt><dd>%s (in %d seconds)</dd>' % (datetime.datetime.now().strftime(format), time.time() - data.getStampCreated()))
 		f.write('<dt>Generator</dt><dd><a href="http://gitstats.sourceforge.net/">GitStats</a> (version %s)</dd>' % getversion())
-		f.write('<dt>Report Period</dt><dd>%s to %s</dd>' % (data.getFirstCommitDate().strftime(format), data.getLastCommitDate().strftime(format)))
+		f.write('<dt>Report Period</dt><dd>%s to %s (%d days)</dd>' % (data.getFirstCommitDate().strftime(format), data.getLastCommitDate().strftime(format), data.getCommitDeltaDays()))
 		f.write('<dt>Total Files</dt><dd>%s</dd>' % data.getTotalFiles())
 		f.write('<dt>Total Lines of Code</dt><dd>%s</dd>' % data.getTotalLOC())
 		f.write('<dt>Total Commits</dt><dd>%s</dd>' % data.getTotalCommits())
