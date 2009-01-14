@@ -1,13 +1,13 @@
 #!/usr/bin/env python
-# Copyright (c) 2007-2008 Heikki Hokkanen <hoxu@users.sf.net>
+# Copyright (c) 2007-2009 Heikki Hokkanen <hoxu@users.sf.net> & others (see doc/author.txt)
 # GPLv2 / GPLv3
-import subprocess
 import datetime
 import glob
 import os
 import pickle
 import re
 import shutil
+import subprocess
 import sys
 import time
 import zlib
@@ -49,6 +49,13 @@ def getkeyssortedbyvalues(dict):
 # dict['author'] = { 'commits': 512 } - ...key(dict, 'commits')
 def getkeyssortedbyvaluekey(d, key):
 	return map(lambda el : el[1], sorted(map(lambda el : (d[el][key], el), d.keys())))
+
+VERSION = 0
+def getversion():
+	global VERSION
+	if VERSION == 0:
+		VERSION = getpipeoutput(["git rev-parse --short HEAD"]).split('\n')[0]
+	return VERSION
 
 class DataCollector:
 	"""Manages data collection from a revision control repository."""
@@ -866,11 +873,11 @@ plot 'lines_of_code.dat' using 1:2 w lines
 <head>
 	<title>GitStats - %s</title>
 	<link rel="stylesheet" href="gitstats.css" type="text/css" />
-	<meta name="generator" content="GitStats" />
+	<meta name="generator" content="GitStats %s" />
 	<script type="text/javascript" src="sortable.js"></script>
 </head>
 <body>
-""" % self.title)
+""" % (self.title, getversion()))
 
 	def printNav(self, f):
 		f.write("""
