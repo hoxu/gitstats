@@ -3,6 +3,15 @@
 	- git-log --pretty=format:"%at %an" |grep -C3 unknown
 	- git-rev-list (for number of files in each revision) says "Warning: failed to parse line "<unknown> 17741"
 
+- Tags
+	- sort tags by date and collect info starting from latest
+	- show how many commits per tag
+		- git rev-list v0.0.1 |wc -l
+		- git rev-list v0.0.2 |wc -l
+		- git rev-list v0.0.2 ^v0.0.1 |wc -l
+	- Authors (count of people contributing after last version)?
+		- git shortlog -s v0.0.2 ^v0.0.1
+
 [Unsorted]
 - clean up after running gnuplot (option to keep .dat files around?)
 - show raw data in some way (the tables used currently aren't very nice)
@@ -45,7 +54,6 @@
 
 - Tags
 	- Lines
-	- Authors (count of people contributing after last version)?
 
 - Author page for each author
 	- Name, mail
