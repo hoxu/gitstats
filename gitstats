@@ -194,6 +194,8 @@ class GitDataCollector(DataCollector):
 			if prev != None:
 				cmd += ' "^%s"' % prev
 			output = getpipeoutput([cmd])
+			if len(output) == 0:
+				continue
 			prev = tag
 			for line in output.split('\n'):
 				parts = re.split('\s+', line, 2)
