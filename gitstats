@@ -463,7 +463,7 @@ class HTMLReportCreator(ReportCreator):
 			shutil.copyfile(basedir + '/' + file, path + '/' + file)
 
 		f = open(path + "/index.html", 'w')
-		format = '%Y-%m-%d %H:%m:%S'
+		format = '%Y-%m-%d %H:%M:%S'
 		self.printHeader(f)
 
 		f.write('<h1>GitStats - %s</h1>' % data.projectname)
