@@ -862,7 +862,7 @@ set format x "%Y-%m-%d"
 set ylabel "Files"
 set xtics rotate by 90
 set bmargin 6
-plot 'files_by_date.dat' using 1:2 w histeps
+plot 'files_by_date.dat' using 1:2 w steps
 """)
 		f.close()
 
