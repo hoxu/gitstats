@@ -189,7 +189,6 @@ class GitDataCollector(DataCollector):
 		tags_sorted_by_date_desc = map(lambda el : el[1], reversed(sorted(map(lambda el : (el[1]['date'], el[0]), data.tags.items()))))
 		prev = None
 		for tag in reversed(tags_sorted_by_date_desc):
-			#print prev, tag
 			cmd = 'git shortlog -s "%s"' % tag
 			if prev != None:
 				cmd += ' "^%s"' % prev
@@ -199,12 +198,10 @@ class GitDataCollector(DataCollector):
 			prev = tag
 			for line in output.split('\n'):
 				parts = re.split('\s+', line, 2)
-				#print parts
 				commits = int(parts[1])
 				author = parts[2]
 				self.tags[tag]['commits'] += commits
 				self.tags[tag]['authors'][author] = commits
-		#print self.tags
 
 		# Collect revision statistics
 		# Outputs "<stamp> <author>"
@@ -310,7 +307,6 @@ class GitDataCollector(DataCollector):
 		lines = []
 		for revline in revlines:
 			time, rev = revline.split(' ')
-			#linecount = int(getpipeoutput(['git-ls-tree -r --name-only "%s"' % rev, 'wc -l']).split('\n')[0])
 			linecount = self.getFilesInCommit(rev)
 			lines.append('%d %d' % (int(time), linecount))
 
