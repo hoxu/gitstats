@@ -8,7 +8,7 @@ Requirements
 - Python (>= 2.4.4)
 - Git (>= 1.5.2.4)
 - Gnuplot (>= 4.0.0)
-- Complete, clean git repository (bare or shallow will *not* do)
+- a git repository (bare clone will work as well)
 
 The above versions are not absolute requirements; older versions may work also.
 
