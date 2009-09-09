@@ -478,9 +478,15 @@ class HTMLReportCreator(ReportCreator):
 		self.title = data.projectname
 
 		# copy static files if they do not exist
+		basedirs = [os.path.dirname(os.path.abspath(__file__)), '/usr/share/gitstats']
 		for file in ('gitstats.css', 'sortable.js', 'arrow-up.gif', 'arrow-down.gif', 'arrow-none.gif'):
-			basedir = os.path.dirname(os.path.abspath(__file__))
-			shutil.copyfile(basedir + '/' + file, path + '/' + file)
+			for base in basedirs:
+				src = base + '/' + file
+				if os.path.exists(src):
+					shutil.copyfile(src, path + '/' + file)
+					break
+			else:
+				print 'Warning: "%s" not found, so not copied (searched: %s)' % (file, basedirs)
 
 		f = open(path + "/index.html", 'w')
 		format = '%Y-%m-%d %H:%M:%S'
