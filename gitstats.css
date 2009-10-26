@@ -61,7 +61,7 @@ td {
 .nav ul {
 	list-style-type: none;
 	display: inline;
-	margin: none;
+	margin: 0;
 	padding: 0;
 }
 
