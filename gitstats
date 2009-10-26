@@ -5,6 +5,7 @@ import datetime
 import glob
 import os
 import pickle
+import platform
 import re
 import shutil
 import subprocess
@@ -14,6 +15,7 @@ import zlib
 
 GNUPLOT_COMMON = 'set terminal png transparent\nset size 0.5,0.5\n'
 MAX_EXT_LENGTH = 10 # maximum file extension length
+ON_LINUX = (platform.system() == 'Linux')
 
 exectime_internal = 0.0
 exectime_external = 0.0
@@ -28,7 +30,7 @@ if 'GNUPLOT' in os.environ:
 def getpipeoutput(cmds, quiet = False):
 	global exectime_external
 	start = time.time()
-	if not quiet:
+	if not quiet and ON_LINUX and os.isatty(1):
 		print '>> ' + ' | '.join(cmds),
 		sys.stdout.flush()
 	p0 = subprocess.Popen(cmds[0], stdout = subprocess.PIPE, shell = True)
@@ -39,7 +41,9 @@ def getpipeoutput(cmds, quiet = False):
 	output = p.communicate()[0]
 	end = time.time()
 	if not quiet:
-		print '\r[%.5f] >> %s' % (end - start, ' | '.join(cmds))
+		if ON_LINUX and os.isatty(1):
+			print '\r',
+		print '[%.5f] >> %s' % (end - start, ' | '.join(cmds))
 	exectime_external += (end - start)
 	return output.rstrip('\n')
 
