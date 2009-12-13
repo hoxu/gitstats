@@ -19,6 +19,7 @@ install:
 	install -d $(BINDIR) $(RESOURCEDIR)
 	install -v $(BINARIES) $(BINDIR)
 	install -v -m 644 $(RESOURCES) $(RESOURCEDIR)
+	sed -i 's/VERSION = 0/VERSION = "$(VERSION)"/' $(BINDIR)/gitstats
 
 release:
 	@tar --owner=0 --group=0 --transform 's!^!gitstats/!' -zcf gitstats-$(VERSION).tar.gz $(BINARIES) $(RESOURCES) doc/ Makefile
