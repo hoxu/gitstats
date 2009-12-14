@@ -1,4 +1,4 @@
-PREFIX=/usr
+PREFIX=/usr/local
 BINDIR=$(PREFIX)/bin
 RESOURCEDIR=$(PREFIX)/share/gitstats
 RESOURCES=gitstats.css sortable.js *.gif
@@ -10,7 +10,7 @@ all: help
 help:
 	@echo "Usage:"
 	@echo
-	@echo "make install                   # install to /usr"
+	@echo "make install                   # install to ${PREFIX}"
 	@echo "make install PREFIX=~          # install to ~"
 	@echo "make release [VERSION=foo]     # make a release tarball"
 	@echo
