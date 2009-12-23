@@ -1,4 +1,13 @@
 []
+- Makefile: 'release' target does not replace "VERSION" in binary
+- search: [x] global - search all branches?
+- geshi: allow linking to lines?
+
+- https://sourceforge.net/tracker/index.php?func=detail&aid=2865754&group_id=203965&atid=987714
+	- gitstats is a great tool, but the one thing that I miss is the number of
+	SLOC or comments on the "lines of code" image. Could this somehow be
+	added?
+
 - BUG linux-2.6 repository
 	- git-log --pretty=format:"%at %an" |grep -C3 unknown
 	- git-rev-list (for number of files in each revision) says "Warning: failed to parse line "<unknown> 17741"
