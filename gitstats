@@ -227,7 +227,7 @@ class GitDataCollector(DataCollector):
 				stamp = 0
 			timezone = parts[3]
 			if len(parts) > 4:
-				author = ' '.join(parts[1:])
+				author = ' '.join(parts[4:])
 			date = datetime.datetime.fromtimestamp(float(stamp))
 
 			# First and last commit stamp
