@@ -1,7 +1,5 @@
 []
 - Makefile: 'release' target does not replace "VERSION" in binary
-- search: [x] global - search all branches?
-- geshi: allow linking to lines?
 
 - https://sourceforge.net/tracker/index.php?func=detail&aid=2865754&group_id=203965&atid=987714
 	- gitstats is a great tool, but the one thing that I miss is the number of
