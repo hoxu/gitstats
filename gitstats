@@ -160,7 +160,7 @@ class GitDataCollector(DataCollector):
 		self.activity_by_hour_of_day_busiest = 0
 		self.activity_by_hour_of_week_busiest = 0
 
-		self.authors = {} # name -> {commits, first_commit_stamp, last_commit_stamp}
+		self.authors = {} # name -> {commits, first_commit_stamp, last_commit_stamp, last_active_day, active_days}
 
 		# author of the month
 		self.author_of_month = {} # month -> author -> commits
@@ -303,6 +303,15 @@ class GitDataCollector(DataCollector):
 				self.commits_by_year[yy] += 1
 			else:
 				self.commits_by_year[yy] = 1
+
+			# authors: active days
+			yymmdd = datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d')
+			if 'last_active_day' not in self.authors[author]:
+				self.authors[author]['last_active_day'] = yymmdd
+				self.authors[author]['active_days'] = 1
+			elif yymmdd != self.authors[author]['last_active_day']:
+				self.authors[author]['last_active_day'] = yymmdd
+				self.authors[author]['active_days'] += 1
 
 		# TODO Optimize this, it's the worst bottleneck
 		# outputs "<stamp> <files>" for each revision
@@ -665,10 +674,10 @@ class HTMLReportCreator(ReportCreator):
 		f.write(html_header(2, 'List of Authors'))
 
 		f.write('<table class="authors sortable" id="authors">')
-		f.write('<tr><th>Author</th><th>Commits (%)</th><th>First commit</th><th>Last commit</th><th class="unsortable">Age</th><th># by commits</th></tr>')
+		f.write('<tr><th>Author</th><th>Commits (%)</th><th>First commit</th><th>Last commit</th><th class="unsortable">Age</th><th>Active days</th><th># by commits</th></tr>')
 		for author in sorted(data.getAuthors()):
 			info = data.getAuthorInfo(author)
-			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td></tr>' % (author, info['commits'], info['commits_frac'], info['date_first'], info['date_last'], info['timedelta'], info['place_by_commits']))
+			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td></tr>' % (author, info['commits'], info['commits_frac'], info['date_first'], info['date_last'], info['timedelta'], info['active_days'], info['place_by_commits']))
 		f.write('</table>')
 
 		# Authors :: Author of Month
