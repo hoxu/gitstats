@@ -238,45 +238,30 @@ class GitDataCollector(DataCollector):
 			# activity
 			# hour
 			hour = date.hour
-			if hour in self.activity_by_hour_of_day:
-				self.activity_by_hour_of_day[hour] += 1
-			else:
-				self.activity_by_hour_of_day[hour] = 1
+			self.activity_by_hour_of_day[hour] = self.activity_by_hour_of_day.get(hour, 0) + 1
 			# most active hour?
 			if self.activity_by_hour_of_day[hour] > self.activity_by_hour_of_day_busiest:
 				self.activity_by_hour_of_day_busiest = self.activity_by_hour_of_day[hour]
 
 			# day of week
 			day = date.weekday()
-			if day in self.activity_by_day_of_week:
-				self.activity_by_day_of_week[day] += 1
-			else:
-				self.activity_by_day_of_week[day] = 1
+			self.activity_by_day_of_week[day] = self.activity_by_day_of_week.get(day, 0) + 1
 
 			# hour of week
 			if day not in self.activity_by_hour_of_week:
 				self.activity_by_hour_of_week[day] = {}
-			if hour not in self.activity_by_hour_of_week[day]:
-				self.activity_by_hour_of_week[day][hour] = 1
-			else:
-				self.activity_by_hour_of_week[day][hour] += 1
+			self.activity_by_hour_of_week[day][hour] = self.activity_by_hour_of_week[day].get(hour, 0) + 1
 			# most active hour?
 			if self.activity_by_hour_of_week[day][hour] > self.activity_by_hour_of_week_busiest:
 				self.activity_by_hour_of_week_busiest = self.activity_by_hour_of_week[day][hour]
 
 			# month of year
 			month = date.month
-			if month in self.activity_by_month_of_year:
-				self.activity_by_month_of_year[month] += 1
-			else:
-				self.activity_by_month_of_year[month] = 1
+			self.activity_by_month_of_year[month] = self.activity_by_month_of_year.get(month, 0) + 1
 
 			# yearly/weekly activity
 			yyw = date.strftime('%Y-%W')
-			if yyw not in self.activity_by_year_week:
-				self.activity_by_year_week[yyw] = 1
-			else:
-				self.activity_by_year_week[yyw] += 1
+			self.activity_by_year_week[yyw] = self.activity_by_year_week.get(yyw, 0) + 1
 			if self.activity_by_year_week_peak < self.activity_by_year_week[yyw]:
 				self.activity_by_year_week_peak = self.activity_by_year_week[yyw]
 
@@ -287,39 +272,24 @@ class GitDataCollector(DataCollector):
 			if 'last_commit_stamp' not in self.authors[author]:
 				self.authors[author]['last_commit_stamp'] = stamp
 			self.authors[author]['first_commit_stamp'] = stamp
-			if 'commits' in self.authors[author]:
-				self.authors[author]['commits'] += 1
-			else:
-				self.authors[author]['commits'] = 1
+			self.authors[author]['commits'] = self.authors[author].get('commits', 0) + 1
 
 			# author of the month/year
 			yymm = date.strftime('%Y-%m')
 			if yymm in self.author_of_month:
-				if author in self.author_of_month[yymm]:
-					self.author_of_month[yymm][author] += 1
-				else:
-					self.author_of_month[yymm][author] = 1
+				self.author_of_month[yymm][author] = self.author_of_month[yymm].get(author, 0) + 1
 			else:
 				self.author_of_month[yymm] = {}
 				self.author_of_month[yymm][author] = 1
-			if yymm in self.commits_by_month:
-				self.commits_by_month[yymm] += 1
-			else:
-				self.commits_by_month[yymm] = 1
+			self.commits_by_month[yymm] = self.commits_by_month.get(yymm, 0) + 1
 
 			yy = date.year
 			if yy in self.author_of_year:
-				if author in self.author_of_year[yy]:
-					self.author_of_year[yy][author] += 1
-				else:
-					self.author_of_year[yy][author] = 1
+				self.author_of_year[yy][author] = self.author_of_year[yy].get(author, 0) + 1
 			else:
 				self.author_of_year[yy] = {}
 				self.author_of_year[yy][author] = 1
-			if yy in self.commits_by_year:
-				self.commits_by_year[yy] += 1
-			else:
-				self.commits_by_year[yy] = 1
+			self.commits_by_year[yy] = self.commits_by_year.get(yy, 0) + 1
 
 			# authors: active days
 			yymmdd = date.strftime('%Y-%m-%d')
