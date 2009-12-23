@@ -278,7 +278,7 @@ class GitDataCollector(DataCollector):
 				self.authors[author]['commits'] = 1
 
 			# author of the month/year
-			yymm = datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m')
+			yymm = date.strftime('%Y-%m')
 			if yymm in self.author_of_month:
 				if author in self.author_of_month[yymm]:
 					self.author_of_month[yymm][author] += 1
@@ -292,7 +292,7 @@ class GitDataCollector(DataCollector):
 			else:
 				self.commits_by_month[yymm] = 1
 
-			yy = datetime.datetime.fromtimestamp(stamp).year
+			yy = date.year
 			if yy in self.author_of_year:
 				if author in self.author_of_year[yy]:
 					self.author_of_year[yy][author] += 1
@@ -307,7 +307,7 @@ class GitDataCollector(DataCollector):
 				self.commits_by_year[yy] = 1
 
 			# authors: active days
-			yymmdd = datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d')
+			yymmdd = date.strftime('%Y-%m-%d')
 			if 'last_active_day' not in self.authors[author]:
 				self.authors[author]['last_active_day'] = yymmdd
 				self.authors[author]['active_days'] = 1
