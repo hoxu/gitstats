@@ -28,6 +28,14 @@ table {
 	margin-bottom: 1em;
 }
 
+table.noborders {
+	border: none;
+}
+
+table.noborders td {
+	border: none;
+}
+
 .vtable {
 	float: right;
 	clear: both;
