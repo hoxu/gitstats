@@ -3,7 +3,7 @@
  */
 body {
 	color: black;
-	background-color: #fff;
+	background-color: #dfd;
 }
 
 dt {
@@ -114,3 +114,20 @@ h2:hover a:after {
 	color: #555;
 }
 
+h1 {
+	font-size: x-large;
+}
+
+h2 {
+	background-color: #564;
+	border: 1px solid black;
+	padding-left: 0.5em;
+	padding-right: 0.5em;
+	color: white;
+	font-size: large;
+	clear: both;
+}
+
+h2 a {
+	color: white;
+}
