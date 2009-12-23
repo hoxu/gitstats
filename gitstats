@@ -169,6 +169,8 @@ class GitDataCollector(DataCollector):
 		self.commits_by_year = {} # year -> commits
 		self.first_commit_stamp = 0
 		self.last_commit_stamp = 0
+		self.last_active_day = None
+		self.active_days = 0
 
 		# tags
 		self.tags = {}
@@ -313,6 +315,11 @@ class GitDataCollector(DataCollector):
 				self.authors[author]['last_active_day'] = yymmdd
 				self.authors[author]['active_days'] += 1
 
+			# project: active days
+			if yymmdd != self.last_active_day:
+				self.last_active_day = yymmdd
+				self.active_days += 1
+
 		# TODO Optimize this, it's the worst bottleneck
 		# outputs "<stamp> <files>" for each revision
 		self.files_by_stamp = {} # stamp -> files
@@ -414,6 +421,9 @@ class GitDataCollector(DataCollector):
 			a['date_last'] = date_last.strftime('%Y-%m-%d')
 			a['timedelta'] = delta
 	
+	def getActiveDays(self):
+		return self.active_days
+
 	def getActivityByDayOfWeek(self):
 		return self.activity_by_day_of_week
 
@@ -515,7 +525,7 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<dt>Project name</dt><dd>%s</dd>' % (data.projectname))
 		f.write('<dt>Generated</dt><dd>%s (in %d seconds)</dd>' % (datetime.datetime.now().strftime(format), time.time() - data.getStampCreated()))
 		f.write('<dt>Generator</dt><dd><a href="http://gitstats.sourceforge.net/">GitStats</a> (version %s)</dd>' % getversion())
-		f.write('<dt>Report Period</dt><dd>%s to %s (%d days)</dd>' % (data.getFirstCommitDate().strftime(format), data.getLastCommitDate().strftime(format), data.getCommitDeltaDays()))
+		f.write('<dt>Report Period</dt><dd>%s to %s (%d days, %d active days)</dd>' % (data.getFirstCommitDate().strftime(format), data.getLastCommitDate().strftime(format), data.getCommitDeltaDays(), data.getActiveDays()))
 		f.write('<dt>Total Files</dt><dd>%s</dd>' % data.getTotalFiles())
 		f.write('<dt>Total Lines of Code</dt><dd>%s</dd>' % data.getTotalLOC())
 		f.write('<dt>Total Commits</dt><dd>%s</dd>' % data.getTotalCommits())
