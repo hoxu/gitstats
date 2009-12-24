@@ -172,7 +172,7 @@ class GitDataCollector(DataCollector):
 		self.first_commit_stamp = 0
 		self.last_commit_stamp = 0
 		self.last_active_day = None
-		self.active_days = 0
+		self.active_days = set()
 
 		# timezone
 		self.commits_by_timezone = {} # timezone -> commits
@@ -303,7 +303,7 @@ class GitDataCollector(DataCollector):
 			# project: active days
 			if yymmdd != self.last_active_day:
 				self.last_active_day = yymmdd
-				self.active_days += 1
+				self.active_days.add(yymmdd)
 
 			# timezone
 			self.commits_by_timezone[timezone] = self.commits_by_timezone.get(timezone, 0) + 1
@@ -513,7 +513,7 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<dt>Project name</dt><dd>%s</dd>' % (data.projectname))
 		f.write('<dt>Generated</dt><dd>%s (in %d seconds)</dd>' % (datetime.datetime.now().strftime(format), time.time() - data.getStampCreated()))
 		f.write('<dt>Generator</dt><dd><a href="http://gitstats.sourceforge.net/">GitStats</a> (version %s)</dd>' % getversion())
-		f.write('<dt>Report Period</dt><dd>%s to %s (%d days, %d active days)</dd>' % (data.getFirstCommitDate().strftime(format), data.getLastCommitDate().strftime(format), data.getCommitDeltaDays(), data.getActiveDays()))
+		f.write('<dt>Report Period</dt><dd>%s to %s (%d days, %d active days)</dd>' % (data.getFirstCommitDate().strftime(format), data.getLastCommitDate().strftime(format), data.getCommitDeltaDays(), len(data.getActiveDays())))
 		f.write('<dt>Total Files</dt><dd>%s</dd>' % data.getTotalFiles())
 		f.write('<dt>Total Lines of Code</dt><dd>%s</dd>' % data.getTotalLOC())
 		f.write('<dt>Total Commits</dt><dd>%s</dd>' % data.getTotalCommits())
