@@ -41,6 +41,10 @@ table.noborders td {
 	clear: both;
 }
 
+table.tags td {
+	vertical-align: top;
+}
+
 th {
 	background-color: #ddf;
 }
