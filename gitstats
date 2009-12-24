@@ -174,6 +174,11 @@ class GitDataCollector(DataCollector):
 		self.last_active_day = None
 		self.active_days = set()
 
+		# lines
+		self.total_lines = 0
+		self.total_lines_added = 0
+		self.total_lines_removed = 0
+
 		# timezone
 		self.commits_by_timezone = {} # timezone -> commits
 
@@ -390,6 +395,8 @@ class GitDataCollector(DataCollector):
 					(files, inserted, deleted) = map(lambda el : int(el), numbers)
 					total_lines += inserted
 					total_lines -= deleted
+					self.total_lines_added += inserted
+					self.total_lines_removed += deleted
 				else:
 					print 'Warning: failed to handle line "%s"' % line
 					(files, inserted, deleted) = (0, 0, 0)
@@ -520,7 +527,7 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<dt>Generator</dt><dd><a href="http://gitstats.sourceforge.net/">GitStats</a> (version %s)</dd>' % getversion())
 		f.write('<dt>Report Period</dt><dd>%s to %s (%d days, %d active days)</dd>' % (data.getFirstCommitDate().strftime(format), data.getLastCommitDate().strftime(format), data.getCommitDeltaDays(), len(data.getActiveDays())))
 		f.write('<dt>Total Files</dt><dd>%s</dd>' % data.getTotalFiles())
-		f.write('<dt>Total Lines of Code</dt><dd>%s</dd>' % data.getTotalLOC())
+		f.write('<dt>Total Lines of Code</dt><dd>%s (%d added, %d removed)</dd>' % (data.getTotalLOC(), data.total_lines_added, data.total_lines_removed))
 		f.write('<dt>Total Commits</dt><dd>%s</dd>' % data.getTotalCommits())
 		f.write('<dt>Authors</dt><dd>%s</dd>' % data.getTotalAuthors())
 		f.write('</dl>')
