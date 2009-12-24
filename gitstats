@@ -162,7 +162,7 @@ class GitDataCollector(DataCollector):
 		self.activity_by_year_week = {} # yy_wNN -> commits
 		self.activity_by_year_week_peak = 0
 
-		self.authors = {} # name -> {commits, first_commit_stamp, last_commit_stamp, last_active_day, active_days}
+		self.authors = {} # name -> {commits, first_commit_stamp, last_commit_stamp, last_active_day, active_days, lines_added, lines_removed}
 
 		# author of the month
 		self.author_of_month = {} # month -> author -> commits
@@ -364,6 +364,7 @@ class GitDataCollector(DataCollector):
 		lines = getpipeoutput(['git log --shortstat --pretty=format:"%at %an"']).split('\n')
 		lines.reverse()
 		files = 0; inserted = 0; deleted = 0; total_lines = 0
+		author = None
 		for line in lines:
 			if len(line) == 0:
 				continue
@@ -375,6 +376,10 @@ class GitDataCollector(DataCollector):
 					try:
 						(stamp, author) = (int(line[:pos]), line[pos+1:])
 						self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted, 'lines': total_lines }
+						if author not in self.authors:
+							self.authors[author] = { 'lines_added' : 0, 'lines_removed' : 0 }
+						self.authors[author]['lines_added'] = self.authors[author].get('lines_added', 0) + inserted
+						self.authors[author]['lines_removed'] = self.authors[author].get('lines_removed', 0) + deleted
 					except ValueError:
 						print 'Warning: unexpected line "%s"' % line
 				else:
@@ -716,10 +721,10 @@ class HTMLReportCreator(ReportCreator):
 		f.write(html_header(2, 'List of Authors'))
 
 		f.write('<table class="authors sortable" id="authors">')
-		f.write('<tr><th>Author</th><th>Commits (%)</th><th>First commit</th><th>Last commit</th><th class="unsortable">Age</th><th>Active days</th><th># by commits</th></tr>')
+		f.write('<tr><th>Author</th><th>Commits (%)</th><th>+ lines</th><th>- lines</th><th>First commit</th><th>Last commit</th><th class="unsortable">Age</th><th>Active days</th><th># by commits</th></tr>')
 		for author in sorted(data.getAuthors()):
 			info = data.getAuthorInfo(author)
-			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td></tr>' % (author, info['commits'], info['commits_frac'], info['date_first'], info['date_last'], info['timedelta'], info['active_days'], info['place_by_commits']))
+			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td></tr>' % (author, info['commits'], info['lines_added'], info['lines_removed'], info['commits_frac'], info['date_first'], info['date_last'], info['timedelta'], info['active_days'], info['place_by_commits']))
 		f.write('</table>')
 
 		# Authors :: Author of Month
