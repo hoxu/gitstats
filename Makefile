@@ -4,6 +4,7 @@ RESOURCEDIR=$(PREFIX)/share/gitstats
 RESOURCES=gitstats.css sortable.js *.gif
 BINARIES=gitstats
 VERSION=$(shell git describe 2>/dev/null || git rev-parse --short HEAD)
+SEDVERSION=sed -i 's/VERSION = 0/VERSION = "$(VERSION)"/'
 
 all: help
 
@@ -19,9 +20,12 @@ install:
 	install -d $(BINDIR) $(RESOURCEDIR)
 	install -v $(BINARIES) $(BINDIR)
 	install -v -m 644 $(RESOURCES) $(RESOURCEDIR)
-	sed -i 's/VERSION = 0/VERSION = "$(VERSION)"/' $(BINDIR)/gitstats
+	$(SEDVERSION) $(BINDIR)/gitstats
 
 release:
-	@tar --owner=0 --group=0 --transform 's!^!gitstats/!' -zcf gitstats-$(VERSION).tar.gz $(BINARIES) $(RESOURCES) doc/ Makefile
+	@cp gitstats gitstats.tmp
+	@$(SEDVERSION) gitstats.tmp
+	@tar --owner=0 --group=0 --transform 's!^!gitstats/!' --transform 's!gitstats.tmp!gitstats!' -zcf gitstats-$(VERSION).tar.gz gitstats.tmp $(RESOURCES) doc/ Makefile
+	@$(RM) gitstats.tmp
 
 .PHONY: all help install release
