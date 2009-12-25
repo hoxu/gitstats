@@ -778,9 +778,16 @@ class HTMLReportCreator(ReportCreator):
 		# Files :: File count by date
 		f.write(html_header(2, 'File count by date'))
 
-		fg = open(path + '/files_by_date.dat', 'w')
+		# use set to get rid of duplicate/unnecessary entries
+		files_by_date = set()
 		for stamp in sorted(data.files_by_stamp.keys()):
-			fg.write('%s %d\n' % (datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d'), data.files_by_stamp[stamp]))
+			files_by_date.add('%s %d' % (datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d'), data.files_by_stamp[stamp]))
+
+		fg = open(path + '/files_by_date.dat', 'w')
+		for line in sorted(list(files_by_date)):
+			fg.write('%s\n' % line)
+		#for stamp in sorted(data.files_by_stamp.keys()):
+		#	fg.write('%s %d\n' % (datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d'), data.files_by_stamp[stamp]))
 		fg.close()
 			
 		f.write('<img src="files_by_date.png" alt="Files by Date" />')
