@@ -6,10 +6,6 @@
 	SLOC or comments on the "lines of code" image. Could this somehow be
 	added?
 
-- BUG linux-2.6 repository
-	- git-log --pretty=format:"%at %an" |grep -C3 unknown
-	- git-rev-list (for number of files in each revision) says "Warning: failed to parse line "<unknown> 17741"
-
 [Unsorted]
 - clean up after running gnuplot (option to keep .dat files around?)
 - show raw data in some way (the tables used currently aren't very nice)

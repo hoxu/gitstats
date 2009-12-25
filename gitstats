@@ -223,7 +223,6 @@ class GitDataCollector(DataCollector):
 		# Outputs "<stamp> <author>"
 		lines = getpipeoutput(['git rev-list --pretty=format:"%at %ai %an" HEAD', 'grep -v ^commit']).split('\n')
 		for line in lines:
-			# linux-2.6 says "<unknown>" for one line O_o
 			parts = line.split(' ')
 			author = ''
 			try:
