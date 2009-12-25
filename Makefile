@@ -3,7 +3,7 @@ BINDIR=$(PREFIX)/bin
 RESOURCEDIR=$(PREFIX)/share/gitstats
 RESOURCES=gitstats.css sortable.js *.gif
 BINARIES=gitstats
-VERSION=$(shell git rev-parse --short HEAD)
+VERSION=$(shell git describe 2>/dev/null || git rev-parse --short HEAD)
 
 all: help
 
