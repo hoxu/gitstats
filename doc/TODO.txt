@@ -1,4 +1,7 @@
 []
+- general: analysis, ohloh-like?
+	- age: active days / days - high % means active project usually
+	- number of contributors (& their active days)
 
 - https://sourceforge.net/tracker/index.php?func=detail&aid=2865754&group_id=203965&atid=987714
 	- gitstats is a great tool, but the one thing that I miss is the number of
