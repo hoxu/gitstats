@@ -104,6 +104,10 @@ class DataCollector:
 	def getActivityByHourOfDay(self):
 		return {}
 
+	# : get a dictionary of domains
+	def getDomainInfo(self, domain):
+		return None
+
 	##
 	# Get a list of authors
 	def getAuthors(self):
@@ -164,6 +168,9 @@ class GitDataCollector(DataCollector):
 
 		self.authors = {} # name -> {commits, first_commit_stamp, last_commit_stamp, last_active_day, active_days, lines_added, lines_removed}
 
+		# domains
+		self.domains = {} # domain -> commits
+
 		# author of the month
 		self.author_of_month = {} # month -> author -> commits
 		self.author_of_year = {} # year -> author -> commits
@@ -221,7 +228,7 @@ class GitDataCollector(DataCollector):
 
 		# Collect revision statistics
 		# Outputs "<stamp> <author>"
-		lines = getpipeoutput(['git rev-list --pretty=format:"%at %ai %an" HEAD', 'grep -v ^commit']).split('\n')
+		lines = getpipeoutput(['git rev-list --pretty=format:"%at %ai %aE %an" HEAD', 'grep -v ^commit']).split('\n')
 		for line in lines:
 			parts = line.split(' ')
 			author = ''
@@ -230,8 +237,9 @@ class GitDataCollector(DataCollector):
 			except ValueError:
 				stamp = 0
 			timezone = parts[3]
-			if len(parts) > 4:
-				author = ' '.join(parts[4:])
+			domain = parts[4].rsplit('@', 1)[1]
+			if len(parts) > 5:
+				author = ' '.join(parts[5:])
 			date = datetime.datetime.fromtimestamp(float(stamp))
 
 			# First and last commit stamp
@@ -250,6 +258,12 @@ class GitDataCollector(DataCollector):
 			# day of week
 			day = date.weekday()
 			self.activity_by_day_of_week[day] = self.activity_by_day_of_week.get(day, 0) + 1
+
+			# domain stats
+			if domain not in self.domains:
+				self.domains[domain] = {}
+			# commits
+			self.domains[domain]['commits'] = self.domains[domain].get('commits', 0) + 1
 
 			# hour of week
 			if day not in self.activity_by_hour_of_week:
@@ -437,6 +451,12 @@ class GitDataCollector(DataCollector):
 	
 	def getCommitDeltaDays(self):
 		return (self.last_commit_stamp - self.first_commit_stamp) / 86400
+
+	def getDomainInfo(self, domain):
+		return self.domains[domain]
+
+	def getDomains(self):
+		return self.domains.keys()
 	
 	def getFilesInCommit(self, rev):
 		try:
@@ -634,6 +654,27 @@ class HTMLReportCreator(ReportCreator):
 			f.write('</tr>')
 		f.write('</table></div>')
 		f.write('<img src="day_of_week.png" alt="Day of Week" />')
+		fp.close()
+
+		# Domains
+		f.write(html_header(2, 'Commits by Domains'))
+		domains_by_commits = getkeyssortedbyvaluekey(data.domains, 'commits')
+		domains_by_commits.reverse() # most first
+		f.write('<div class="vtable"><table>')
+		f.write('<tr><th>Domains</th><th>Total (%)</th></tr>')
+		fp = open(path + '/domains.dat', 'w')
+		n = 0
+		max_domains = 10
+		for domain in domains_by_commits:
+			if n == max_domains:
+				break
+			commits = 0
+			n += 1
+			info = data.getDomainInfo(domain)
+			fp.write('%s %d %d\n' % (domain, n , info['commits']))
+			f.write('<tr><th>%s</th><td>%d (%.2f%%)</td></tr>' % (domain, info['commits'], (100.0 * info['commits'] / totalcommits)))
+		f.write('</table></div>')
+		f.write('<img src="domains.png" alt="Commits by Domains" />')
 		fp.close()
 
 		# Hour of Week
@@ -886,6 +927,20 @@ set xrange [0.5:7.5]
 set xtics 1
 set ylabel "Commits"
 plot 'day_of_week.dat' using 1:2:(0.5) w boxes fs solid
+""")
+		f.close()
+
+		# Domains
+		f = open(path + '/domains.plot', 'w')
+		f.write(GNUPLOT_COMMON)
+		f.write(
+"""
+set output 'domains.png'
+unset key
+unset xtics
+set grid y
+set ylabel "Commits"
+plot 'domains.dat' using 2:3:(0.5) with boxes fs solid, '' using 2:3:1 with labels rotate by 45 offset 0,1
 """)
 		f.close()
 
