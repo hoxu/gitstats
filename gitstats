@@ -656,27 +656,6 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<img src="day_of_week.png" alt="Day of Week" />')
 		fp.close()
 
-		# Domains
-		f.write(html_header(2, 'Commits by Domains'))
-		domains_by_commits = getkeyssortedbyvaluekey(data.domains, 'commits')
-		domains_by_commits.reverse() # most first
-		f.write('<div class="vtable"><table>')
-		f.write('<tr><th>Domains</th><th>Total (%)</th></tr>')
-		fp = open(path + '/domains.dat', 'w')
-		n = 0
-		max_domains = 10
-		for domain in domains_by_commits:
-			if n == max_domains:
-				break
-			commits = 0
-			n += 1
-			info = data.getDomainInfo(domain)
-			fp.write('%s %d %d\n' % (domain, n , info['commits']))
-			f.write('<tr><th>%s</th><td>%d (%.2f%%)</td></tr>' % (domain, info['commits'], (100.0 * info['commits'] / totalcommits)))
-		f.write('</table></div>')
-		f.write('<img src="domains.png" alt="Commits by Domains" />')
-		fp.close()
-
 		# Hour of Week
 		f.write(html_header(2, 'Hour of Week'))
 		f.write('<table>')
@@ -799,6 +778,27 @@ class HTMLReportCreator(ReportCreator):
 			next = ', '.join(authors[1:5])
 			f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td></tr>' % (yy, authors[0], commits, (100.0 * commits) / data.commits_by_year[yy], data.commits_by_year[yy], next))
 		f.write('</table>')
+
+		# Domains
+		f.write(html_header(2, 'Commits by Domains'))
+		domains_by_commits = getkeyssortedbyvaluekey(data.domains, 'commits')
+		domains_by_commits.reverse() # most first
+		f.write('<div class="vtable"><table>')
+		f.write('<tr><th>Domains</th><th>Total (%)</th></tr>')
+		fp = open(path + '/domains.dat', 'w')
+		n = 0
+		max_domains = 10
+		for domain in domains_by_commits:
+			if n == max_domains:
+				break
+			commits = 0
+			n += 1
+			info = data.getDomainInfo(domain)
+			fp.write('%s %d %d\n' % (domain, n , info['commits']))
+			f.write('<tr><th>%s</th><td>%d (%.2f%%)</td></tr>' % (domain, info['commits'], (100.0 * info['commits'] / totalcommits)))
+		f.write('</table></div>')
+		f.write('<img src="domains.png" alt="Commits by Domains" />')
+		fp.close()
 
 		f.write('</body></html>')
 		f.close()
