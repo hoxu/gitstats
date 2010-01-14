@@ -227,19 +227,20 @@ class GitDataCollector(DataCollector):
 				self.tags[tag]['authors'][author] = commits
 
 		# Collect revision statistics
-		# Outputs "<stamp> <author>"
-		lines = getpipeoutput(['git rev-list --pretty=format:"%at %ai %aE %an" HEAD', 'grep -v ^commit']).split('\n')
+		# Outputs "<stamp> <date> <time> <timezone> <author> '<' <mail> '>'"
+		lines = getpipeoutput(['git rev-list --pretty=format:"%at %ai %an <%aE>" HEAD', 'grep -v ^commit']).split('\n')
 		for line in lines:
-			parts = line.split(' ')
+			parts = line.split(' ', 4)
 			author = ''
 			try:
 				stamp = int(parts[0])
 			except ValueError:
 				stamp = 0
 			timezone = parts[3]
-			domain = parts[4].rsplit('@', 1)[1]
-			if len(parts) > 5:
-				author = ' '.join(parts[5:])
+			author, mail = parts[4].split('<', 1)
+			author = author.rstrip()
+			mail = mail.rstrip('>')
+			domain = mail.rsplit('@', 1)[1]
 			date = datetime.datetime.fromtimestamp(float(stamp))
 
 			# First and last commit stamp
