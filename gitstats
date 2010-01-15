@@ -985,7 +985,7 @@ plot 'commits_by_year_month.dat' using 1:2:(0.5) w boxes fs solid
 """
 set output 'commits_by_year.png'
 unset key
-set xtics 1
+set xtics 1 rotate by 90
 set ylabel "Commits"
 set yrange [0:]
 plot 'commits_by_year.dat' using 1:2:(0.5) w boxes fs solid
