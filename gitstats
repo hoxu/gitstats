@@ -240,7 +240,9 @@ class GitDataCollector(DataCollector):
 			author, mail = parts[4].split('<', 1)
 			author = author.rstrip()
 			mail = mail.rstrip('>')
-			domain = mail.rsplit('@', 1)[1]
+			domain = '?'
+			if mail.find('@') != -1:
+				domain = mail.rsplit('@', 1)[1]
 			date = datetime.datetime.fromtimestamp(float(stamp))
 
 			# First and last commit stamp
