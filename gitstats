@@ -2,6 +2,7 @@
 # Copyright (c) 2007-2010 Heikki Hokkanen <hoxu@users.sf.net> & others (see doc/author.txt)
 # GPLv2 / GPLv3
 import datetime
+import getopt
 import glob
 import os
 import pickle
@@ -14,7 +15,6 @@ import time
 import zlib
 
 GNUPLOT_COMMON = 'set terminal png transparent\nset size 1.0,0.5\n'
-MAX_EXT_LENGTH = 10 # maximum file extension length
 ON_LINUX = (platform.system() == 'Linux')
 
 exectime_internal = 0.0
@@ -26,6 +26,12 @@ time_start = time.time()
 gnuplot_cmd = 'gnuplot'
 if 'GNUPLOT' in os.environ:
 	gnuplot_cmd = os.environ['GNUPLOT']
+
+conf = {
+	'max_domains': 10,
+	'max_ext_length': 10,
+	'style': 'gitstats.css'
+}
 
 def getpipeoutput(cmds, quiet = False):
 	global exectime_external
@@ -365,7 +371,7 @@ class GitDataCollector(DataCollector):
 				ext = ''
 			else:
 				ext = filename[(filename.rfind('.') + 1):]
-			if len(ext) > MAX_EXT_LENGTH:
+			if len(ext) > conf['max_ext_length']:
 				ext = ''
 
 			if ext not in self.extensions:
@@ -800,9 +806,8 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<tr><th>Domains</th><th>Total (%)</th></tr>')
 		fp = open(path + '/domains.dat', 'w')
 		n = 0
-		max_domains = 10
 		for domain in domains_by_commits:
-			if n == max_domains:
+			if n == conf['max_domains']:
 				break
 			commits = 0
 			n += 1
@@ -1051,12 +1056,12 @@ plot 'lines_of_code.dat' using 1:2 w lines
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 	<title>GitStats - %s</title>
-	<link rel="stylesheet" href="gitstats.css" type="text/css" />
+	<link rel="stylesheet" href="%s" type="text/css" />
 	<meta name="generator" content="GitStats %s" />
 	<script type="text/javascript" src="sortable.js"></script>
 </head>
 <body>
-""" % (self.title, getversion()))
+""" % (self.title, conf['style'], getversion()))
 
 	def printNav(self, f):
 		f.write("""
@@ -1074,13 +1079,25 @@ plot 'lines_of_code.dat' using 1:2 w lines
 		
 
 class GitStats:
-	def run(self, args):
-		if len(args) <  2:
+	def run(self, args_orig):
+		optlist, args = getopt.getopt(args_orig, 'c:')
+		for o,v in optlist:
+			if o == '-c':
+				key, value = v.split('=', 1)
+				if key not in conf:
+					raise 'Error: no such key "%s" in config' % key
+				conf[key] = value
+
+		if len(args) < 2:
 			print """
 Usage: gitstats [options] <gitpath> <outputpath>
 
 Options:
-"""
+-c key=value     Override configuration value
+
+Default config values:
+%s
+""" % conf
 			sys.exit(0)
 
 		gitpath = args[0]
