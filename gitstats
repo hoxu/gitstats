@@ -13,7 +13,7 @@ import sys
 import time
 import zlib
 
-GNUPLOT_COMMON = 'set terminal png transparent\nset size 0.5,0.5\n'
+GNUPLOT_COMMON = 'set terminal png transparent\nset size 1.0,0.5\n'
 MAX_EXT_LENGTH = 10 # maximum file extension length
 ON_LINUX = (platform.system() == 'Linux')
 
