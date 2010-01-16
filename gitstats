@@ -1073,49 +1073,53 @@ plot 'lines_of_code.dat' using 1:2 w lines
 """)
 		
 
-usage = """
+class GitStats:
+	def run(self, args):
+		if len(args) <  2:
+			print """
 Usage: gitstats [options] <gitpath> <outputpath>
 
 Options:
 """
+			sys.exit(0)
 
-if len(sys.argv) <  3:
-	print usage
-	sys.exit(0)
+		gitpath = args[0]
+		outputpath = os.path.abspath(args[1])
+		rundir = os.getcwd()
 
-gitpath = sys.argv[1]
-outputpath = os.path.abspath(sys.argv[2])
-rundir = os.getcwd()
+		try:
+			os.makedirs(outputpath)
+		except OSError:
+			pass
+		if not os.path.isdir(outputpath):
+			print 'FATAL: Output path is not a directory or does not exist'
+			sys.exit(1)
 
-try:
-	os.makedirs(outputpath)
-except OSError:
-	pass
-if not os.path.isdir(outputpath):
-	print 'FATAL: Output path is not a directory or does not exist'
-	sys.exit(1)
+		print 'Git path: %s' % gitpath
+		print 'Output path: %s' % outputpath
 
-print 'Git path: %s' % gitpath
-print 'Output path: %s' % outputpath
+		os.chdir(gitpath)
 
-os.chdir(gitpath)
+		cachefile = os.path.join(outputpath, 'gitstats.cache')
 
-cachefile = os.path.join(outputpath, 'gitstats.cache')
+		print 'Collecting data...'
+		data = GitDataCollector()
+		data.loadCache(cachefile)
+		data.collect(gitpath)
+		print 'Refining data...'
+		data.saveCache(cachefile)
+		data.refine()
 
-print 'Collecting data...'
-data = GitDataCollector()
-data.loadCache(cachefile)
-data.collect(gitpath)
-print 'Refining data...'
-data.saveCache(cachefile)
-data.refine()
+		os.chdir(rundir)
 
-os.chdir(rundir)
+		print 'Generating report...'
+		report = HTMLReportCreator()
+		report.create(data, outputpath)
 
-print 'Generating report...'
-report = HTMLReportCreator()
-report.create(data, outputpath)
+		time_end = time.time()
+		exectime_internal = time_end - time_start
+		print 'Execution time %.5f secs, %.5f secs (%.2f %%) in external commands)' % (exectime_internal, exectime_external, (100.0 * exectime_external) / exectime_internal)
 
-time_end = time.time()
-exectime_internal = time_end - time_start
-print 'Execution time %.5f secs, %.5f secs (%.2f %%) in external commands)' % (exectime_internal, exectime_external, (100.0 * exectime_external) / exectime_internal)
+g = GitStats()
+g.run(sys.argv[1:])
+
