@@ -373,7 +373,7 @@ class GitDataCollector(DataCollector):
 
 			self.extensions[ext]['files'] += 1
 			try:
-				self.extensions[ext]['lines'] += int(getpipeoutput(['git cat-file blob %s' % sha1, 'wc -l']).split()[0])
+				self.extensions[ext]['lines'] += self.getLinesInBlob(sha1)
 			except:
 				print 'Warning: Could not count lines for file "%s"' % line
 
@@ -478,6 +478,16 @@ class GitDataCollector(DataCollector):
 	def getLastCommitDate(self):
 		return datetime.datetime.fromtimestamp(self.last_commit_stamp)
 	
+	def getLinesInBlob(self, sha1):
+		try:
+			res = self.cache['lines_in_blob'][sha1]
+		except:
+			res = int(getpipeoutput(['git cat-file blob %s' % sha1, 'wc -l']).split()[0])
+			if 'lines_in_blob' not in self.cache:
+				self.cache['lines_in_blob'] = {}
+			self.cache['lines_in_blob'][sha1] = res
+		return res
+
 	def getTags(self):
 		lines = getpipeoutput(['git show-ref --tags', 'cut -d/ -f3'])
 		return lines.split('\n')
