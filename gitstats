@@ -30,7 +30,8 @@ if 'GNUPLOT' in os.environ:
 conf = {
 	'max_domains': 10,
 	'max_ext_length': 10,
-	'style': 'gitstats.css'
+	'style': 'gitstats.css',
+	'max_authors': 20,
 }
 
 def getpipeoutput(cmds, quiet = False):
@@ -455,8 +456,10 @@ class GitDataCollector(DataCollector):
 	def getAuthorInfo(self, author):
 		return self.authors[author]
 	
-	def getAuthors(self):
-		return self.authors.keys()
+	def getAuthors(self, limit = None):
+		res = getkeyssortedbyvaluekey(self.authors, 'commits')
+		res.reverse()
+		return res[:limit]
 	
 	def getCommitDeltaDays(self):
 		return (self.last_commit_stamp - self.first_commit_stamp) / 86400
@@ -768,10 +771,15 @@ class HTMLReportCreator(ReportCreator):
 
 		f.write('<table class="authors sortable" id="authors">')
 		f.write('<tr><th>Author</th><th>Commits (%)</th><th>+ lines</th><th>- lines</th><th>First commit</th><th>Last commit</th><th class="unsortable">Age</th><th>Active days</th><th># by commits</th></tr>')
-		for author in sorted(data.getAuthors()):
+		for author in sorted(data.getAuthors(conf['max_authors'])):
 			info = data.getAuthorInfo(author)
 			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td></tr>' % (author, info['commits'], info['commits_frac'], info['lines_added'], info['lines_removed'], info['date_first'], info['date_last'], info['timedelta'], info['active_days'], info['place_by_commits']))
 		f.write('</table>')
+
+		allauthors = data.getAuthors()
+		if len(allauthors) > conf['max_authors']:
+			rest = allauthors[conf['max_authors']:]
+			f.write('<p class="moreauthors">These didn\'t make it to the top: %s</p>' % ', '.join(rest))
 
 		# Authors :: Author of Month
 		f.write(html_header(2, 'Author of Month'))
