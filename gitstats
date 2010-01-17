@@ -462,7 +462,7 @@ class GitDataCollector(DataCollector):
 		return res[:limit]
 	
 	def getCommitDeltaDays(self):
-		return (self.last_commit_stamp - self.first_commit_stamp) / 86400
+		return (self.last_commit_stamp - self.first_commit_stamp) / 86400 + 1
 
 	def getDomainInfo(self, domain):
 		return self.domains[domain]
