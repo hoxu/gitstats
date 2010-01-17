@@ -937,6 +937,7 @@ set output 'hour_of_day.png'
 unset key
 set xrange [0.5:24.5]
 set xtics 4
+set grid y
 set ylabel "Commits"
 plot 'hour_of_day.dat' using 1:2:(0.5) w boxes fs solid
 """)
@@ -951,6 +952,7 @@ set output 'day_of_week.png'
 unset key
 set xrange [0.5:7.5]
 set xtics 1
+set grid y
 set ylabel "Commits"
 plot 'day_of_week.dat' using 1:2:(0.5) w boxes fs solid
 """)
@@ -979,6 +981,7 @@ set output 'month_of_year.png'
 unset key
 set xrange [0.5:12.5]
 set xtics 1
+set grid y
 set ylabel "Commits"
 plot 'month_of_year.dat' using 1:2:(0.5) w boxes fs solid
 """)
@@ -996,6 +999,7 @@ set timefmt "%Y-%m"
 set format x "%Y-%m"
 set xtics rotate by 90 15768000
 set bmargin 5
+set grid y
 set ylabel "Commits"
 plot 'commits_by_year_month.dat' using 1:2:(0.5) w boxes fs solid
 """)
@@ -1009,6 +1013,7 @@ plot 'commits_by_year_month.dat' using 1:2:(0.5) w boxes fs solid
 set output 'commits_by_year.png'
 unset key
 set xtics 1 rotate by 90
+set grid y
 set ylabel "Commits"
 set yrange [0:]
 plot 'commits_by_year.dat' using 1:2:(0.5) w boxes fs solid
@@ -1025,6 +1030,7 @@ unset key
 set xdata time
 set timefmt "%Y-%m-%d"
 set format x "%Y-%m-%d"
+set grid y
 set ylabel "Files"
 set xtics rotate by 90
 set ytics autofreq
@@ -1043,6 +1049,7 @@ unset key
 set xdata time
 set timefmt "%s"
 set format x "%Y-%m-%d"
+set grid y
 set ylabel "Lines"
 set xtics rotate by 90
 set bmargin 6
