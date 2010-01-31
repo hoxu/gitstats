@@ -1,4 +1,6 @@
 []
+- BUG: linux-2.6 repo has 105.95% active days
+
 - general: analysis, ohloh-like?
 	- age: active days / days - high % means active project usually
 	- number of contributors (& their active days)
