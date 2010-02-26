@@ -16,6 +16,7 @@ import zlib
 
 GNUPLOT_COMMON = 'set terminal png transparent\nset size 1.0,0.5\n'
 ON_LINUX = (platform.system() == 'Linux')
+WEEKDAYS = ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
 
 exectime_internal = 0.0
 exectime_external = 0.0
@@ -666,9 +667,9 @@ class HTMLReportCreator(ReportCreator):
 			commits = 0
 			if d in day_of_week:
 				commits = day_of_week[d]
-			fp.write('%d %d\n' % (d + 1, commits))
+			fp.write('%d %s %d\n' % (d + 1, WEEKDAYS[d], commits))
 			f.write('<tr>')
-			f.write('<th>%d</th>' % (d + 1))
+			f.write('<th>%s</th>' % (WEEKDAYS[d]))
 			if d in day_of_week:
 				f.write('<td>%d (%.2f%%)</td>' % (day_of_week[d], (100.0 * day_of_week[d]) / totalcommits))
 			else:
@@ -688,7 +689,7 @@ class HTMLReportCreator(ReportCreator):
 		f.write('</tr>')
 
 		for weekday in range(0, 7):
-			f.write('<tr><th>%d</th>' % (weekday + 1))
+			f.write('<tr><th>%s</th>' % (WEEKDAYS[weekday]))
 			for hour in range(0, 24):
 				try:
 					commits = data.activity_by_hour_of_week[weekday][hour]
@@ -954,7 +955,7 @@ set xrange [0.5:7.5]
 set xtics 1
 set grid y
 set ylabel "Commits"
-plot 'day_of_week.dat' using 1:2:(0.5) w boxes fs solid
+plot 'day_of_week.dat' using 1:3:(0.5):xtic(2) w boxes fs solid
 """)
 		f.close()
 
