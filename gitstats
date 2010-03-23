@@ -409,6 +409,7 @@ class GitDataCollector(DataCollector):
 							self.authors[author] = { 'lines_added' : 0, 'lines_removed' : 0 }
 						self.authors[author]['lines_added'] = self.authors[author].get('lines_added', 0) + inserted
 						self.authors[author]['lines_removed'] = self.authors[author].get('lines_removed', 0) + deleted
+						files, inserted, deleted = 0, 0, 0
 					except ValueError:
 						print 'Warning: unexpected line "%s"' % line
 				else:
