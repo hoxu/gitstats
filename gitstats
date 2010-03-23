@@ -87,7 +87,7 @@ class DataCollector:
 		if not os.path.exists(cachefile):
 			return
 		print 'Loading cache...'
-		f = open(cachefile)
+		f = open(cachefile, 'rb')
 		try:
 			self.cache = pickle.loads(zlib.decompress(f.read()))
 		except:
@@ -149,7 +149,7 @@ class DataCollector:
 	# Save cacheable data
 	def saveCache(self, cachefile):
 		print 'Saving cache...'
-		f = open(cachefile, 'w')
+		f = open(cachefile, 'wb')
 		#pickle.dump(self.cache, f)
 		data = zlib.compress(pickle.dumps(self.cache))
 		f.write(data)
