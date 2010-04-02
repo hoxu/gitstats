@@ -787,26 +787,26 @@ class HTMLReportCreator(ReportCreator):
 		# Authors :: Author of Month
 		f.write(html_header(2, 'Author of Month'))
 		f.write('<table class="sortable" id="aom">')
-		f.write('<tr><th>Month</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th></tr>' % conf['authors_top'])
+		f.write('<tr><th>Month</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' % conf['authors_top'])
 		for yymm in reversed(sorted(data.author_of_month.keys())):
 			authordict = data.author_of_month[yymm]
 			authors = getkeyssortedbyvalues(authordict)
 			authors.reverse()
 			commits = data.author_of_month[yymm][authors[0]]
 			next = ', '.join(authors[1:conf['authors_top']+1])
-			f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td></tr>' % (yymm, authors[0], commits, (100.0 * commits) / data.commits_by_month[yymm], data.commits_by_month[yymm], next))
+			f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (yymm, authors[0], commits, (100.0 * commits) / data.commits_by_month[yymm], data.commits_by_month[yymm], next, len(authors)))
 
 		f.write('</table>')
 
 		f.write(html_header(2, 'Author of Year'))
-		f.write('<table class="sortable" id="aoy"><tr><th>Year</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th></tr>' % conf['authors_top'])
+		f.write('<table class="sortable" id="aoy"><tr><th>Year</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' % conf['authors_top'])
 		for yy in reversed(sorted(data.author_of_year.keys())):
 			authordict = data.author_of_year[yy]
 			authors = getkeyssortedbyvalues(authordict)
 			authors.reverse()
 			commits = data.author_of_year[yy][authors[0]]
 			next = ', '.join(authors[1:conf['authors_top']+1])
-			f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td></tr>' % (yy, authors[0], commits, (100.0 * commits) / data.commits_by_year[yy], data.commits_by_year[yy], next))
+			f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (yy, authors[0], commits, (100.0 * commits) / data.commits_by_year[yy], data.commits_by_year[yy], next, len(authors)))
 		f.write('</table>')
 
 		# Domains
