@@ -34,6 +34,8 @@ conf = {
 	'style': 'gitstats.css',
 	'max_authors': 20,
 	'authors_top': 5,
+	'commit_begin': '',
+	'commit_end': '',
 }
 
 def getpipeoutput(cmds, quiet = False):
@@ -56,6 +58,13 @@ def getpipeoutput(cmds, quiet = False):
 	exectime_external += (end - start)
 	return output.rstrip('\n')
 
+def getcommitrange(defaultrange = '', end_only = False):
+	if len(conf['commit_end']) > 0:
+		if end_only or len(conf['commit_begin']) == 0:
+			return conf['commit_end']
+		return '%s..%s' % (conf['commit_begin'], conf['commit_end'])
+	return defaultrange
+
 def getkeyssortedbyvalues(dict):
 	return map(lambda el : el[1], sorted(map(lambda el : (el[1], el[0]), dict.items())))
 
@@ -67,7 +76,7 @@ VERSION = 0
 def getversion():
 	global VERSION
 	if VERSION == 0:
-		VERSION = getpipeoutput(["git rev-parse --short HEAD"]).split('\n')[0]
+		VERSION = getpipeoutput(["git rev-parse --short %s" % getcommitrange('HEAD')]).split('\n')[0]
 	return VERSION
 
 class DataCollector:
@@ -161,7 +170,7 @@ class GitDataCollector(DataCollector):
 		DataCollector.collect(self, dir)
 
 		try:
-			self.total_authors = int(getpipeoutput(['git shortlog -s', 'wc -l']))
+			self.total_authors = int(getpipeoutput(['git shortlog -s %s' % getcommitrange(), 'wc -l']))
 		except:
 			self.total_authors = 0
 		#self.total_lines = int(getoutput('git-ls-files -z |xargs -0 cat |wc -l'))
@@ -237,7 +246,7 @@ class GitDataCollector(DataCollector):
 
 		# Collect revision statistics
 		# Outputs "<stamp> <date> <time> <timezone> <author> '<' <mail> '>'"
-		lines = getpipeoutput(['git rev-list --pretty=format:"%at %ai %an <%aE>" HEAD', 'grep -v ^commit']).split('\n')
+		lines = getpipeoutput(['git rev-list --pretty=format:"%%at %%ai %%an <%%aE>" %s' % getcommitrange('HEAD'), 'grep -v ^commit']).split('\n')
 		for line in lines:
 			parts = line.split(' ', 4)
 			author = ''
@@ -341,7 +350,7 @@ class GitDataCollector(DataCollector):
 		# TODO Optimize this, it's the worst bottleneck
 		# outputs "<stamp> <files>" for each revision
 		self.files_by_stamp = {} # stamp -> files
-		revlines = getpipeoutput(['git rev-list --pretty=format:"%at %T" HEAD', 'grep -v ^commit']).strip().split('\n')
+		revlines = getpipeoutput(['git rev-list --pretty=format:"%%at %%T" %s' % getcommitrange('HEAD'), 'grep -v ^commit']).strip().split('\n')
 		lines = []
 		for revline in revlines:
 			time, rev = revline.split(' ')
@@ -361,7 +370,7 @@ class GitDataCollector(DataCollector):
 
 		# extensions
 		self.extensions = {} # extension -> files, lines
-		lines = getpipeoutput(['git ls-tree -r -z HEAD']).split('\000')
+		lines = getpipeoutput(['git ls-tree -r -z %s' % getcommitrange('HEAD', end_only = True)]).split('\000')
 		self.total_files = len(lines)
 		for line in lines:
 			if len(line) == 0:
@@ -391,7 +400,7 @@ class GitDataCollector(DataCollector):
 		#  N files changed, N insertions (+), N deletions(-)
 		# <stamp> <author>
 		self.changes_by_date = {} # stamp -> { files, ins, del }
-		lines = getpipeoutput(['git log --shortstat --pretty=format:"%at %an"']).split('\n')
+		lines = getpipeoutput(['git log --shortstat --pretty=format:"%%at %%an" %s' % getcommitrange('HEAD')]).split('\n')
 		lines.reverse()
 		files = 0; inserted = 0; deleted = 0; total_lines = 0
 		author = None
