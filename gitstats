@@ -161,7 +161,7 @@ class GitDataCollector(DataCollector):
 		DataCollector.collect(self, dir)
 
 		try:
-			self.total_authors = int(getpipeoutput(['git log', 'git shortlog -s', 'wc -l']))
+			self.total_authors = int(getpipeoutput(['git shortlog -s', 'wc -l']))
 		except:
 			self.total_authors = 0
 		#self.total_lines = int(getoutput('git-ls-files -z |xargs -0 cat |wc -l'))
