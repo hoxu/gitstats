@@ -216,7 +216,7 @@ class GitDataCollector(DataCollector):
 			(hash, tag) = line.split(' ')
 
 			tag = tag.replace('refs/tags/', '')
-			output = getpipeoutput(['git log "%s" --pretty=format:"%%at %%an" -n 1' % hash])
+			output = getpipeoutput(['git log "%s" --pretty=format:"%%at %%aN" -n 1' % hash])
 			if len(output) > 0:
 				parts = output.split(' ')
 				stamp = 0
@@ -400,7 +400,7 @@ class GitDataCollector(DataCollector):
 		#  N files changed, N insertions (+), N deletions(-)
 		# <stamp> <author>
 		self.changes_by_date = {} # stamp -> { files, ins, del }
-		lines = getpipeoutput(['git log --shortstat --pretty=format:"%%at %%an" %s' % getcommitrange('HEAD')]).split('\n')
+		lines = getpipeoutput(['git log --shortstat --pretty=format:"%%at %%aN" %s' % getcommitrange('HEAD')]).split('\n')
 		lines.reverse()
 		files = 0; inserted = 0; deleted = 0; total_lines = 0
 		author = None
