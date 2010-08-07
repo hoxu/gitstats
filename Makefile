@@ -28,4 +28,7 @@ release:
 	@tar --owner=0 --group=0 --transform 's!^!gitstats/!' --transform 's!gitstats.tmp!gitstats!' -zcf gitstats-$(VERSION).tar.gz gitstats.tmp $(RESOURCES) doc/ Makefile
 	@$(RM) gitstats.tmp
 
+man:
+	pod2man --center "User Commands" -r $(shell git rev-parse --short HEAD) doc/gitstats.pod > doc/gitstats.1
+
 .PHONY: all help install release

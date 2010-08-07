@@ -1,0 +1,38 @@
+=encoding utf8
+
+=head1 NAME
+
+gitstats - git history statistics generator
+
+=head1 SYNOPSIS
+
+B<gitstats> [options] <repository dir> <output dir>
+
+=head1 DESCRIPTION
+
+B<gitstats> is a statistics generator for L<git(1)> repositories. It examines the repository and produces some interesting statistics from the history of it.
+
+=head1 FAQ
+
+Q: How do I generate statistics of a non-master branch?
+
+A: Use C<-c commit_end=web> parameter.
+
+Q: I have files in my git repository that I would like to exclude from the statistics, how do I do that?
+
+A: At the moment the only way is to use L<git-filter-branch(1)> to create a temporary repository and generate the statistics from that.
+
+=head1 AUTHORS
+
+B<gitstats> was written by Heikki Hokkanen and others.
+
+See the git repository at http://repo.or.cz/w/gitstats.git for an up-to-date full list of contributors.
+
+=head1 WWW
+
+http://gitstats.sourceforge.net/
+
+=head1 SEE ALSO
+
+L<git(1)>
+
