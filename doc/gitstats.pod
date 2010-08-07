@@ -10,7 +10,43 @@ B<gitstats> [options] <repository dir> <output dir>
 
 =head1 DESCRIPTION
 
-B<gitstats> is a statistics generator for L<git(1)> repositories. It examines the repository and produces some interesting statistics from the history of it.
+B<gitstats> is a statistics generator for L<git(1)> repositories. It examines the repository and produces some interesting statistics from the history of it. Currently HTML is the only output format.
+
+=head1 OPTIONS
+
+-c option=value
+
+Override a default configuration value. Defaults can be seen by running B<gitstats> without parameters.
+
+=head2 Values:
+
+=over
+
+=item authors_top
+
+How many top authors to show.
+
+=item commit_begin, commit_end
+
+Specify a commit range to generate statistics from. You can specify only commit_end limit statistics to a certain commit or another branch.
+
+=item max_authors
+
+How many authors to show in the list of authors.
+
+=item max_domains
+
+How many domains to show in domains by commits.
+
+=item max_ext_length
+
+Maximum file extension length.
+
+=item style
+
+CSS stylesheet to use.
+
+=back
 
 =head1 FAQ
 
