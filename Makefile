@@ -4,7 +4,7 @@ RESOURCEDIR=$(PREFIX)/share/gitstats
 RESOURCES=gitstats.css sortable.js *.gif
 BINARIES=gitstats
 VERSION=$(shell git describe 2>/dev/null || git rev-parse --short HEAD)
-SEDVERSION=sed -i 's/VERSION = 0/VERSION = "$(VERSION)"/'
+SEDVERSION=perl -pi -e 's/VERSION = 0/VERSION = "$(VERSION)"/' --
 
 all: help
 
