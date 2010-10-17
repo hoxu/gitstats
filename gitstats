@@ -36,6 +36,7 @@ conf = {
 	'authors_top': 5,
 	'commit_begin': '',
 	'commit_end': '',
+	'linear_linestats': 1,
 }
 
 def getpipeoutput(cmds, quiet = False):
@@ -400,7 +401,10 @@ class GitDataCollector(DataCollector):
 		#  N files changed, N insertions (+), N deletions(-)
 		# <stamp> <author>
 		self.changes_by_date = {} # stamp -> { files, ins, del }
-		lines = getpipeoutput(['git log --shortstat --pretty=format:"%%at %%aN" %s' % getcommitrange('HEAD')]).split('\n')
+		extra = ''
+		if conf['linear_linestats']:
+			extra = '--first-parent -m'
+		lines = getpipeoutput(['git log --shortstat %s --pretty=format:"%%at %%aN" %s' % (extra, getcommitrange('HEAD'))]).split('\n')
 		lines.reverse()
 		files = 0; inserted = 0; deleted = 0; total_lines = 0
 		author = None
@@ -455,6 +459,8 @@ class GitDataCollector(DataCollector):
 			a['date_first'] = date_first.strftime('%Y-%m-%d')
 			a['date_last'] = date_last.strftime('%Y-%m-%d')
 			a['timedelta'] = delta
+			if 'lines_added' not in a: a['lines_added'] = 0
+			if 'lines_removed' not in a: a['lines_removed'] = 0
 	
 	def getActiveDays(self):
 		return self.active_days
