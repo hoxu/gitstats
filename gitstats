@@ -59,7 +59,7 @@ def getpipeoutput(cmds, quiet = False):
 	exectime_external += (end - start)
 	return output.rstrip('\n')
 
-def getcommitrange(defaultrange = '', end_only = False):
+def getcommitrange(defaultrange = 'HEAD', end_only = False):
 	if len(conf['commit_end']) > 0:
 		if end_only or len(conf['commit_begin']) == 0:
 			return conf['commit_end']
