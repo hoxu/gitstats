@@ -92,7 +92,54 @@ class DataCollector:
 	def __init__(self):
 		self.stamp_created = time.time()
 		self.cache = {}
-	
+		self.total_authors = 0
+		self.activity_by_hour_of_day = {} # hour -> commits
+		self.activity_by_day_of_week = {} # day -> commits
+		self.activity_by_month_of_year = {} # month [1-12] -> commits
+		self.activity_by_hour_of_week = {} # weekday -> hour -> commits
+		self.activity_by_hour_of_day_busiest = 0
+		self.activity_by_hour_of_week_busiest = 0
+		self.activity_by_year_week = {} # yy_wNN -> commits
+		self.activity_by_year_week_peak = 0
+
+		self.authors = {} # name -> {commits, first_commit_stamp, last_commit_stamp, last_active_day, active_days, lines_added, lines_removed}
+
+		self.total_commits = 0
+		self.total_files = 0
+		self.authors_by_commits = 0
+
+		# domains
+		self.domains = {} # domain -> commits
+
+		# author of the month
+		self.author_of_month = {} # month -> author -> commits
+		self.author_of_year = {} # year -> author -> commits
+		self.commits_by_month = {} # month -> commits
+		self.commits_by_year = {} # year -> commits
+		self.first_commit_stamp = 0
+		self.last_commit_stamp = 0
+		self.last_active_day = None
+		self.active_days = set()
+
+		# lines
+		self.total_lines = 0
+		self.total_lines_added = 0
+		self.total_lines_removed = 0
+
+		# timezone
+		self.commits_by_timezone = {} # timezone -> commits
+
+		# tags
+		self.tags = {}
+
+		self.files_by_stamp = {} # stamp -> files
+
+		# extensions
+		self.extensions = {} # extension -> files, lines
+
+		# line statistics
+		self.changes_by_date = {} # stamp -> { files, ins, del }
+
 	##
 	# This should be the main function to extract data from the repository.
 	def collect(self, dir):
@@ -181,45 +228,12 @@ class GitDataCollector(DataCollector):
 		DataCollector.collect(self, dir)
 
 		try:
-			self.total_authors = int(getpipeoutput(['git shortlog -s %s' % getcommitrange(), 'wc -l']))
+			self.total_authors += int(getpipeoutput(['git shortlog -s %s' % getcommitrange(), 'wc -l']))
 		except:
 			self.total_authors = 0
 		#self.total_lines = int(getoutput('git-ls-files -z |xargs -0 cat |wc -l'))
 
-		self.activity_by_hour_of_day = {} # hour -> commits
-		self.activity_by_day_of_week = {} # day -> commits
-		self.activity_by_month_of_year = {} # month [1-12] -> commits
-		self.activity_by_hour_of_week = {} # weekday -> hour -> commits
-		self.activity_by_hour_of_day_busiest = 0
-		self.activity_by_hour_of_week_busiest = 0
-		self.activity_by_year_week = {} # yy_wNN -> commits
-		self.activity_by_year_week_peak = 0
-
-		self.authors = {} # name -> {commits, first_commit_stamp, last_commit_stamp, last_active_day, active_days, lines_added, lines_removed}
-
-		# domains
-		self.domains = {} # domain -> commits
-
-		# author of the month
-		self.author_of_month = {} # month -> author -> commits
-		self.author_of_year = {} # year -> author -> commits
-		self.commits_by_month = {} # month -> commits
-		self.commits_by_year = {} # year -> commits
-		self.first_commit_stamp = 0
-		self.last_commit_stamp = 0
-		self.last_active_day = None
-		self.active_days = set()
-
-		# lines
-		self.total_lines = 0
-		self.total_lines_added = 0
-		self.total_lines_removed = 0
-
-		# timezone
-		self.commits_by_timezone = {} # timezone -> commits
-
 		# tags
-		self.tags = {}
 		lines = getpipeoutput(['git show-ref --tags']).split('\n')
 		for line in lines:
 			if len(line) == 0:
@@ -252,7 +266,7 @@ class GitDataCollector(DataCollector):
 				parts = re.split('\s+', line, 2)
 				commits = int(parts[1])
 				author = parts[2]
-				self.tags[tag]['commits'] += commits
+				self.tags[tag]['commits'] = commits
 				self.tags[tag]['authors'][author] = commits
 
 		# Collect revision statistics
@@ -359,7 +373,6 @@ class GitDataCollector(DataCollector):
 
 		# TODO Optimize this, it's the worst bottleneck
 		# outputs "<stamp> <files>" for each revision
-		self.files_by_stamp = {} # stamp -> files
 		revlines = getpipeoutput(['git rev-list --pretty=format:"%%at %%T" %s' % getcommitrange('HEAD'), 'grep -v ^commit']).strip().split('\n')
 		lines = []
 		for revline in revlines:
@@ -367,7 +380,7 @@ class GitDataCollector(DataCollector):
 			linecount = self.getFilesInCommit(rev)
 			lines.append('%d %d' % (int(time), linecount))
 
-		self.total_commits = len(lines)
+		self.total_commits += len(lines)
 		for line in lines:
 			parts = line.split(' ')
 			if len(parts) != 2:
@@ -379,9 +392,8 @@ class GitDataCollector(DataCollector):
 				print 'Warning: failed to parse line "%s"' % line
 
 		# extensions
-		self.extensions = {} # extension -> files, lines
 		lines = getpipeoutput(['git ls-tree -r -z %s' % getcommitrange('HEAD', end_only = True)]).split('\000')
-		self.total_files = len(lines)
+		self.total_files += len(lines)
 		for line in lines:
 			if len(line) == 0:
 				continue
@@ -498,9 +510,9 @@ class GitDataCollector(DataCollector):
 	def refine(self):
 		# authors
 		# name -> {place_by_commits, commits_frac, date_first, date_last, timedelta}
-		authors_by_commits = getkeyssortedbyvaluekey(self.authors, 'commits')
-		authors_by_commits.reverse() # most first
-		for i, name in enumerate(authors_by_commits):
+		self.authors_by_commits = getkeyssortedbyvaluekey(self.authors, 'commits')
+		self.authors_by_commits.reverse() # most first
+		for i, name in enumerate(self.authors_by_commits):
 			self.authors[name]['place_by_commits'] = i + 1
 
 		for name in self.authors.keys():
@@ -1027,8 +1039,8 @@ class HTMLReportCreator(ReportCreator):
 		tags_sorted_by_date_desc = map(lambda el : el[1], reversed(sorted(map(lambda el : (el[1]['date'], el[0]), data.tags.items()))))
 		for tag in tags_sorted_by_date_desc:
 			authorinfo = []
-			authors_by_commits = getkeyssortedbyvalues(data.tags[tag]['authors'])
-			for i in reversed(authors_by_commits):
+			self.authors_by_commits = getkeyssortedbyvalues(data.tags[tag]['authors'])
+			for i in reversed(self.authors_by_commits):
 				authorinfo.append('%s (%d)' % (i, data.tags[tag]['authors'][i]))
 			f.write('<tr><td>%s</td><td>%s</td><td>%d</td><td>%s</td></tr>' % (tag, data.tags[tag]['date'], data.tags[tag]['commits'], ', '.join(authorinfo)))
 		f.write('</table>')
@@ -1276,7 +1288,7 @@ class GitStats:
 
 		if len(args) < 2:
 			print """
-Usage: gitstats [options] <gitpath> <outputpath>
+Usage: gitstats [options] <gitpath> [<gitpath>] <outputpath>
 
 Options:
 -c key=value     Override configuration value
@@ -1286,8 +1298,7 @@ Default config values:
 """ % conf
 			sys.exit(0)
 
-		gitpath = args[0]
-		outputpath = os.path.abspath(args[1])
+		outputpath = os.path.abspath(args[-1])
 		rundir = os.getcwd()
 
 		try:
@@ -1298,17 +1309,22 @@ Default config values:
 			print 'FATAL: Output path is not a directory or does not exist'
 			sys.exit(1)
 
-		print 'Git path: %s' % gitpath
 		print 'Output path: %s' % outputpath
-
-		os.chdir(gitpath)
-
 		cachefile = os.path.join(outputpath, 'gitstats.cache')
 
-		print 'Collecting data...'
 		data = GitDataCollector()
 		data.loadCache(cachefile)
-		data.collect(gitpath)
+
+		for path in args[0:-1]:
+			gitpath = path
+
+			print 'Git path: %s' % gitpath
+
+			os.chdir(gitpath)
+
+			print 'Collecting data...'
+			data.collect(gitpath)
+
 		print 'Refining data...'
 		data.saveCache(cachefile)
 		data.refine()
