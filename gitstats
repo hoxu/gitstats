@@ -1020,7 +1020,7 @@ unset key
 set xdata time
 set timefmt "%Y-%m"
 set format x "%Y-%m"
-set xtics rotate by 90 15768000
+set xtics rotate
 set bmargin 5
 set grid y
 set ylabel "Commits"
@@ -1035,7 +1035,7 @@ plot 'commits_by_year_month.dat' using 1:2:(0.5) w boxes fs solid
 """
 set output 'commits_by_year.png'
 unset key
-set xtics 1 rotate by 90
+set xtics 1 rotate
 set grid y
 set ylabel "Commits"
 set yrange [0:]
@@ -1055,7 +1055,7 @@ set timefmt "%Y-%m-%d"
 set format x "%Y-%m-%d"
 set grid y
 set ylabel "Files"
-set xtics rotate by 90
+set xtics rotate
 set ytics autofreq
 set bmargin 6
 plot 'files_by_date.dat' using 1:2 w steps
@@ -1074,7 +1074,7 @@ set timefmt "%s"
 set format x "%Y-%m-%d"
 set grid y
 set ylabel "Lines"
-set xtics rotate by 90
+set xtics rotate
 set bmargin 6
 plot 'lines_of_code.dat' using 1:2 w lines
 """)
