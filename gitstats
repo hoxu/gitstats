@@ -37,6 +37,7 @@ conf = {
 	'commit_begin': '',
 	'commit_end': '',
 	'linear_linestats': 1,
+	'project_name': '',
 }
 
 def getpipeoutput(cmds, quiet = False):
@@ -90,7 +91,10 @@ class DataCollector:
 	# This should be the main function to extract data from the repository.
 	def collect(self, dir):
 		self.dir = dir
-		self.projectname = os.path.basename(os.path.abspath(dir))
+		if len(conf['project_name']) == 0:
+			self.projectname = os.path.basename(os.path.abspath(dir))
+		else:
+			self.projectname = conf['project_name']
 	
 	##
 	# Load cacheable data
