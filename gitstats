@@ -322,7 +322,6 @@ class GitDataCollector(DataCollector):
 			if 'last_commit_stamp' not in self.authors[author]:
 				self.authors[author]['last_commit_stamp'] = stamp
 			self.authors[author]['first_commit_stamp'] = stamp
-			self.authors[author]['commits'] = self.authors[author].get('commits', 0) + 1
 
 			# author of the month/year
 			yymm = date.strftime('%Y-%m')
@@ -472,12 +471,16 @@ class GitDataCollector(DataCollector):
 					try:
 						(stamp, author) = (int(line[:pos]), line[pos+1:])
 						if author not in self.authors:
-							self.authors[author] = { 'lines_added' : 0, 'lines_removed' : 0 }
+							self.authors[author] = { 'lines_added' : 0, 'lines_removed' : 0, 'commits' : 0}
+						self.authors[author]['commits'] = self.authors[author].get('commits', 0) + 1
 						self.authors[author]['lines_added'] = self.authors[author].get('lines_added', 0) + inserted
 						self.authors[author]['lines_removed'] = self.authors[author].get('lines_removed', 0) + deleted
 						if stamp not in self.changes_by_date_by_author:
 							self.changes_by_date_by_author[stamp] = {}
-						self.changes_by_date_by_author[stamp][author] = self.authors[author]['lines_added']
+						if author not in self.changes_by_date_by_author[stamp]:
+							self.changes_by_date_by_author[stamp][author] = {}
+						self.changes_by_date_by_author[stamp][author]['lines_added'] = self.authors[author]['lines_added']
+						self.changes_by_date_by_author[stamp][author]['commits'] = self.authors[author]['commits']
 						files, inserted, deleted = 0, 0, 0
 					except ValueError:
 						print 'Warning: unexpected line "%s"' % line
@@ -851,10 +854,16 @@ class HTMLReportCreator(ReportCreator):
 		f.write(html_header(2, 'Cumulated Added Lines of Code per Author'))
 		f.write('<img src="lines_of_code_by_author.png" alt="Lines of code per Author" />')
 		if len(allauthors) > conf['max_authors']:
-			rest = allauthors[conf['max_authors']:]
-			f.write('<p class="moreauthors">These didn\'t make it to the graph: %s</p>' % ', '.join(rest))
+			f.write('<p class="moreauthors">Only top %d authors shown</p>' % conf['max_authors'])
 
-		fg = open(path + '/lines_of_code_by_author.dat', 'w')
+		f.write(html_header(2, 'Commits per Author'))
+		f.write('<img src="commits_by_author.png" alt="Commits per Author" />')
+		if len(allauthors) > conf['max_authors']:
+			f.write('<p class="moreauthors">Only top %d authors shown</p>' % conf['max_authors'])
+
+		fgl = open(path + '/lines_of_code_by_author.dat', 'w')
+		fgc = open(path + '/commits_by_author.dat', 'w')
+
 		lines_by_authors = {} # cumulated added lines by
 		# author. to save memory,
 		# changes_by_date_by_author[stamp][author] is defined
@@ -864,17 +873,25 @@ class HTMLReportCreator(ReportCreator):
 
 		# Don't rely on getAuthors to give the same order each
 		# time. Be robust and keep the list in a variable.
+		commits_by_authors = {} # cumulated added lines by
+
 		self.authors_to_plot = data.getAuthors(conf['max_authors'])
 		for author in self.authors_to_plot:
 			lines_by_authors[author] = 0
+			commits_by_authors[author] = 0
 		for stamp in sorted(data.changes_by_date_by_author.keys()):
-			fg.write('%d' % stamp)
+			fgl.write('%d' % stamp)
+			fgc.write('%d' % stamp)
 			for author in self.authors_to_plot:
 				if author in data.changes_by_date_by_author[stamp].keys():
-					lines_by_authors[author] = data.changes_by_date_by_author[stamp][author]
-				fg.write(' %d' % lines_by_authors[author])
-			fg.write('\n');
-		fg.close()
+					lines_by_authors[author] = data.changes_by_date_by_author[stamp][author]['lines_added']
+					commits_by_authors[author] = data.changes_by_date_by_author[stamp][author]['commits']
+				fgl.write(' %d' % lines_by_authors[author])
+				fgc.write(' %d' % commits_by_authors[author])
+			fgl.write('\n');
+			fgc.write('\n');
+		fgl.close()
+		fgc.close()
 
 		# Authors :: Author of Month
 		f.write(html_header(2, 'Author of Month'))
@@ -1175,6 +1192,33 @@ plot """
 		for a in self.authors_to_plot:
 			i = i + 1
 			plots.append("""'lines_of_code_by_author.dat' using 1:%d title "%s" w lines""" % (i, a.replace("\"", "\\\"")))
+		f.write(", ".join(plots))
+		f.write('\n')
+
+		f.close()
+
+		# Commits per author
+		f = open(path + '/commits_by_author.plot', 'w')
+		f.write(GNUPLOT_COMMON)
+		f.write(
+"""
+set terminal png transparent size 640,480
+set output 'commits_by_author.png'
+set key left top
+set xdata time
+set timefmt "%s"
+set format x "%Y-%m-%d"
+set grid y
+set ylabel "Commits"
+set xtics rotate
+set bmargin 6
+plot """
+)
+		i = 1
+		plots = []
+		for a in self.authors_to_plot:
+			i = i + 1
+			plots.append("""'commits_by_author.dat' using 1:%d title "%s" w lines""" % (i, a.replace("\"", "\\\"")))
 		f.write(", ".join(plots))
 		f.write('\n')
 
