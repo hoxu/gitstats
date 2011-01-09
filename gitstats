@@ -411,6 +411,8 @@ class GitDataCollector(DataCollector):
 		#  N files changed, N insertions (+), N deletions(-)
 		# <stamp> <author>
 		self.changes_by_date = {} # stamp -> { files, ins, del }
+		# computation of lines of code by date is better done
+		# on a linear history.
 		extra = ''
 		if conf['linear_linestats']:
 			extra = '--first-parent -m'
@@ -429,10 +431,6 @@ class GitDataCollector(DataCollector):
 					try:
 						(stamp, author) = (int(line[:pos]), line[pos+1:])
 						self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted, 'lines': total_lines }
-						if author not in self.authors:
-							self.authors[author] = { 'lines_added' : 0, 'lines_removed' : 0 }
-						self.authors[author]['lines_added'] = self.authors[author].get('lines_added', 0) + inserted
-						self.authors[author]['lines_removed'] = self.authors[author].get('lines_removed', 0) + deleted
 						files, inserted, deleted = 0, 0, 0
 					except ValueError:
 						print 'Warning: unexpected line "%s"' % line
@@ -451,6 +449,41 @@ class GitDataCollector(DataCollector):
 					(files, inserted, deleted) = (0, 0, 0)
 				#self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted }
 		self.total_lines = total_lines
+
+		# Per-author statistics
+		# Similar to the above, but never use --first-parent
+		# (we need to walk through every commits to know who
+		# commited what, not just through mainline)
+		lines = getpipeoutput(['git log --shortstat --pretty=format:"%%at %%aN" %s' % (getcommitrange('HEAD'))]).split('\n')
+		lines.reverse()
+		files = 0; inserted = 0; deleted = 0; 
+		author = None
+		for line in lines:
+			if len(line) == 0:
+				continue
+
+			# <stamp> <author>
+			if line.find('files changed,') == -1:
+				pos = line.find(' ')
+				if pos != -1:
+					try:
+						(stamp, author) = (int(line[:pos]), line[pos+1:])
+						if author not in self.authors:
+							self.authors[author] = { 'lines_added' : 0, 'lines_removed' : 0 }
+						self.authors[author]['lines_added'] = self.authors[author].get('lines_added', 0) + inserted
+						self.authors[author]['lines_removed'] = self.authors[author].get('lines_removed', 0) + deleted
+						files, inserted, deleted = 0, 0, 0
+					except ValueError:
+						print 'Warning: unexpected line "%s"' % line
+				else:
+					print 'Warning: unexpected line "%s"' % line
+			else:
+				numbers = re.findall('\d+', line)
+				if len(numbers) == 3:
+					(files, inserted, deleted) = map(lambda el : int(el), numbers)
+				else:
+					print 'Warning: failed to handle line "%s"' % line
+					(files, inserted, deleted) = (0, 0, 0)
 	
 	def refine(self):
 		# authors
