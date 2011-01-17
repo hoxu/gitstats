@@ -523,7 +523,7 @@ class GitDataCollector(DataCollector):
 			delta = date_last - date_first
 			a['date_first'] = date_first.strftime('%Y-%m-%d')
 			a['date_last'] = date_last.strftime('%Y-%m-%d')
-			a['timedelta'] = delta
+			a['timedelta'] = abs(delta)
 			if 'lines_added' not in a: a['lines_added'] = 0
 			if 'lines_removed' not in a: a['lines_removed'] = 0
 	
