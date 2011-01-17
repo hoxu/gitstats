@@ -450,15 +450,16 @@ class GitDataCollector(DataCollector):
 		self.total_lines = total_lines
 
 		# Per-author statistics
+
+		# defined for stamp, author only if author commited at this timestamp.
 		self.changes_by_date_by_author = {} # stamp -> author -> lines_added
-		                                    # defined for stamp, author only if
-		                                    # author commited at this timestamp.
+
 		# Similar to the above, but never use --first-parent
-		# (we need to walk through every commits to know who
-		# commited what, not just through mainline)
+		# (we need to walk through every commit to know who
+		# committed what, not just through mainline)
 		lines = getpipeoutput(['git log --shortstat --pretty=format:"%%at %%aN" %s' % (getcommitrange('HEAD'))]).split('\n')
 		lines.reverse()
-		files = 0; inserted = 0; deleted = 0; 
+		files = 0; inserted = 0; deleted = 0
 		author = None
 		for line in lines:
 			if len(line) == 0:
@@ -888,8 +889,8 @@ class HTMLReportCreator(ReportCreator):
 					commits_by_authors[author] = data.changes_by_date_by_author[stamp][author]['commits']
 				fgl.write(' %d' % lines_by_authors[author])
 				fgc.write(' %d' % commits_by_authors[author])
-			fgl.write('\n');
-			fgc.write('\n');
+			fgl.write('\n')
+			fgc.write('\n')
 		fgl.close()
 		fgc.close()
 
