@@ -475,10 +475,11 @@ class GitDataCollector(DataCollector):
 		# Similar to the above, but never use --first-parent
 		# (we need to walk through every commit to know who
 		# committed what, not just through mainline)
-		lines = getpipeoutput(['git log --shortstat --pretty=format:"%%at %%aN" %s' % (getcommitrange('HEAD'))]).split('\n')
+		lines = getpipeoutput(['git log --shortstat --date-order --pretty=format:"%%at %%aN" %s' % (getcommitrange('HEAD'))]).split('\n')
 		lines.reverse()
 		files = 0; inserted = 0; deleted = 0
 		author = None
+		stamp = 0
 		for line in lines:
 			if len(line) == 0:
 				continue
@@ -488,7 +489,11 @@ class GitDataCollector(DataCollector):
 				pos = line.find(' ')
 				if pos != -1:
 					try:
+						oldstamp = stamp
 						(stamp, author) = (int(line[:pos]), line[pos+1:])
+						if oldstamp > stamp:
+							# clock skew, keep old timestamp to avoid having ugly graph
+							stamp = oldstamp
 						if author not in self.authors:
 							self.authors[author] = { 'lines_added' : 0, 'lines_removed' : 0, 'commits' : 0}
 						self.authors[author]['commits'] = self.authors[author].get('commits', 0) + 1
