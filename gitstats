@@ -288,10 +288,12 @@ class GitDataCollector(DataCollector):
 				domain = mail.rsplit('@', 1)[1]
 			date = datetime.datetime.fromtimestamp(float(stamp))
 
-			# First and last commit stamp
-			if self.last_commit_stamp == 0:
+			# First and last commit stamp (may be in any order because of cherry-picking and patches)
+			if stamp > self.last_commit_stamp:
 				self.last_commit_stamp = stamp
-			self.first_commit_stamp = stamp
+				print 'Last:', stamp
+			if self.first_commit_stamp == 0 or stamp < self.first_commit_stamp:
+				self.first_commit_stamp = stamp
 
 			# activity
 			# hour
@@ -332,10 +334,15 @@ class GitDataCollector(DataCollector):
 			# author stats
 			if author not in self.authors:
 				self.authors[author] = {}
-			# commits
+			# commits, note again that commits may be in any date order because of cherry-picking and patches
 			if 'last_commit_stamp' not in self.authors[author]:
 				self.authors[author]['last_commit_stamp'] = stamp
-			self.authors[author]['first_commit_stamp'] = stamp
+			if stamp > self.authors[author]['last_commit_stamp']:
+				self.authors[author]['last_commit_stamp'] = stamp
+			if 'first_commit_stamp' not in self.authors[author]:
+				self.authors[author]['first_commit_stamp'] = stamp
+			if stamp < self.authors[author]['first_commit_stamp']:
+				self.authors[author]['first_commit_stamp'] = stamp
 
 			# author of the month/year
 			yymm = date.strftime('%Y-%m')
@@ -523,7 +530,7 @@ class GitDataCollector(DataCollector):
 			delta = date_last - date_first
 			a['date_first'] = date_first.strftime('%Y-%m-%d')
 			a['date_last'] = date_last.strftime('%Y-%m-%d')
-			a['timedelta'] = abs(delta)
+			a['timedelta'] = delta
 			if 'lines_added' not in a: a['lines_added'] = 0
 			if 'lines_removed' not in a: a['lines_removed'] = 0
 	
