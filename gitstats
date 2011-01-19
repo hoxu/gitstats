@@ -291,7 +291,6 @@ class GitDataCollector(DataCollector):
 			# First and last commit stamp (may be in any order because of cherry-picking and patches)
 			if stamp > self.last_commit_stamp:
 				self.last_commit_stamp = stamp
-				print 'Last:', stamp
 			if self.first_commit_stamp == 0 or stamp < self.first_commit_stamp:
 				self.first_commit_stamp = stamp
 
