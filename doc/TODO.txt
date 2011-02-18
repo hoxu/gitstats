@@ -1,5 +1,9 @@
 []
-- BUG: linux-2.6 repo has 105.95% active days
+- cleanup: use defaultdict(int) for counting dicts instead of foo[x] = foo.get(x, 0) + 1
+	- not supported in python 2.4 - do any users use python 2.4?
+	- debian lenny (oldstable) has python 2.5
+- bug: multirepo tags
+	- self.tags contains tags from all repos - WRONG
 
 - general: analysis, ohloh-like?
 	- age: active days / days - high % means active project usually
@@ -18,7 +22,6 @@
 	- styles/{default,...}.css
 - could show some statistics from last year, month, etc... pisg-like?
 - Commandline options
-	--title "Project name"
 	--debug / --verbose
 - save command line settings and use them next run if not overridden?
 
