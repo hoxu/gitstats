@@ -405,8 +405,9 @@ class GitDataCollector(DataCollector):
 				continue
 			parts = re.split('\s+', line, 4)
 			sha1 = parts[2]
-			filename = parts[3]
+			fullpath = parts[3]
 
+			filename = fullpath.split('/')[-1] # strip directories
 			if filename.find('.') == -1 or filename.rfind('.') == 0:
 				ext = ''
 			else:
