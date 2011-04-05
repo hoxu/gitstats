@@ -35,7 +35,7 @@ conf = {
 	'max_authors': 20,
 	'authors_top': 5,
 	'commit_begin': '',
-	'commit_end': '',
+	'commit_end': 'HEAD',
 	'linear_linestats': 1,
 	'project_name': '',
 }
