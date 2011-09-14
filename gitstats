@@ -116,6 +116,10 @@ class DataCollector:
 		self.author_of_year = {} # year -> author -> commits
 		self.commits_by_month = {} # month -> commits
 		self.commits_by_year = {} # year -> commits
+		self.lines_added_by_month = {} # month -> lines added
+		self.lines_added_by_year = {} # year -> lines added
+		self.lines_removed_by_month = {} # month -> lines removed
+		self.lines_removed_by_year = {} # year -> lines removed
 		self.first_commit_stamp = 0
 		self.last_commit_stamp = 0
 		self.last_active_day = None
@@ -449,6 +453,16 @@ class GitDataCollector(DataCollector):
 					try:
 						(stamp, author) = (int(line[:pos]), line[pos+1:])
 						self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted, 'lines': total_lines }
+
+						date = datetime.datetime.fromtimestamp(stamp)
+						yymm = date.strftime('%Y-%m')
+						self.lines_added_by_month[yymm] = self.lines_added_by_month.get(yymm, 0) + inserted
+						self.lines_removed_by_month[yymm] = self.lines_removed_by_month.get(yymm, 0) + deleted
+
+						yy = date.year
+						self.lines_added_by_year[yy] = self.lines_added_by_year.get(yy,0) + inserted
+						self.lines_removed_by_year[yy] = self.lines_removed_by_year.get(yy, 0) + deleted
+
 						files, inserted, deleted = 0, 0, 0
 					except ValueError:
 						print 'Warning: unexpected line "%s"' % line
@@ -462,6 +476,7 @@ class GitDataCollector(DataCollector):
 					total_lines -= deleted
 					self.total_lines_added += inserted
 					self.total_lines_removed += deleted
+
 				else:
 					print 'Warning: failed to handle line "%s"' % line
 					(files, inserted, deleted) = (0, 0, 0)
@@ -817,9 +832,9 @@ class HTMLReportCreator(ReportCreator):
 
 		# Commits by year/month
 		f.write(html_header(2, 'Commits by year/month'))
-		f.write('<div class="vtable"><table><tr><th>Month</th><th>Commits</th></tr>')
+		f.write('<div class="vtable"><table><tr><th>Month</th><th>Commits</th><th>Lines added</th><th>Lines removed</th></tr>')
 		for yymm in reversed(sorted(data.commits_by_month.keys())):
-			f.write('<tr><td>%s</td><td>%d</td></tr>' % (yymm, data.commits_by_month[yymm]))
+			f.write('<tr><td>%s</td><td>%d</td><td>%d</td><td>%d</td></tr>' % (yymm, data.commits_by_month[yymm], data.lines_added_by_month[yymm], data.lines_removed_by_month[yymm]))
 		f.write('</table></div>')
 		f.write('<img src="commits_by_year_month.png" alt="Commits by year/month" />')
 		fg = open(path + '/commits_by_year_month.dat', 'w')
@@ -829,9 +844,9 @@ class HTMLReportCreator(ReportCreator):
 
 		# Commits by year
 		f.write(html_header(2, 'Commits by Year'))
-		f.write('<div class="vtable"><table><tr><th>Year</th><th>Commits (% of all)</th></tr>')
+		f.write('<div class="vtable"><table><tr><th>Year</th><th>Commits (% of all)</th><th>Lines added</th><th>Lines removed</th></tr>')
 		for yy in reversed(sorted(data.commits_by_year.keys())):
-			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td></tr>' % (yy, data.commits_by_year[yy], (100.0 * data.commits_by_year[yy]) / data.getTotalCommits()))
+			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td></tr>' % (yy, data.commits_by_year[yy], (100.0 * data.commits_by_year[yy]) / data.getTotalCommits(), data.lines_added_by_year[yy], data.lines_removed_by_year[yy]))
 		f.write('</table></div>')
 		f.write('<img src="commits_by_year.png" alt="Commits by Year" />')
 		fg = open(path + '/commits_by_year.dat', 'w')
