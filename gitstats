@@ -130,6 +130,9 @@ class DataCollector:
 		self.total_lines_added = 0
 		self.total_lines_removed = 0
 
+		# size
+		self.total_size = 0
+
 		# timezone
 		self.commits_by_timezone = {} # timezone -> commits
 
@@ -401,15 +404,19 @@ class GitDataCollector(DataCollector):
 			except ValueError:
 				print 'Warning: failed to parse line "%s"' % line
 
-		# extensions
-		lines = getpipeoutput(['git ls-tree -r -z %s' % getcommitrange('HEAD', end_only = True)]).split('\000')
+		# extensions and size of files
+		lines = getpipeoutput(['git ls-tree -r -l -z %s' % getcommitrange('HEAD', end_only = True)]).split('\000')
+		self.total_size = 0
 		self.total_files += len(lines)
 		for line in lines:
 			if len(line) == 0:
 				continue
-			parts = re.split('\s+', line, 4)
+			parts = re.split('\s+', line, 5)
 			sha1 = parts[2]
-			fullpath = parts[3]
+			size = int(parts[3])
+			fullpath = parts[4]
+
+			self.total_size += size
 
 			filename = fullpath.split('/')[-1] # strip directories
 			if filename.find('.') == -1 or filename.rfind('.') == 0:
@@ -625,6 +632,9 @@ class GitDataCollector(DataCollector):
 	
 	def getTotalLOC(self):
 		return self.total_lines
+
+	def getTotalSize(self):
+		return self.total_size
 	
 	def revToDate(self, rev):
 		stamp = int(getpipeoutput(['git log --pretty=format:%%at "%s" -n 1' % rev]))
@@ -991,7 +1001,7 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<dl>\n')
 		f.write('<dt>Total files</dt><dd>%d</dd>' % data.getTotalFiles())
 		f.write('<dt>Total lines</dt><dd>%d</dd>' % data.getTotalLOC())
-		f.write('<dt>Average file size</dt><dd>%.2f bytes</dd>' % ((100.0 * data.getTotalLOC()) / data.getTotalFiles()))
+		f.write('<dt>Average file size</dt><dd>%.2f bytes</dd>' % (float(data.getTotalSize()) / data.getTotalFiles()))
 		f.write('</dl>\n')
 
 		# Files :: File count by date
