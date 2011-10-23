@@ -407,7 +407,6 @@ class GitDataCollector(DataCollector):
 		# extensions and size of files
 		lines = getpipeoutput(['git ls-tree -r -l -z %s' % getcommitrange('HEAD', end_only = True)]).split('\000')
 		self.total_size = 0
-		self.total_files += len(lines)
 		for line in lines:
 			if len(line) == 0:
 				continue
@@ -417,6 +416,7 @@ class GitDataCollector(DataCollector):
 			fullpath = parts[4]
 
 			self.total_size += size
+			self.total_files += 1
 
 			filename = fullpath.split('/')[-1] # strip directories
 			if filename.find('.') == -1 or filename.rfind('.') == 0:
