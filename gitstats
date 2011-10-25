@@ -406,7 +406,6 @@ class GitDataCollector(DataCollector):
 
 		# extensions and size of files
 		lines = getpipeoutput(['git ls-tree -r -l -z %s' % getcommitrange('HEAD', end_only = True)]).split('\000')
-		self.total_size = 0
 		for line in lines:
 			if len(line) == 0:
 				continue
