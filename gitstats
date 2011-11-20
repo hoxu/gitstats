@@ -410,6 +410,9 @@ class GitDataCollector(DataCollector):
 			if len(line) == 0:
 				continue
 			parts = re.split('\s+', line, 5)
+			if parts[0] == '160000' and parts[3] == '-':
+				# skip submodules
+				continue
 			sha1 = parts[2]
 			size = int(parts[3])
 			fullpath = parts[4]
