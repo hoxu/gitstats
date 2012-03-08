@@ -273,7 +273,7 @@ class GitDataCollector(DataCollector):
 				parts = re.split('\s+', line, 2)
 				commits = int(parts[1])
 				author = parts[2]
-				self.tags[tag]['commits'] = commits
+				self.tags[tag]['commits'] += commits
 				self.tags[tag]['authors'][author] = commits
 
 		# Collect revision statistics
