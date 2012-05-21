@@ -74,6 +74,18 @@ def getkeyssortedbyvalues(dict):
 def getkeyssortedbyvaluekey(d, key):
 	return map(lambda el : el[1], sorted(map(lambda el : (d[el][key], el), d.keys())))
 
+def getstatsummarycounts(line):
+	numbers = re.findall('\d+', line)
+	if   len(numbers) == 1:
+		# neither insertions nor deletions: may probably only happen for "0 files changed"
+		numbers.append(0);
+		numbers.append(0);
+	elif len(numbers) == 2 and line.find('(+)') != -1:
+		numbers.append(0);    # only insertions were printed on line
+	elif len(numbers) == 2 and line.find('(-)') != -1:
+		numbers.insert(1, 0); # only deletions were printed on line
+	return numbers
+
 VERSION = 0
 def getversion():
 	global VERSION
@@ -456,7 +468,7 @@ class GitDataCollector(DataCollector):
 				continue
 
 			# <stamp> <author>
-			if line.find('files changed,') == -1:
+			if re.search('files? changed', line) == None:
 				pos = line.find(' ')
 				if pos != -1:
 					try:
@@ -478,7 +490,8 @@ class GitDataCollector(DataCollector):
 				else:
 					print 'Warning: unexpected line "%s"' % line
 			else:
-				numbers = re.findall('\d+', line)
+				numbers = getstatsummarycounts(line)
+
 				if len(numbers) == 3:
 					(files, inserted, deleted) = map(lambda el : int(el), numbers)
 					total_lines += inserted
@@ -510,7 +523,7 @@ class GitDataCollector(DataCollector):
 				continue
 
 			# <stamp> <author>
-			if line.find('files changed,') == -1:
+			if re.search('files? changed', line) == None:
 				pos = line.find(' ')
 				if pos != -1:
 					try:
@@ -536,7 +549,8 @@ class GitDataCollector(DataCollector):
 				else:
 					print 'Warning: unexpected line "%s"' % line
 			else:
-				numbers = re.findall('\d+', line)
+				numbers = getstatsummarycounts(line);
+
 				if len(numbers) == 3:
 					(files, inserted, deleted) = map(lambda el : int(el), numbers)
 				else:
