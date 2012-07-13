@@ -248,10 +248,7 @@ class GitDataCollector(DataCollector):
 	def collect(self, dir):
 		DataCollector.collect(self, dir)
 
-		try:
-			self.total_authors += int(getpipeoutput(['git shortlog -s %s' % getcommitrange(), 'wc -l']))
-		except:
-			self.total_authors = 0
+		self.total_authors += int(getpipeoutput(['git shortlog -s %s' % getcommitrange(), 'wc -l']))
 		#self.total_lines = int(getoutput('git-ls-files -z |xargs -0 cat |wc -l'))
 
 		# tags
