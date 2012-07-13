@@ -1050,7 +1050,11 @@ class HTMLReportCreator(ReportCreator):
 		for ext in sorted(data.extensions.keys()):
 			files = data.extensions[ext]['files']
 			lines = data.extensions[ext]['lines']
-			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d (%.2f%%)</td><td>%d</td></tr>' % (ext, files, (100.0 * files) / data.getTotalFiles(), lines, (100.0 * lines) / data.getTotalLOC(), lines / files))
+			try:
+				loc_percentage = (100.0 * lines) / data.getTotalLOC()
+			except ZeroDivisionError:
+				loc_percentage = 0
+			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d (%.2f%%)</td><td>%d</td></tr>' % (ext, files, (100.0 * files) / data.getTotalFiles(), lines, loc_percentage, lines / files))
 		f.write('</table>')
 
 		f.write('</body></html>')
