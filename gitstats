@@ -99,7 +99,7 @@ def getgitversion():
 	return getpipeoutput(['git --version']).split('\n')[0]
 
 def getgnuplotversion():
-	return getpipeoutput(['gnuplot --version']).split('\n')[0]
+	return getpipeoutput(['%s --version' % gnuplot_cmd]).split('\n')[0]
 
 class DataCollector:
 	"""Manages data collection from a revision control repository."""
