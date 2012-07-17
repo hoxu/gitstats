@@ -40,6 +40,7 @@ conf = {
 	'commit_end': 'HEAD',
 	'linear_linestats': 1,
 	'project_name': '',
+	'merge_authors': {}
 }
 
 def getpipeoutput(cmds, quiet = False):
@@ -286,6 +287,8 @@ class GitDataCollector(DataCollector):
 				parts = re.split('\s+', line, 2)
 				commits = int(parts[1])
 				author = parts[2]
+				if author in conf['merge_authors']:
+					author = conf['merge_authors'][author]
 				self.tags[tag]['commits'] += commits
 				self.tags[tag]['authors'][author] = commits
 
@@ -302,6 +305,8 @@ class GitDataCollector(DataCollector):
 			timezone = parts[3]
 			author, mail = parts[4].split('<', 1)
 			author = author.rstrip()
+			if author in conf['merge_authors']:
+				author = conf['merge_authors'][author]
 			mail = mail.rstrip('>')
 			domain = '?'
 			if mail.find('@') != -1:
@@ -474,6 +479,8 @@ class GitDataCollector(DataCollector):
 				if pos != -1:
 					try:
 						(stamp, author) = (int(line[:pos]), line[pos+1:])
+						if author in conf['merge_authors']:
+							author = conf['merge_authors'][author]
 						self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted, 'lines': total_lines }
 
 						date = datetime.datetime.fromtimestamp(stamp)
@@ -530,6 +537,8 @@ class GitDataCollector(DataCollector):
 					try:
 						oldstamp = stamp
 						(stamp, author) = (int(line[:pos]), line[pos+1:])
+						if author in conf['merge_authors']:
+							author = conf['merge_authors'][author]
 						if oldstamp > stamp:
 							# clock skew, keep old timestamp to avoid having ugly graph
 							stamp = oldstamp
@@ -1344,6 +1353,9 @@ class GitStats:
 					raise KeyError('no such key "%s" in config' % key)
 				if isinstance(conf[key], int):
 					conf[key] = int(value)
+				elif isinstance(conf[key], dict):
+					kk,vv = value.split(',', 1)
+					conf[key][kk] = vv
 				else:
 					conf[key] = value
 
