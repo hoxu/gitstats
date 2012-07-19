@@ -30,6 +30,17 @@ How many top authors to show.
 
 Specify a commit range to generate statistics from. You can specify only commit_end limit statistics to a certain commit or another branch.
 
+=item linear_linestats
+
+When enabled, the lines of code statistics are collected from linear history.
+The downside is that commits of long feature branches appear only at the point
+where a merge commit is made.
+
+If disabled (old behaviour), the problem is that if two branches contain the
+same changes (for example, removal of same lines), the statistics get skewed.
+
+Defaults to on.
+
 =item max_authors
 
 How many authors to show in the list of authors.
@@ -41,6 +52,10 @@ How many domains to show in domains by commits.
 =item max_ext_length
 
 Maximum file extension length.
+
+=item project_name
+
+Project name to show on the generated pages. Default is to use basename of the repository directory.
 
 =item style
 
