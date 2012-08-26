@@ -73,6 +73,20 @@ Q: I have files in my git repository that I would like to exclude from the stati
 
 A: At the moment the only way is to use L<git-filter-branch(1)> to create a temporary repository and generate the statistics from that.
 
+=head1 EXAMPLES
+
+=over
+
+=item Generates statistics from a git repository in C<foo> and outputs the result in a directory C<foo_stats>:
+
+  gitstats foo foo_stats
+
+=item As above, but only analyzes the last 10 commits:
+
+  gitstats -c commit_begin='HEAD~10' foo foo_stats
+
+=back
+
 =head1 AUTHORS
 
 B<gitstats> was written by Heikki Hokkanen and others.
