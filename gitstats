@@ -119,7 +119,8 @@ class DataCollector:
 		self.activity_by_year_week = {} # yy_wNN -> commits
 		self.activity_by_year_week_peak = 0
 
-		self.authors = {} # name -> {commits, first_commit_stamp, last_commit_stamp, last_active_day, active_days, lines_added, lines_removed}
+		self.authors = {} # name -> {commits, first_commit_stamp, last_commit_stamp, last_active_day, active_days, lines_added, lines_removed, log_words}
+		self.author_averages = {} # name -> {log_words, lines_added, lines_removed}
 
 		self.total_commits = 0
 		self.total_files = 0
@@ -294,9 +295,13 @@ class GitDataCollector(DataCollector):
 
 		# Collect revision statistics
 		# Outputs "<stamp> <date> <time> <timezone> <author> '<' <mail> '>'"
-		lines = getpipeoutput(['git rev-list --pretty=format:"%%at %%ai %%aN <%%aE>" %s' % getcommitrange('HEAD'), 'grep -v ^commit']).split('\n')
+		lines = getpipeoutput(['git rev-list --pretty=format:"%%at %%ai %%aN <%%aE>" %s' % getcommitrange('HEAD')]).split('\n')
 		for line in lines:
 			parts = line.split(' ', 4)
+			if len(parts) == 2 and parts[0] == 'commit':
+				# Current line denotes next commit and is of the form "commit <sha1>". Save sha1 as rev id and continue to next line.
+				rev = parts[1]
+				continue
 			author = ''
 			try:
 				stamp = int(parts[0])
@@ -367,6 +372,7 @@ class GitDataCollector(DataCollector):
 				self.authors[author]['first_commit_stamp'] = stamp
 			if stamp < self.authors[author]['first_commit_stamp']:
 				self.authors[author]['first_commit_stamp'] = stamp
+			self.authors[author]['log_words'] = self.authors[author].get('log_words', 0) + self.getLogMessageWordCount(rev)
 
 			# author of the month/year
 			yymm = date.strftime('%Y-%m')
@@ -586,6 +592,10 @@ class GitDataCollector(DataCollector):
 			a['timedelta'] = delta
 			if 'lines_added' not in a: a['lines_added'] = 0
 			if 'lines_removed' not in a: a['lines_removed'] = 0
+			com_avg = self.author_averages[name] = {}
+			com_avg['lines_added'] = a['lines_added'] / a['commits']
+			com_avg['lines_removed'] = a['lines_removed'] / a['commits']
+			com_avg['log_words'] = float(a['log_words']) / a['commits']
 	
 	def getActiveDays(self):
 		return self.active_days
@@ -596,6 +606,9 @@ class GitDataCollector(DataCollector):
 	def getActivityByHourOfDay(self):
 		return self.activity_by_hour_of_day
 
+	def getAuthorAverages(self, author):
+		return self.author_averages[author]
+	
 	def getAuthorInfo(self, author):
 		return self.authors[author]
 	
@@ -603,7 +616,7 @@ class GitDataCollector(DataCollector):
 		res = getkeyssortedbyvaluekey(self.authors, 'commits')
 		res.reverse()
 		return res[:limit]
-	
+
 	def getCommitDeltaDays(self):
 		return (self.last_commit_stamp / 86400 - self.first_commit_stamp / 86400) + 1
 
@@ -638,6 +651,16 @@ class GitDataCollector(DataCollector):
 			if 'lines_in_blob' not in self.cache:
 				self.cache['lines_in_blob'] = {}
 			self.cache['lines_in_blob'][sha1] = res
+		return res
+
+	def getLogMessageWordCount(self, rev):
+		try:
+			res = self.cache['log_words'][rev]
+		except:
+			res = int(getpipeoutput(['git log -n1 --pretty=format:"%%B" %s' % rev, 'wc -w']))
+			if 'log_words' not in self.cache:
+				self.cache['log_words'] = {}
+			self.cache['log_words'][rev] = res
 		return res
 
 	def getTags(self):
@@ -968,6 +991,15 @@ class HTMLReportCreator(ReportCreator):
 			fgc.write('\n')
 		fgl.close()
 		fgc.close()
+
+		# Authors :: Per-Commit Averages
+		f.write(html_header(2, 'Per-Commit Averages'))
+		f.write('<table class="sortable" id="pca">')
+		f.write('<tr><th>Author</th><th>Log message length (words)</th><th>+ lines</th><th>- lines</th>')
+		for author in data.getAuthors(conf['max_authors']):
+			info = data.getAuthorAverages(author)
+			f.write('<tr><td>%s</td><td>%.1f</td><td>%d</td><td>%d</td></tr>' % (author, info['log_words'], info['lines_added'], info['lines_removed']))
+		f.write('</table>')
 
 		# Authors :: Author of Month
 		f.write(html_header(2, 'Author of Month'))
