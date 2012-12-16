@@ -14,6 +14,12 @@ import sys
 import time
 import zlib
 
+if sys.version_info < (2, 6):
+       print >> sys.stderr, "Python 2.6 or higher is required for gitstats"
+       sys.exit(1)
+
+from multiprocessing import Pool
+
 os.environ['LC_ALL'] = 'C'
 
 GNUPLOT_COMMON = 'set terminal png transparent size 640,240\nset size 1.0,1.0\n'
@@ -103,6 +109,20 @@ def getgitversion():
 
 def getgnuplotversion():
 	return getpipeoutput(['%s --version' % gnuplot_cmd]).split('\n')[0]
+
+def getnumoffilesfromrev(time_rev):
+	"""
+	Get number of files changed in commit
+	"""
+	time, rev = time_rev
+	return (int(time), rev, int(getpipeoutput(['git ls-tree -r --name-only "%s"' % rev, 'wc -l']).split('\n')[0]))
+
+def getnumoflinesinblob(ext_blob):
+	"""
+	Get number of lines in blob
+	"""
+	ext, blob_id = ext_blob
+	return (ext, blob_id, int(getpipeoutput(['git cat-file blob %s' % blob_id, 'wc -l']).split()[0]))
 
 class DataCollector:
 	"""Manages data collection from a revision control repository."""
@@ -402,14 +422,34 @@ class GitDataCollector(DataCollector):
 			# timezone
 			self.commits_by_timezone[timezone] = self.commits_by_timezone.get(timezone, 0) + 1
 
-		# TODO Optimize this, it's the worst bottleneck
 		# outputs "<stamp> <files>" for each revision
 		revlines = getpipeoutput(['git rev-list --pretty=format:"%%at %%T" %s' % getcommitrange('HEAD'), 'grep -v ^commit']).strip().split('\n')
 		lines = []
+		revs_to_read = []
+		time_rev_count = []
+		#Look up rev in cache and take info from cache if found
+		#If not append rev to list of rev to read from repo
 		for revline in revlines:
 			time, rev = revline.split(' ')
-			linecount = self.getFilesInCommit(rev)
-			lines.append('%d %d' % (int(time), linecount))
+			#if cache empty then add time and rev to list of new rev's
+			#otherwise try to read needed info from cache
+			if 'files_in_tree' not in self.cache.keys():
+				revs_to_read.append((time,rev))
+				continue
+			if rev in self.cache['files_in_tree'].keys():
+				lines.append('%d %d' % (int(time), self.cache['files_in_tree'][rev]))
+			else:
+				revs_to_read.append((time,rev))
+
+		#Read revisions from repo
+		time_rev_count = Pool(processes=24).map(getnumoffilesfromrev, revs_to_read)
+
+		#Update cache with new revisions and append then to general list
+		for (time, rev, count) in time_rev_count:
+			if 'files_in_tree' not in self.cache:
+				self.cache['files_in_tree'] = {}
+			self.cache['files_in_tree'][rev] = count
+			lines.append('%d %d' % (int(time), count))
 
 		self.total_commits += len(lines)
 		for line in lines:
@@ -424,6 +464,7 @@ class GitDataCollector(DataCollector):
 
 		# extensions and size of files
 		lines = getpipeoutput(['git ls-tree -r -l -z %s' % getcommitrange('HEAD', end_only = True)]).split('\000')
+		blobs_to_read = []
 		for line in lines:
 			if len(line) == 0:
 				continue
@@ -431,7 +472,7 @@ class GitDataCollector(DataCollector):
 			if parts[0] == '160000' and parts[3] == '-':
 				# skip submodules
 				continue
-			sha1 = parts[2]
+			blob_id = parts[2]
 			size = int(parts[3])
 			fullpath = parts[4]
 
@@ -445,15 +486,28 @@ class GitDataCollector(DataCollector):
 				ext = filename[(filename.rfind('.') + 1):]
 			if len(ext) > conf['max_ext_length']:
 				ext = ''
-
 			if ext not in self.extensions:
 				self.extensions[ext] = {'files': 0, 'lines': 0}
-
 			self.extensions[ext]['files'] += 1
-			try:
-				self.extensions[ext]['lines'] += self.getLinesInBlob(sha1)
-			except:
-				print 'Warning: Could not count lines for file "%s"' % line
+			#if cache empty then add ext and blob id to list of new blob's
+			#otherwise try to read needed info from cache
+			if 'lines_in_blob' not in self.cache.keys():
+				blobs_to_read.append((ext,blob_id))
+				continue
+			if blob_id in self.cache['lines_in_blob'].keys():
+				self.extensions[ext]['lines'] += self.cache['lines_in_blob'][blob_id]
+			else:
+				blobs_to_read.append((ext,blob_id))
+
+		#Get info abount line count for new blob's that wasn't found in cache
+		ext_blob_linecount = Pool(processes=24).map(getnumoflinesinblob, blobs_to_read)
+
+		#Update cache and write down info about number of number of lines
+		for (ext, blob_id, linecount) in ext_blob_linecount:
+			if 'lines_in_blob' not in self.cache:
+				self.cache['lines_in_blob'] = {}
+			self.cache['lines_in_blob'][blob_id] = linecount
+			self.extensions[ext]['lines'] += self.cache['lines_in_blob'][blob_id]
 
 		# line statistics
 		# outputs:
@@ -613,33 +667,12 @@ class GitDataCollector(DataCollector):
 	def getDomains(self):
 		return self.domains.keys()
 	
-	def getFilesInCommit(self, rev):
-		try:
-			res = self.cache['files_in_tree'][rev]
-		except:
-			res = int(getpipeoutput(['git ls-tree -r --name-only "%s"' % rev, 'wc -l']).split('\n')[0])
-			if 'files_in_tree' not in self.cache:
-				self.cache['files_in_tree'] = {}
-			self.cache['files_in_tree'][rev] = res
-
-		return res
-
 	def getFirstCommitDate(self):
 		return datetime.datetime.fromtimestamp(self.first_commit_stamp)
 	
 	def getLastCommitDate(self):
 		return datetime.datetime.fromtimestamp(self.last_commit_stamp)
 	
-	def getLinesInBlob(self, sha1):
-		try:
-			res = self.cache['lines_in_blob'][sha1]
-		except:
-			res = int(getpipeoutput(['git cat-file blob %s' % sha1, 'wc -l']).split()[0])
-			if 'lines_in_blob' not in self.cache:
-				self.cache['lines_in_blob'] = {}
-			self.cache['lines_in_blob'][sha1] = res
-		return res
-
 	def getTags(self):
 		lines = getpipeoutput(['git show-ref --tags', 'cut -d/ -f3'])
 		return lines.split('\n')
