@@ -241,11 +241,17 @@ class DataCollector:
 	# Save cacheable data
 	def saveCache(self, cachefile):
 		print 'Saving cache...'
-		f = open(cachefile, 'wb')
+		tempfile = cachefile + '.tmp'
+		f = open(tempfile, 'wb')
 		#pickle.dump(self.cache, f)
 		data = zlib.compress(pickle.dumps(self.cache))
 		f.write(data)
 		f.close()
+		try:
+			os.remove(cachefile)
+		except OSError:
+			pass
+		os.rename(tempfile, cachefile)
 
 class GitDataCollector(DataCollector):
 	def collect(self, dir):
