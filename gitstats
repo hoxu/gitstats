@@ -517,7 +517,7 @@ class GitDataCollector(DataCollector):
 					print 'Warning: failed to handle line "%s"' % line
 					(files, inserted, deleted) = (0, 0, 0)
 				#self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted }
-		self.total_lines = total_lines
+		self.total_lines += total_lines
 
 		# Per-author statistics
 
