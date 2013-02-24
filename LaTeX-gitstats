@@ -1,0 +1,20 @@
+#!/bin/bash
+dirpath="files/git/stats"
+###
+
+rm -r "$dirpath"
+if [ -z "$1" ]
+then	gitstats . "$dirpath"
+else	gitstats -c project_name="$1" . "$dirpath"
+fi
+cd "$dirpath"
+for fullname in *.plot
+do	filename=${fullname%.plot}
+	sed 's/png/ps/g' "$fullname"|sed 's/ps transparent.*$/postscript/g' > "$filename-ps.plot"
+	gnuplot "$filename-ps.plot"
+	ps2pdf "$filename.ps"
+	pdfcrop "$filename.pdf"
+	rm "$filename-ps.plot" "$filename.ps" "$filename.pdf"
+done
+find . -name "*.dat" -delete
+find . -name "*.plot" -delete

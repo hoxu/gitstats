@@ -1,0 +1,67 @@
+%% <Hallo_Welt.tex> Vorlageversion 1.0.1 <Robin Schneider>
+%%% Präambel
+%\RequirePackage{snapshot}		%% \jobname.dep
+%\listfiles	%% listfiles in die Logdatei
+\documentclass[12pt,a4paper,ngerman]{scrartcl}
+
+\usepackage[utf8]{inputenc}	%% Schriftkodierung
+\usepackage[T1]{fontenc}
+\usepackage{babel} 		%% Sprachunterstützung
+\usepackage{
+	hyperref,
+	pdfpages,
+	pdflscape,
+}
+
+\usepackage{
+	ltxtable,
+	dcolumn,
+	slashbox,
+	tikz,
+	xcolor,
+}
+\definecolor{niceblue}{HTML}{92dcec}
+
+
+%%% Dokumentkörper
+\begin{document}
+\pagestyle{empty}
+
+\begin{landscape}
+\section*{Produktivste Tageszeit (Tabelle)?}
+\pdfbookmark[3]{Produktivste Tageszeit (Tabelle)?}{hour_of_day_table}
+\hspace{-4cm}%
+\input{stats/latex/hour_of_day}%
+
+\section*{Produktivste Tageszeit und Wochentag (Tabelle)?}%
+\pdfbookmark[3]{Produktivste Tageszeit und Wochentag (Tabelle)?}{hour_of_week_table}
+\input{stats/latex/hour_of_week}%
+
+\section*{Aktivität in den letzten 32 Wochen (Anzahl der commits)?}%
+\pdfbookmark[3]{Aktivität in den letzten 32 Wochen?}{weekly_activity_dia}
+\input{stats/latex/weekly_activity}%
+\end{landscape}
+
+\section*{Produktivste Tageszeit?}%
+\pdfbookmark[3]{Produktivste Tageszeit?}{hour_of_day}
+\includegraphics[width=14cm]{stats/hour_of_day-crop}%
+
+\section*{Produktivster Wochentag?}
+\pdfbookmark[3]{Produktivster Wochentag?}{day_of_week}
+\includegraphics[width=14cm]{stats/day_of_week-crop}%
+
+\section*{Produktivster Monat?}%
+\pdfbookmark[3]{Produktivster Monat?}{month_of_year}
+\includegraphics[width=14cm]{stats/month_of_year-crop}%
+
+\section*{Quellcode Zeilen?}%
+\pdfbookmark[3]{Quellcode Zeilen?}{lines_of_code}
+\includegraphics[width=14cm]{stats/lines_of_code-crop}%
+
+\section*{Dateitypen?}%
+\pdfbookmark[3]{Dateitypen?}{dateitypen}
+\begin{center}%
+	\input{stats/latex/files-extensions}%
+\end{center}%
+
+\end{document}
