@@ -93,7 +93,7 @@ VERSION = 0
 def getversion():
 	global VERSION
 	if VERSION == 0:
-		gitstats_repo = os.path.dirname(os.path.abspath(__file__))
+		gitstats_repo = os.path.dirname(__file__)
 		VERSION = getpipeoutput(["git --git-dir=%s/.git --work-tree=%s rev-parse --short %s" %
 			(gitstats_repo, gitstats_repo, getcommitrange('HEAD').split('\n')[0])])
 	return VERSION
@@ -169,7 +169,7 @@ class DataCollector:
 	def collect(self, dir):
 		self.dir = dir
 		if len(conf['project_name']) == 0:
-			self.projectname = os.path.basename(os.path.abspath(dir))
+			self.projectname = os.path.basename(dir)
 		else:
 			self.projectname = conf['project_name']
 	
@@ -694,7 +694,7 @@ class HTMLReportCreator(ReportCreator):
 		self.title = data.projectname
 
 		# copy static files. Looks in the binary directory, ../share/gitstats and /usr/share/gitstats
-		binarypath = os.path.dirname(os.path.abspath(__file__))
+		binarypath = os.path.dirname(__file__)
 		secondarypath = os.path.join(binarypath, '..', 'share', 'gitstats')
 		basedirs = [binarypath, secondarypath, '/usr/share/gitstats']
 		for file in ('gitstats.css', 'sortable.js', 'arrow-up.gif', 'arrow-down.gif', 'arrow-none.gif'):
@@ -1377,7 +1377,7 @@ Default config values:
 """ % conf
 			sys.exit(0)
 
-		outputpath = os.path.abspath(args[-1])
+		outputpath = args[-1]
 		rundir = os.getcwd()
 
 		try:
