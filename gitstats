@@ -1357,6 +1357,8 @@ Options:
 
 Default config values:
 %s
+
+Please see the manual page for more details.
 """ % conf
 
 
