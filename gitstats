@@ -40,7 +40,8 @@ conf = {
 	'commit_end': 'HEAD',
 	'linear_linestats': 1,
 	'project_name': '',
-	'merge_authors': {}
+	'merge_authors': {},
+	'paths': ''
 }
 
 def getpipeoutput(cmds, quiet = False):
@@ -471,7 +472,7 @@ class GitDataCollector(DataCollector):
 		extra = ''
 		if conf['linear_linestats']:
 			extra = '--first-parent -m'
-		lines = getpipeoutput(['git log --shortstat %s --pretty=format:"%%at %%aN" %s' % (extra, getcommitrange('HEAD'))]).split('\n')
+		lines = getpipeoutput(['git log --shortstat %s --pretty=format:"%%at %%aN" %s %s' % (extra, getcommitrange('HEAD'), conf['paths'])]).split('\n')
 		lines.reverse()
 		files = 0; inserted = 0; deleted = 0; total_lines = 0
 		author = None
@@ -527,7 +528,7 @@ class GitDataCollector(DataCollector):
 		# Similar to the above, but never use --first-parent
 		# (we need to walk through every commit to know who
 		# committed what, not just through mainline)
-		lines = getpipeoutput(['git log --shortstat --date-order --pretty=format:"%%at %%aN" %s' % (getcommitrange('HEAD'))]).split('\n')
+		lines = getpipeoutput(['git log --shortstat --date-order --pretty=format:"%%at %%aN" %s %s' % (getcommitrange('HEAD'), conf['paths'])]).split('\n')
 		lines.reverse()
 		files = 0; inserted = 0; deleted = 0
 		author = None

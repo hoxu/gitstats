@@ -61,6 +61,13 @@ Project name to show on the generated pages. Default is to use basename of the r
 
 CSS stylesheet to use.
 
+=item paths
+
+Specify the folders to use in the stats. You can specify the folders by including them as a string with spaces as separators. 
+
+If many folders are going to be included, is required quotes for this parameter. Example: C<-c paths="src libs">  
+Default to include all the folders (empty string).
+
 =back
 
 =head1 FAQ
