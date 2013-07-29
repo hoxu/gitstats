@@ -46,7 +46,8 @@ conf = {
 	'commit_end': 'HEAD',
 	'linear_linestats': 1,
 	'project_name': '',
-	'merge_authors': {}
+	'merge_authors': {},
+	'processes': 8,
 }
 
 def getpipeoutput(cmds, quiet = False):
@@ -448,7 +449,7 @@ class GitDataCollector(DataCollector):
 				revs_to_read.append((time,rev))
 
 		#Read revisions from repo
-		time_rev_count = Pool(processes=24).map(getnumoffilesfromrev, revs_to_read)
+		time_rev_count = Pool(processes=conf['processes']).map(getnumoffilesfromrev, revs_to_read)
 
 		#Update cache with new revisions and append then to general list
 		for (time, rev, count) in time_rev_count:

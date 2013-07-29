@@ -53,6 +53,10 @@ How many domains to show in domains by commits.
 
 Maximum file extension length.
 
+=item processes
+
+Number of concurrent processes to use when extracting git repository data.
+
 =item project_name
 
 Project name to show on the generated pages. Default is to use basename of the repository directory.
