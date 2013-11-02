@@ -1341,7 +1341,7 @@ plot """
 		plots = []
 		for a in self.authors_to_plot:
 			i = i + 1
-			plots.append("""'commits_by_author.dat' using 1:%d title "%s" w lines""" % (i, a.replace("\"", "\\\"")))
+			plots.append("""'commits_by_author.dat' using 1:%d title $'%s' w lines""" % (i, a.replace("'", "\\'")))
 		f.write(", ".join(plots))
 		f.write('\n')
 
