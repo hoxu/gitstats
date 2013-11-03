@@ -507,7 +507,7 @@ class GitDataCollector(DataCollector):
 				blobs_to_read.append((ext,blob_id))
 
 		#Get info abount line count for new blob's that wasn't found in cache
-		ext_blob_linecount = Pool(processes=24).map(getnumoflinesinblob, blobs_to_read)
+		ext_blob_linecount = Pool(processes=conf['processes']).map(getnumoflinesinblob, blobs_to_read)
 
 		#Update cache and write down info about number of number of lines
 		for (ext, blob_id, linecount) in ext_blob_linecount:
