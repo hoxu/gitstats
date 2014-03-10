@@ -1171,6 +1171,7 @@ class HTMLReportCreator(ReportCreator):
 set output 'hour_of_day.png'
 unset key
 set xrange [0.5:24.5]
+set yrange [0:]
 set xtics 4
 set grid y
 set ylabel "Commits"
@@ -1186,6 +1187,7 @@ plot 'hour_of_day.dat' using 1:2:(0.5) w boxes fs solid
 set output 'day_of_week.png'
 unset key
 set xrange [0.5:7.5]
+set yrange [0:]
 set xtics 1
 set grid y
 set ylabel "Commits"
@@ -1216,6 +1218,7 @@ plot 'domains.dat' using 2:3:(0.5) with boxes fs solid, '' using 2:3:1 with labe
 set output 'month_of_year.png'
 unset key
 set xrange [0.5:12.5]
+set yrange [0:]
 set xtics 1
 set grid y
 set ylabel "Commits"
@@ -1230,6 +1233,7 @@ plot 'month_of_year.dat' using 1:2:(0.5) w boxes fs solid
 """
 set output 'commits_by_year_month.png'
 unset key
+set yrange [0:]
 set xdata time
 set timefmt "%Y-%m"
 set format x "%Y-%m"
@@ -1248,6 +1252,7 @@ plot 'commits_by_year_month.dat' using 1:2:(0.5) w boxes fs solid
 """
 set output 'commits_by_year.png'
 unset key
+set yrange [0:]
 set xtics 1 rotate
 set grid y
 set ylabel "Commits"
@@ -1263,6 +1268,7 @@ plot 'commits_by_year.dat' using 1:2:(0.5) w boxes fs solid
 """
 set output 'files_by_date.png'
 unset key
+set yrange [0:]
 set xdata time
 set timefmt "%Y-%m-%d"
 set format x "%Y-%m-%d"
@@ -1282,6 +1288,7 @@ plot 'files_by_date.dat' using 1:2 w steps
 """
 set output 'lines_of_code.png'
 unset key
+set yrange [0:]
 set xdata time
 set timefmt "%s"
 set format x "%Y-%m-%d"
@@ -1301,6 +1308,7 @@ plot 'lines_of_code.dat' using 1:2 w lines
 set terminal png transparent size 640,480
 set output 'lines_of_code_by_author.png'
 set key left top
+set yrange [0:]
 set xdata time
 set timefmt "%s"
 set format x "%Y-%m-%d"
@@ -1329,6 +1337,7 @@ plot """
 set terminal png transparent size 640,480
 set output 'commits_by_author.png'
 set key left top
+set yrange [0:]
 set xdata time
 set timefmt "%s"
 set format x "%Y-%m-%d"
