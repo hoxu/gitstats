@@ -1454,10 +1454,13 @@ class GitStats:
 		for gitpath in args[0:-1]:
 			print 'Git path: %s' % gitpath
 
+			prevdir = os.getcwd()
 			os.chdir(gitpath)
 
 			print 'Collecting data...'
 			data.collect(gitpath)
+
+			os.chdir(prevdir)
 
 		print 'Refining data...'
 		data.saveCache(cachefile)
