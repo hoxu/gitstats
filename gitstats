@@ -15,8 +15,8 @@ import time
 import zlib
 
 if sys.version_info < (2, 6):
-       print >> sys.stderr, "Python 2.6 or higher is required for gitstats"
-       sys.exit(1)
+	print >> sys.stderr, "Python 2.6 or higher is required for gitstats"
+	sys.exit(1)
 
 from multiprocessing import Pool
 
