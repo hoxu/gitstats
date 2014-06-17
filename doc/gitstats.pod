@@ -61,6 +61,10 @@ Number of concurrent processes to use when extracting git repository data.
 
 Project name to show on the generated pages. Default is to use basename of the repository directory.
 
+=item start_date
+
+Specify a starting date to pass with --since to git.
+
 =item style
 
 CSS stylesheet to use.
