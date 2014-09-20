@@ -1380,6 +1380,7 @@ plot """
 	<title>GitStats - %s</title>
 	<link rel="stylesheet" href="%s" type="text/css" />
 	<meta name="generator" content="GitStats %s" />
+	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 	<script type="text/javascript" src="sortable.js"></script>
 </head>
 <body>
