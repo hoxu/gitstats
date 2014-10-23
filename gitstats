@@ -482,7 +482,7 @@ class GitDataCollector(DataCollector):
 		for line in lines:
 			if len(line) == 0:
 				continue
-			parts = re.split('\s+', line, 5)
+			parts = re.split('\s+', line, 4)
 			if parts[0] == '160000' and parts[3] == '-':
 				# skip submodules
 				continue
