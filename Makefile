@@ -3,7 +3,7 @@ BINDIR=$(PREFIX)/bin
 RESOURCEDIR=$(PREFIX)/share/gitstats
 RESOURCES=gitstats.css sortable.js *.gif
 BINARIES=gitstats
-VERSION=$(shell git describe 2>/dev/null || git rev-parse --short HEAD)
+VERSION=$(shell git describe 2>/dev/null || git rev-parse --short HEAD 2>/dev/null || date +%Y-%m-%d)
 SEDVERSION=perl -pi -e 's/VERSION = 0/VERSION = "$(VERSION)"/' --
 
 all: help
@@ -29,6 +29,6 @@ release:
 	@$(RM) gitstats.tmp
 
 man:
-	pod2man --center "User Commands" -r $(shell git rev-parse --short HEAD) doc/gitstats.pod > doc/gitstats.1
+	pod2man --center "User Commands" -r $(VERSION) doc/gitstats.pod > doc/gitstats.1
 
 .PHONY: all help install release
