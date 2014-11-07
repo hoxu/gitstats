@@ -726,7 +726,7 @@ def html_linkify(text):
 
 def html_header(level, text):
 	name = html_linkify(text)
-	return '\n<h%d><a href="#%s" name="%s">%s</a></h%d>\n\n' % (level, name, name, text, level)
+	return '\n<h%d id="%s"><a href="#%s">%s</a></h%d>\n\n' % (level, name, name, text, level)
 
 class HTMLReportCreator(ReportCreator):
 	def create(self, data, path):
