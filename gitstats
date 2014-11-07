@@ -839,7 +839,7 @@ class HTMLReportCreator(ReportCreator):
 			else:
 				f.write('<td>0.00</td>')
 		f.write('</tr></table>')
-		f.write('<img src="hour_of_day.png" alt="Hour of Day" />')
+		f.write('<img src="hour_of_day.png" alt="Hour of Day">')
 		fg = open(path + '/hour_of_day.dat', 'w')
 		for i in range(0, 24):
 			if i in hour_of_day:
@@ -867,7 +867,7 @@ class HTMLReportCreator(ReportCreator):
 				f.write('<td>0</td>')
 			f.write('</tr>')
 		f.write('</table></div>')
-		f.write('<img src="day_of_week.png" alt="Day of Week" />')
+		f.write('<img src="day_of_week.png" alt="Day of Week">')
 		fp.close()
 
 		# Hour of Week
@@ -910,7 +910,7 @@ class HTMLReportCreator(ReportCreator):
 			fp.write('%d %d\n' % (mm, commits))
 		fp.close()
 		f.write('</table></div>')
-		f.write('<img src="month_of_year.png" alt="Month of Year" />')
+		f.write('<img src="month_of_year.png" alt="Month of Year">')
 
 		# Commits by year/month
 		f.write(html_header(2, 'Commits by year/month'))
@@ -918,7 +918,7 @@ class HTMLReportCreator(ReportCreator):
 		for yymm in reversed(sorted(data.commits_by_month.keys())):
 			f.write('<tr><td>%s</td><td>%d</td><td>%d</td><td>%d</td></tr>' % (yymm, data.commits_by_month.get(yymm,0), data.lines_added_by_month.get(yymm,0), data.lines_removed_by_month.get(yymm,0)))
 		f.write('</table></div>')
-		f.write('<img src="commits_by_year_month.png" alt="Commits by year/month" />')
+		f.write('<img src="commits_by_year_month.png" alt="Commits by year/month">')
 		fg = open(path + '/commits_by_year_month.dat', 'w')
 		for yymm in sorted(data.commits_by_month.keys()):
 			fg.write('%s %s\n' % (yymm, data.commits_by_month[yymm]))
@@ -930,7 +930,7 @@ class HTMLReportCreator(ReportCreator):
 		for yy in reversed(sorted(data.commits_by_year.keys())):
 			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td></tr>' % (yy, data.commits_by_year.get(yy,0), (100.0 * data.commits_by_year.get(yy,0)) / data.getTotalCommits(), data.lines_added_by_year.get(yy,0), data.lines_removed_by_year.get(yy,0)))
 		f.write('</table></div>')
-		f.write('<img src="commits_by_year.png" alt="Commits by Year" />')
+		f.write('<img src="commits_by_year.png" alt="Commits by Year">')
 		fg = open(path + '/commits_by_year.dat', 'w')
 		for yy in sorted(data.commits_by_year.keys()):
 			fg.write('%d %d\n' % (yy, data.commits_by_year[yy]))
@@ -974,12 +974,12 @@ class HTMLReportCreator(ReportCreator):
 			f.write('<p class="moreauthors">These didn\'t make it to the top: %s</p>' % ', '.join(rest))
 
 		f.write(html_header(2, 'Cumulated Added Lines of Code per Author'))
-		f.write('<img src="lines_of_code_by_author.png" alt="Lines of code per Author" />')
+		f.write('<img src="lines_of_code_by_author.png" alt="Lines of code per Author">')
 		if len(allauthors) > conf['max_authors']:
 			f.write('<p class="moreauthors">Only top %d authors shown</p>' % conf['max_authors'])
 
 		f.write(html_header(2, 'Commits per Author'))
-		f.write('<img src="commits_by_author.png" alt="Commits per Author" />')
+		f.write('<img src="commits_by_author.png" alt="Commits per Author">')
 		if len(allauthors) > conf['max_authors']:
 			f.write('<p class="moreauthors">Only top %d authors shown</p>' % conf['max_authors'])
 
@@ -1057,7 +1057,7 @@ class HTMLReportCreator(ReportCreator):
 			fp.write('%s %d %d\n' % (domain, n , info['commits']))
 			f.write('<tr><th>%s</th><td>%d (%.2f%%)</td></tr>' % (domain, info['commits'], (100.0 * info['commits'] / totalcommits)))
 		f.write('</table></div>')
-		f.write('<img src="domains.png" alt="Commits by Domains" />')
+		f.write('<img src="domains.png" alt="Commits by Domains">')
 		fp.close()
 
 		f.write('</body></html>')
@@ -1094,7 +1094,7 @@ class HTMLReportCreator(ReportCreator):
 		#	fg.write('%s %d\n' % (datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d'), data.files_by_stamp[stamp]))
 		fg.close()
 			
-		f.write('<img src="files_by_date.png" alt="Files by Date" />')
+		f.write('<img src="files_by_date.png" alt="Files by Date">')
 
 		#f.write('<h2>Average file size by date</h2>')
 
@@ -1126,7 +1126,7 @@ class HTMLReportCreator(ReportCreator):
 		f.write('</dl>\n')
 
 		f.write(html_header(2, 'Lines of Code'))
-		f.write('<img src="lines_of_code.png" />')
+		f.write('<img src="lines_of_code.png">')
 
 		fg = open(path + '/lines_of_code.dat', 'w')
 		for stamp in sorted(data.changes_by_date.keys()):
@@ -1373,14 +1373,13 @@ plot """
 
 	def printHeader(self, f, title = ''):
 		f.write(
-"""<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+"""<!DOCTYPE html>
+<html>
 <head>
+	<meta charset="UTF-8">
 	<title>GitStats - %s</title>
-	<link rel="stylesheet" href="%s" type="text/css" />
-	<meta name="generator" content="GitStats %s" />
-	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+	<link rel="stylesheet" href="%s" type="text/css">
+	<meta name="generator" content="GitStats %s">
 	<script type="text/javascript" src="sortable.js"></script>
 </head>
 <body>
