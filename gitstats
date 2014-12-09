@@ -697,7 +697,7 @@ class HTMLReportCreator(ReportCreator):
 		binarypath = os.path.dirname(os.path.abspath(__file__))
 		secondarypath = os.path.join(binarypath, '..', 'share', 'gitstats')
 		basedirs = [binarypath, secondarypath, '/usr/share/gitstats']
-		for file in ('gitstats.css', 'sortable.js', 'arrow-up.gif', 'arrow-down.gif', 'arrow-none.gif'):
+		for file in (conf['style'], 'sortable.js', 'arrow-up.gif', 'arrow-down.gif', 'arrow-none.gif'):
 			for base in basedirs:
 				src = base + '/' + file
 				if os.path.exists(src):
