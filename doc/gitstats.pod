@@ -53,9 +53,17 @@ How many domains to show in domains by commits.
 
 Maximum file extension length.
 
+=item processes
+
+Number of concurrent processes to use when extracting git repository data.
+
 =item project_name
 
 Project name to show on the generated pages. Default is to use basename of the repository directory.
+
+=item start_date
+
+Specify a starting date to pass with --since to git.
 
 =item style
 
@@ -72,6 +80,10 @@ A: Use C<-c commit_end=web> parameter.
 Q: I have files in my git repository that I would like to exclude from the statistics, how do I do that?
 
 A: At the moment the only way is to use L<git-filter-branch(1)> to create a temporary repository and generate the statistics from that.
+
+Q: How do I merge author information when the same author has made commits using different names or emails ?
+
+A: Use git .mailmap feature described in B<MAPPING AUTHORS> of L<git-shortlog(1)>.
 
 =head1 EXAMPLES
 
@@ -91,7 +103,7 @@ A: At the moment the only way is to use L<git-filter-branch(1)> to create a temp
 
 B<gitstats> was written by Heikki Hokkanen and others.
 
-See the git repository at http://repo.or.cz/w/gitstats.git for an up-to-date full list of contributors.
+See the git repository at https://github.com/hoxu/gitstats for an up-to-date full list of contributors.
 
 =head1 WWW
 
