@@ -663,8 +663,6 @@ class GitDataCollector(DataCollector):
 
 		for name in self.authors.keys():
 			a = self.authors[name]
-			#if a is None:
-			#	continue
 			a['commits_frac'] = (100 * float(a['commits'])) / self.getTotalCommits()
 			date_first = datetime.datetime.fromtimestamp(a['first_commit_stamp'])
 			date_last = datetime.datetime.fromtimestamp(a['last_commit_stamp'])
@@ -1445,6 +1443,8 @@ class GitStats:
 					raise KeyError('no such key "%s" in config' % key)
 				if isinstance(conf[key], int):
 					conf[key] = int(value)
+				elif isinstance(conf[key], list):
+					conf[key].append(value)
 				else:
 					conf[key] = value
 			elif o in ('-h', '--help'):
@@ -1510,5 +1510,3 @@ if __name__=='__main__':
 	g = GitStats()
 	g.run(sys.argv[1:])
 
-
-mon@open-freelancer:~/dev/go/src/openfreelancers$ 
