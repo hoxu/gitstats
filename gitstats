@@ -477,6 +477,10 @@ class GitDataCollector(DataCollector):
             except ValueError:
                 print 'Warning: failed to parse line "%s"' % line
 
+
+        # compile exclude_paths regex
+        conf['exclude_paths'] = [re.compile(pattern, re.IGNORECASE) for pattern in conf['exclude_paths']]
+
         # extensions and size of files
         lines = getpipeoutput(['git ls-tree -r -l -z %s' % getcommitrange('HEAD', end_only = True)]).split('\000')
         blobs_to_read = []
@@ -492,11 +496,12 @@ class GitDataCollector(DataCollector):
             fullpath = parts[4]
 
             exclude = False
-            for path in conf['exclude_paths']:
-                if path in fullpath:
+            for pattern in conf['exclude_paths']:
+                if pattern.search(fullpath):
                     exclude = True
                     break
             if exclude:
+                print 'Excluding file: %s' % fullpath
                 continue
 
             self.total_size += size
