@@ -47,7 +47,8 @@ conf = {
     'linear_linestats': 1,
     'project_name': '',
     'processes': 8,
-    'start_date': ''
+    'start_date': '',
+    'exclude_paths': [],
 }
 
 def getpipeoutput(cmds, quiet = False):
@@ -489,6 +490,14 @@ class GitDataCollector(DataCollector):
             blob_id = parts[2]
             size = int(parts[3])
             fullpath = parts[4]
+
+            exclude = False
+            for path in conf['exclude_paths']:
+                if path in fullpath:
+                    exclude = True
+                    break
+            if exclude:
+                continue
 
             self.total_size += size
             self.total_files += 1
@@ -1424,6 +1433,8 @@ class GitStats:
                     raise KeyError('no such key "%s" in config' % key)
                 if isinstance(conf[key], int):
                     conf[key] = int(value)
+                elif isinstance(conf[key], list):
+                    conf[key].append(value)
                 else:
                     conf[key] = value
             elif o in ('-h', '--help'):
