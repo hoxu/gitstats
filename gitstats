@@ -4,6 +4,7 @@
 import datetime
 import getopt
 import glob
+import json
 import os
 import pickle
 import platform
@@ -25,6 +26,7 @@ os.environ['LC_ALL'] = 'C'
 GNUPLOT_COMMON = 'set terminal png transparent size 640,240\nset size 1.0,1.0\n'
 ON_LINUX = (platform.system() == 'Linux')
 WEEKDAYS = ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
+JSONFILE = 'gitstats.json'
 
 exectime_internal = 0.0
 exectime_external = 0.0
@@ -727,6 +729,24 @@ def html_linkify(text):
 def html_header(level, text):
 	name = html_linkify(text)
 	return '\n<h%d id="%s"><a href="#%s">%s</a></h%d>\n\n' % (level, name, name, text, level)
+
+class GitDataCollectorJSONEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, set):
+            return list(obj)
+        if isinstance(obj, datetime.timedelta):
+            return str(obj)
+        if isinstance(obj, GitDataCollector):
+            return obj.__dict__
+        # Let the base class default method raise the TypeError
+        return json.JSONEncoder.default(self, obj)
+
+class JSONReportCreator(ReportCreator):
+    def create(self, data, filename):
+        f = open(filename, 'w')
+        json.dump(data, f, indent=True,
+                cls=GitDataCollectorJSONEncoder)
+        f.close()
 
 class HTMLReportCreator(ReportCreator):
 	def create(self, data, path):
@@ -1472,9 +1492,13 @@ class GitStats:
 
 		os.chdir(rundir)
 
-		print 'Generating report...'
+		print 'Generating HTML report...'
 		report = HTMLReportCreator()
 		report.create(data, outputpath)
+
+		print 'Generating JSON report...'
+		report = JSONReportCreator()
+		report.create(data, os.path.join(outputpath, JSONFILE))
 
 		time_end = time.time()
 		exectime_internal = time_end - time_start
@@ -1483,9 +1507,9 @@ class GitStats:
 			print 'You may now run:'
 			print
 			print '   sensible-browser \'%s\'' % os.path.join(outputpath, 'index.html').replace("'", "'\\''")
+			print '   sensible-notepad \'%s\'' % os.path.join(outputpath, JSONFILE).replace("'", "'\\''")
 			print
 
 if __name__=='__main__':
 	g = GitStats()
 	g.run(sys.argv[1:])
-
