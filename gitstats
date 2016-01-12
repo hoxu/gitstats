@@ -13,6 +13,7 @@ import subprocess
 import sys
 import time
 import zlib
+import multiprocessing
 
 if sys.version_info < (2, 6):
 	print >> sys.stderr, "Python 2.6 or higher is required for gitstats"
@@ -46,7 +47,7 @@ conf = {
 	'commit_end': 'HEAD',
 	'linear_linestats': 1,
 	'project_name': '',
-	'processes': 8,
+	'processes': multiprocessing.cpu_count(),
 	'start_date': ''
 }
 
