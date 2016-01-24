@@ -47,7 +47,8 @@ conf = {
 	'linear_linestats': 1,
 	'project_name': '',
 	'processes': 8,
-	'start_date': ''
+	'start_date': '',
+	'no_merges': 0,
 }
 
 def getpipeoutput(cmds, quiet = False):
@@ -133,7 +134,7 @@ def getnumoflinesinblob(ext_blob):
 	ext, blob_id = ext_blob
 	return (ext, blob_id, int(getpipeoutput(['git cat-file blob %s' % blob_id, 'wc -l']).split()[0]))
 
-class DataCollector:
+class DataCollector(object):
 	"""Manages data collection from a revision control repository."""
 	def __init__(self):
 		self.stamp_created = time.time()
@@ -201,7 +202,7 @@ class DataCollector:
 			self.projectname = os.path.basename(os.path.abspath(dir))
 		else:
 			self.projectname = conf['project_name']
-	
+
 	##
 	# Load cacheable data
 	def loadCache(self, cachefile):
@@ -216,7 +217,7 @@ class DataCollector:
 			f.seek(0)
 			self.cache = pickle.load(f)
 		f.close()
-	
+
 	##
 	# Produce any additional statistics from the extracted data.
 	def refine(self):
@@ -226,7 +227,7 @@ class DataCollector:
 	# : get a dictionary of author
 	def getAuthorInfo(self, author):
 		return None
-	
+
 	def getActivityByDayOfWeek(self):
 		return {}
 
@@ -241,31 +242,31 @@ class DataCollector:
 	# Get a list of authors
 	def getAuthors(self):
 		return []
-	
+
 	def getFirstCommitDate(self):
 		return datetime.datetime.now()
-	
+
 	def getLastCommitDate(self):
 		return datetime.datetime.now()
-	
+
 	def getStampCreated(self):
 		return self.stamp_created
-	
+
 	def getTags(self):
 		return []
-	
+
 	def getTotalAuthors(self):
 		return -1
-	
+
 	def getTotalCommits(self):
 		return -1
-		
+
 	def getTotalFiles(self):
 		return -1
-	
+
 	def getTotalLOC(self):
 		return -1
-	
+
 	##
 	# Save cacheable data
 	def saveCache(self, cachefile):
@@ -283,10 +284,14 @@ class DataCollector:
 		os.rename(tempfile, cachefile)
 
 class GitDataCollector(DataCollector):
+	def __init__(self):
+		super(GitDataCollector, self).__init__()
+		self.no_merges = "--no-merges" if conf["no_merges"] else ""
+
 	def collect(self, dir):
 		DataCollector.collect(self, dir)
 
-		self.total_authors += int(getpipeoutput(['git shortlog -s %s' % getlogrange(), 'wc -l']))
+		self.total_authors += int(getpipeoutput(['git shortlog -s %s %s' % (getlogrange(), self.no_merges), 'wc -l']))
 		#self.total_lines = int(getoutput('git-ls-files -z |xargs -0 cat |wc -l'))
 
 		# tags
@@ -311,7 +316,7 @@ class GitDataCollector(DataCollector):
 		tags_sorted_by_date_desc = map(lambda el : el[1], reversed(sorted(map(lambda el : (el[1]['date'], el[0]), self.tags.items()))))
 		prev = None
 		for tag in reversed(tags_sorted_by_date_desc):
-			cmd = 'git shortlog -s "%s"' % tag
+			cmd = 'git shortlog -s "%s" %s' % (tag, self.no_merges)
 			if prev != None:
 				cmd += ' "^%s"' % prev
 			output = getpipeoutput([cmd])
@@ -327,7 +332,7 @@ class GitDataCollector(DataCollector):
 
 		# Collect revision statistics
 		# Outputs "<stamp> <date> <time> <timezone> <author> '<' <mail> '>'"
-		lines = getpipeoutput(['git rev-list --pretty=format:"%%at %%ai %%aN <%%aE>" %s' % getlogrange('HEAD'), 'grep -v ^commit']).split('\n')
+		lines = getpipeoutput(['git rev-list --pretty=format:"%%at %%ai %%aN <%%aE>" %s %s' % (getlogrange('HEAD'), self.no_merges), 'grep -v ^commit']).split('\n')
 		for line in lines:
 			parts = line.split(' ', 4)
 			author = ''
@@ -434,7 +439,7 @@ class GitDataCollector(DataCollector):
 			self.commits_by_timezone[timezone] = self.commits_by_timezone.get(timezone, 0) + 1
 
 		# outputs "<stamp> <files>" for each revision
-		revlines = getpipeoutput(['git rev-list --pretty=format:"%%at %%T" %s' % getlogrange('HEAD'), 'grep -v ^commit']).strip().split('\n')
+		revlines = getpipeoutput(['git rev-list --pretty=format:"%%at %%T" %s %s' % (getlogrange('HEAD'), self.no_merges), 'grep -v ^commit']).strip().split('\n')
 		lines = []
 		revs_to_read = []
 		time_rev_count = []
@@ -536,7 +541,7 @@ class GitDataCollector(DataCollector):
 		extra = ''
 		if conf['linear_linestats']:
 			extra = '--first-parent -m'
-		lines = getpipeoutput(['git log --shortstat %s --pretty=format:"%%at %%aN" %s' % (extra, getlogrange('HEAD'))]).split('\n')
+		lines = getpipeoutput(['git log --shortstat %s --pretty=format:"%%at %%aN" %s %s' % (extra, getlogrange('HEAD'), self.no_merges)]).split('\n')
 		lines.reverse()
 		files = 0; inserted = 0; deleted = 0; total_lines = 0
 		author = None
@@ -590,7 +595,7 @@ class GitDataCollector(DataCollector):
 		# Similar to the above, but never use --first-parent
 		# (we need to walk through every commit to know who
 		# committed what, not just through mainline)
-		lines = getpipeoutput(['git log --shortstat --date-order --pretty=format:"%%at %%aN" %s' % (getlogrange('HEAD'))]).split('\n')
+		lines = getpipeoutput(['git log --shortstat --date-order --pretty=format:"%%at %%aN" %s %s' % (getlogrange('HEAD'), self.no_merges)]).split('\n')
 		lines.reverse()
 		files = 0; inserted = 0; deleted = 0
 		author = None
@@ -633,7 +638,7 @@ class GitDataCollector(DataCollector):
 				else:
 					print 'Warning: failed to handle line "%s"' % line
 					(files, inserted, deleted) = (0, 0, 0)
-	
+
 	def refine(self):
 		# authors
 		# name -> {place_by_commits, commits_frac, date_first, date_last, timedelta}
@@ -653,7 +658,7 @@ class GitDataCollector(DataCollector):
 			a['timedelta'] = delta
 			if 'lines_added' not in a: a['lines_added'] = 0
 			if 'lines_removed' not in a: a['lines_removed'] = 0
-	
+
 	def getActiveDays(self):
 		return self.active_days
 
@@ -665,12 +670,12 @@ class GitDataCollector(DataCollector):
 
 	def getAuthorInfo(self, author):
 		return self.authors[author]
-	
+
 	def getAuthors(self, limit = None):
 		res = getkeyssortedbyvaluekey(self.authors, 'commits')
 		res.reverse()
 		return res[:limit]
-	
+
 	def getCommitDeltaDays(self):
 		return (self.last_commit_stamp / 86400 - self.first_commit_stamp / 86400) + 1
 
@@ -679,44 +684,44 @@ class GitDataCollector(DataCollector):
 
 	def getDomains(self):
 		return self.domains.keys()
-	
+
 	def getFirstCommitDate(self):
 		return datetime.datetime.fromtimestamp(self.first_commit_stamp)
-	
+
 	def getLastCommitDate(self):
 		return datetime.datetime.fromtimestamp(self.last_commit_stamp)
-	
+
 	def getTags(self):
 		lines = getpipeoutput(['git show-ref --tags', 'cut -d/ -f3'])
 		return lines.split('\n')
-	
+
 	def getTagDate(self, tag):
 		return self.revToDate('tags/' + tag)
-	
+
 	def getTotalAuthors(self):
 		return self.total_authors
-	
+
 	def getTotalCommits(self):
 		return self.total_commits
 
 	def getTotalFiles(self):
 		return self.total_files
-	
+
 	def getTotalLOC(self):
 		return self.total_lines
 
 	def getTotalSize(self):
 		return self.total_size
-	
+
 	def revToDate(self, rev):
-		stamp = int(getpipeoutput(['git log --pretty=format:%%at "%s" -n 1' % rev]))
+		stamp = int(getpipeoutput(['git log --pretty=format:%%at "%s" -n 1 %s' % (rev, self.no_merges)]))
 		return datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d')
 
 class ReportCreator:
 	"""Creates the actual report based on given data."""
 	def __init__(self):
 		pass
-	
+
 	def create(self, data, path):
 		self.data = data
 		self.path = path
@@ -1094,7 +1099,7 @@ class HTMLReportCreator(ReportCreator):
 		#for stamp in sorted(data.files_by_stamp.keys()):
 		#	fg.write('%s %d\n' % (datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d'), data.files_by_stamp[stamp]))
 		fg.close()
-			
+
 		f.write('<img src="files_by_date.png" alt="Files by Date">')
 
 		#f.write('<h2>Average file size by date</h2>')
@@ -1166,7 +1171,7 @@ class HTMLReportCreator(ReportCreator):
 		f.close()
 
 		self.createGraphs(path)
-	
+
 	def createGraphs(self, path):
 		print 'Generating graphs...'
 
@@ -1399,7 +1404,7 @@ plot """
 </ul>
 </div>
 """)
-		
+
 def usage():
 	print """
 Usage: gitstats [options] <gitpath..> <outputpath>
