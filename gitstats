@@ -148,6 +148,15 @@ class DataCollector:
 		self.activity_by_year_week = {} # yy_wNN -> commits
 		self.activity_by_year_week_peak = 0
 
+		self.lineactivity_by_hour_of_day = {} # hour -> commits
+		self.lineactivity_by_day_of_week = {} # day -> commits
+		self.lineactivity_by_month_of_year = {} # month [1-12] -> commits
+		self.lineactivity_by_hour_of_week = {} # weekday -> hour -> commits
+		self.lineactivity_by_hour_of_day_busiest = 0
+		self.lineactivity_by_hour_of_week_busiest = 0
+		self.lineactivity_by_year_week = {} # yy_wNN -> commits
+		self.lineactivity_by_year_week_peak = 0
+		
 		self.authors = {} # name -> {commits, first_commit_stamp, last_commit_stamp, last_active_day, active_days, lines_added, lines_removed}
 
 		self.total_commits = 0
@@ -233,6 +242,12 @@ class DataCollector:
 	def getActivityByHourOfDay(self):
 		return {}
 
+	def getLineActivityByDayOfWeek(self):
+		return {}
+
+	def getLineActivityByHourOfDay(self):
+		return {}
+		
 	# : get a dictionary of domains
 	def getDomainInfo(self, domain):
 		return None
@@ -262,7 +277,10 @@ class DataCollector:
 		
 	def getTotalFiles(self):
 		return -1
-	
+
+	def getTotalLines(self):
+		return -1
+		
 	def getTotalLOC(self):
 		return -1
 	
@@ -561,6 +579,43 @@ class GitDataCollector(DataCollector):
 						self.lines_added_by_year[yy] = self.lines_added_by_year.get(yy,0) + inserted
 						self.lines_removed_by_year[yy] = self.lines_removed_by_year.get(yy, 0) + deleted
 
+						# lineactivity
+						# hour
+						hour = date.hour
+						self.lineactivity_by_hour_of_day[hour] = self.lineactivity_by_hour_of_day.get(hour, 0) + inserted + deleted
+						# most active hour?
+						if self.lineactivity_by_hour_of_day[hour] > self.lineactivity_by_hour_of_day_busiest:
+							self.lineactivity_by_hour_of_day_busiest = self.lineactivity_by_hour_of_day[hour]
+
+						# day of week
+						day = date.weekday()
+						self.lineactivity_by_day_of_week[day] = self.lineactivity_by_day_of_week.get(day, 0) + inserted + deleted
+
+						# domain stats
+						#if domain not in self.domains:
+							#self.domains[domain] = {}
+						# lines
+						#self.domains[domain]['lines'] = self.domains[domain].get('lines', 0) + 1
+
+						# hour of week
+						if day not in self.lineactivity_by_hour_of_week:
+							self.lineactivity_by_hour_of_week[day] = {}
+						self.lineactivity_by_hour_of_week[day][hour] = self.lineactivity_by_hour_of_week[day].get(hour, 0) + inserted + deleted
+						# most active hour?
+						if self.lineactivity_by_hour_of_week[day][hour] > self.lineactivity_by_hour_of_week_busiest:
+							self.lineactivity_by_hour_of_week_busiest = self.lineactivity_by_hour_of_week[day][hour]
+
+						# month of year
+						month = date.month
+						self.lineactivity_by_month_of_year[month] = self.lineactivity_by_month_of_year.get(month, 0) + inserted + deleted
+
+						# yearly/weekly activity
+						yyw = date.strftime('%Y-%W')
+						self.lineactivity_by_year_week[yyw] = self.lineactivity_by_year_week.get(yyw, 0) + inserted + deleted
+						if self.lineactivity_by_year_week_peak < self.lineactivity_by_year_week[yyw]:
+							self.lineactivity_by_year_week_peak = self.lineactivity_by_year_week[yyw]
+						
+						
 						files, inserted, deleted = 0, 0, 0
 					except ValueError:
 						print 'Warning: unexpected line "%s"' % line
@@ -663,6 +718,12 @@ class GitDataCollector(DataCollector):
 	def getActivityByHourOfDay(self):
 		return self.activity_by_hour_of_day
 
+	def getLineActivityByDayOfWeek(self):
+		return self.lineactivity_by_day_of_week
+
+	def getLineActivityByHourOfDay(self):
+		return self.lineactivity_by_hour_of_day
+		
 	def getAuthorInfo(self, author):
 		return self.authors[author]
 	
@@ -704,6 +765,9 @@ class GitDataCollector(DataCollector):
 	
 	def getTotalLOC(self):
 		return self.total_lines
+		
+	def getTotalLines(self):
+		return self.total_lines_added + self.total_lines_removed
 
 	def getTotalSize(self):
 		return self.total_size
@@ -1133,6 +1197,173 @@ class HTMLReportCreator(ReportCreator):
 		for stamp in sorted(data.changes_by_date.keys()):
 			fg.write('%d %d\n' % (stamp, data.changes_by_date[stamp]['lines']))
 		fg.close()
+		
+		# Weekly activity
+		WEEKS = 32
+		f.write(html_header(2, 'Weekly activity'))
+		f.write('<p>Last %d weeks</p>' % WEEKS)
+
+		# generate weeks to show (previous N weeks from now)
+		now = datetime.datetime.now()
+		deltaweek = datetime.timedelta(7)
+		weeks = []
+		stampcur = now
+		for i in range(0, WEEKS):
+			weeks.insert(0, stampcur.strftime('%Y-%W'))
+			stampcur -= deltaweek
+
+		# top row: commits & bar
+		f.write('<table class="noborders"><tr>')
+		for i in range(0, WEEKS):
+			commits = 0
+			if weeks[i] in data.lineactivity_by_year_week:
+				commits = data.lineactivity_by_year_week[weeks[i]]
+
+			percentage = 0
+			if weeks[i] in data.lineactivity_by_year_week:
+				percentage = float(data.lineactivity_by_year_week[weeks[i]]) / data.lineactivity_by_year_week_peak
+			height = max(1, int(200 * percentage))
+			f.write('<td style="text-align: center; vertical-align: bottom">%d<div style="display: block; background-color: red; width: 20px; height: %dpx"></div></td>' % (commits, height))
+
+		# bottom row: year/week
+		f.write('</tr><tr>')
+		for i in range(0, WEEKS):
+			f.write('<td>%s</td>' % (WEEKS - i))
+		f.write('</tr></table>')
+
+		# Hour of Day
+		f.write(html_header(2, 'Hour of Day'))
+		hour_of_day = data.getLineActivityByHourOfDay()
+		f.write('<table><tr><th>Hour</th>')
+		for i in range(0, 24):
+			f.write('<th>%d</th>' % i)
+		f.write('</tr>\n<tr><th>Lines</th>')
+		fp = open(path + '/line_hour_of_day.dat', 'w')
+		for i in range(0, 24):
+			if i in hour_of_day:
+				r = 127 + int((float(hour_of_day[i]) / data.lineactivity_by_hour_of_day_busiest) * 128)
+				f.write('<td style="background-color: rgb(%d, 0, 0)">%d</td>' % (r, hour_of_day[i]))
+				fp.write('%d %d\n' % (i, hour_of_day[i]))
+			else:
+				f.write('<td>0</td>')
+				fp.write('%d 0\n' % i)
+		fp.close()
+		f.write('</tr>\n<tr><th>%</th>')
+		totallines = data.getTotalLines()
+		for i in range(0, 24):
+			if i in hour_of_day:
+				r = 127 + int((float(hour_of_day[i]) / data.lineactivity_by_hour_of_day_busiest) * 128)
+				f.write('<td style="background-color: rgb(%d, 0, 0)">%.2f</td>' % (r, (100.0 * hour_of_day[i]) / totallines))
+			else:
+				f.write('<td>0.00</td>')
+		f.write('</tr></table>')
+		f.write('<img src="line_hour_of_day.png" alt="Hour of Day" />')
+		fg = open(path + '/line_hour_of_day.dat', 'w')
+		for i in range(0, 24):
+			if i in hour_of_day:
+				fg.write('%d %d\n' % (i + 1, hour_of_day[i]))
+			else:
+				fg.write('%d 0\n' % (i + 1))
+		fg.close()
+
+		# Day of Week
+		f.write(html_header(2, 'Day of Week'))
+		day_of_week = data.getLineActivityByDayOfWeek()
+		f.write('<div class="vtable"><table>')
+		f.write('<tr><th>Day</th><th>Total (%)</th></tr>')
+		fp = open(path + '/line_day_of_week.dat', 'w')
+		for d in range(0, 7):
+			commits = 0
+			if d in day_of_week:
+				commits = day_of_week[d]
+			fp.write('%d %s %d\n' % (d + 1, WEEKDAYS[d], commits))
+			f.write('<tr>')
+			f.write('<th>%s</th>' % (WEEKDAYS[d]))
+			if d in day_of_week:
+				f.write('<td>%d (%.2f%%)</td>' % (day_of_week[d], (100.0 * day_of_week[d]) / totallines))
+			else:
+				f.write('<td>0</td>')
+			f.write('</tr>')
+		f.write('</table></div>')
+		f.write('<img src="line_day_of_week.png" alt="Day of Week" />')
+		fp.close()
+
+		# Hour of Week
+		f.write(html_header(2, 'Hour of Week'))
+		f.write('<table>')
+
+		f.write('<tr><th>Weekday</th>')
+		for hour in range(0, 24):
+			f.write('<th>%d</th>' % (hour))
+		f.write('</tr>')
+
+		for weekday in range(0, 7):
+			f.write('<tr><th>%s</th>' % (WEEKDAYS[weekday]))
+			for hour in range(0, 24):
+				try:
+					commits = data.lineactivity_by_hour_of_week[weekday][hour]
+				except KeyError:
+					commits = 0
+				if commits != 0:
+					f.write('<td')
+					r = 127 + int((float(commits) / data.lineactivity_by_hour_of_week_busiest) * 128)
+					f.write(' style="background-color: rgb(%d, 0, 0)"' % r)
+					f.write('>%d</td>' % commits)
+				else:
+					f.write('<td></td>')
+			f.write('</tr>')
+
+		f.write('</table>')
+
+		# Month of Year
+		f.write(html_header(2, 'Month of Year'))
+		f.write('<div class="vtable"><table>')
+		f.write('<tr><th>Month</th><th>Lines (%)</th></tr>')
+		fp = open (path + '/line_month_of_year.dat', 'w')
+		for mm in range(1, 13):
+			commits = 0
+			if mm in data.lineactivity_by_month_of_year:
+				commits = data.lineactivity_by_month_of_year[mm]
+			f.write('<tr><td>%d</td><td>%d (%.2f %%)</td></tr>' % (mm, commits, (100.0 * commits) / data.getTotalLines()))
+			fp.write('%d %d\n' % (mm, commits))
+		fp.close()
+		f.write('</table></div>')
+		f.write('<img src="line_month_of_year.png" alt="Month of Year" />')
+
+		# Lines by year/month
+		f.write(html_header(2, 'Lines by year/month'))
+		f.write('<div class="vtable"><table><tr><th>Month</th><th>Commits</th><th>Lines added</th><th>Lines removed</th></tr>')
+		for yymm in reversed(sorted(data.commits_by_month.keys())):
+			f.write('<tr><td>%s</td><td>%d</td><td>%d</td><td>%d</td></tr>' % (yymm, data.commits_by_month.get(yymm,0), data.lines_added_by_month.get(yymm,0), data.lines_removed_by_month.get(yymm,0)))
+		f.write('</table></div>')
+		f.write('<img src="line_commits_by_year_month.png" alt="Commits by year/month" />')
+		fg = open(path + '/line_commits_by_year_month.dat', 'w')
+		for yymm in sorted(data.commits_by_month.keys()):
+			fg.write('%s %s\n' % (yymm, data.lines_added_by_month[yymm] + data.lines_removed_by_month[yymm]))
+		fg.close()
+
+		# Lines by year
+		f.write(html_header(2, 'Lines by Year'))
+		f.write('<div class="vtable"><table><tr><th>Year</th><th>Commits (% of all)</th><th>Lines added</th><th>Lines removed</th></tr>')
+		for yy in reversed(sorted(data.commits_by_year.keys())):
+			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td></tr>' % (yy, data.commits_by_year.get(yy,0), (100.0 * data.commits_by_year.get(yy,0)) / data.getTotalCommits(), data.lines_added_by_year.get(yy,0), data.lines_removed_by_year.get(yy,0)))
+		f.write('</table></div>')
+		f.write('<img src="line_commits_by_year.png" alt="Commits by Year" />')
+		fg = open(path + '/line_commits_by_year.dat', 'w')
+		for yy in sorted(data.commits_by_year.keys()):
+			fg.write('%d %d\n' % (yy, data.lines_added_by_year.get(yy,0) + data.lines_removed_by_year.get(yy,0)))
+		fg.close()
+
+		# Commits by timezone
+		f.write(html_header(2, 'Commits by Timezone'))
+		f.write('<table><tr>')
+		f.write('<th>Timezone</th><th>Commits</th>')
+		max_commits_on_tz = max(data.commits_by_timezone.values())
+		for i in sorted(data.commits_by_timezone.keys(), key = lambda n : int(n)):
+			commits = data.commits_by_timezone[i]
+			r = 127 + int((float(commits) / max_commits_on_tz) * 128)
+			f.write('<tr><th>%s</th><td style="background-color: rgb(%d, 0, 0)">%d</td></tr>' % (i, r, commits))
+		f.write('</tr></table>')
 
 		f.write('</body></html>')
 		f.close()
@@ -1334,6 +1565,100 @@ plot """
 		f.write(", ".join(plots))
 		f.write('\n')
 
+		f.close()
+
+
+		# hour of day
+		f = open(path + '/line_hour_of_day.plot', 'w')
+		f.write(GNUPLOT_COMMON)
+		f.write(
+"""
+set output 'line_hour_of_day.png'
+unset key
+set xrange [0.5:24.5]
+set xtics 4
+set grid y
+set ylabel "Lines"
+plot 'line_hour_of_day.dat' using 1:2:(0.5) w boxes fs solid
+""")
+		f.close()
+
+		# day of week
+		f = open(path + '/line_day_of_week.plot', 'w')
+		f.write(GNUPLOT_COMMON)
+		f.write(
+"""
+set output 'line_day_of_week.png'
+unset key
+set xrange [0.5:7.5]
+set xtics 1
+set grid y
+set ylabel "Lines"
+plot 'line_day_of_week.dat' using 1:3:(0.5):xtic(2) w boxes fs solid
+""")
+		f.close()
+
+		# Domains
+#		f = open(path + '/domains.plot', 'w')
+#		f.write(GNUPLOT_COMMON)
+#		f.write(
+#"""
+#set output 'domains.png'
+#unset key
+#unset xtics
+#set yrange [0:]
+#set grid y
+#set ylabel "Commits"
+#plot 'domains.dat' using 2:3:(0.5) with boxes fs solid, '' using 2:3:1 with labels rotate by 45 offset 0,1
+#""")
+#		f.close()
+
+		# Month of Year
+		f = open(path + '/line_month_of_year.plot', 'w')
+		f.write(GNUPLOT_COMMON)
+		f.write(
+"""
+set output 'line_month_of_year.png'
+unset key
+set xrange [0.5:12.5]
+set xtics 1
+set grid y
+set ylabel "Lines"
+plot 'line_month_of_year.dat' using 1:2:(0.5) w boxes fs solid
+""")
+		f.close()
+
+		# commits_by_year_month
+		f = open(path + '/line_commits_by_year_month.plot', 'w')
+		f.write(GNUPLOT_COMMON)
+		f.write(
+"""
+set output 'line_commits_by_year_month.png'
+unset key
+set xdata time
+set timefmt "%Y-%m"
+set format x "%Y-%m"
+set xtics rotate
+set bmargin 5
+set grid y
+set ylabel "Lines"
+plot 'line_commits_by_year_month.dat' using 1:2:(0.5) w boxes fs solid
+""")
+		f.close()
+
+		# commits_by_year
+		f = open(path + '/line_commits_by_year.plot', 'w')
+		f.write(GNUPLOT_COMMON)
+		f.write(
+"""
+set output 'line_commits_by_year.png'
+unset key
+set xtics 1 rotate
+set grid y
+set ylabel "Lines"
+set yrange [0:]
+plot 'line_commits_by_year.dat' using 1:2:(0.5) w boxes fs solid
+""")
 		f.close()
 
 		# Commits per author
