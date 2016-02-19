@@ -50,6 +50,9 @@ conf = {
 	'start_date': ''
 }
 
+def getYYW(date):
+	return '%d-%d' % (date.isocalendar()[0], date.isocalendar()[1])
+
 def getpipeoutput(cmds, quiet = False):
 	global exectime_external
 	start = time.time()
@@ -381,7 +384,7 @@ class GitDataCollector(DataCollector):
 			self.activity_by_month_of_year[month] = self.activity_by_month_of_year.get(month, 0) + 1
 
 			# yearly/weekly activity
-			yyw = date.strftime('%Y-%W')
+			yyw = getYYW(date)
 			self.activity_by_year_week[yyw] = self.activity_by_year_week.get(yyw, 0) + 1
 			if self.activity_by_year_week_peak < self.activity_by_year_week[yyw]:
 				self.activity_by_year_week_peak = self.activity_by_year_week[yyw]
@@ -791,7 +794,8 @@ class HTMLReportCreator(ReportCreator):
 		weeks = []
 		stampcur = now
 		for i in range(0, WEEKS):
-			weeks.insert(0, stampcur.strftime('%Y-%W'))
+			yyw = getYYW(stampcur)
+			weeks.insert(0, yyw)
 			stampcur -= deltaweek
 
 		# top row: commits & bar
