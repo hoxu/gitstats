@@ -22,7 +22,7 @@ from multiprocessing import Pool
 
 os.environ['LC_ALL'] = 'C'
 
-GNUPLOT_COMMON = 'set terminal png transparent size 640,240\nset size 1.0,1.0\n'
+GNUPLOT_COMMON = 'set terminal png transparent size %s\nset size 1.0,1.0\n'
 ON_LINUX = (platform.system() == 'Linux')
 WEEKDAYS = ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
 
@@ -47,7 +47,8 @@ conf = {
 	'linear_linestats': 1,
 	'project_name': '',
 	'processes': 8,
-	'start_date': ''
+	'start_date': '',
+        'image_resolution': '1280,640',
 }
 
 def getpipeoutput(cmds, quiet = False):
@@ -1312,18 +1313,18 @@ plot 'lines_of_code.dat' using 1:2 w lines
 		f.write(GNUPLOT_COMMON)
 		f.write(
 """
-set terminal png transparent size 640,480
+set terminal png transparent size %s
 set output 'lines_of_code_by_author.png'
 set key left top
 set yrange [0:]
 set xdata time
-set timefmt "%s"
-set format x "%Y-%m-%d"
+set timefmt "%%s"
+set format x "%%s"
 set grid y
 set ylabel "Lines"
 set xtics rotate
 set bmargin 6
-plot """
+plot """ % conf['image_resolution']
 )
 		i = 1
 		plots = []
@@ -1341,18 +1342,18 @@ plot """
 		f.write(GNUPLOT_COMMON)
 		f.write(
 """
-set terminal png transparent size 640,480
+set terminal png transparent size %s
 set output 'commits_by_author.png'
 set key left top
 set yrange [0:]
 set xdata time
-set timefmt "%s"
-set format x "%Y-%m-%d"
+set timefmt "%%s"
+set format x "%%s"
 set grid y
 set ylabel "Commits"
 set xtics rotate
 set bmargin 6
-plot """
+plot """ % conf['image_resolution']
 )
 		i = 1
 		plots = []
@@ -1416,6 +1417,7 @@ Please see the manual page for more details.
 
 class GitStats:
 	def run(self, args_orig):
+                global GNUPLOT_COMMON
 		optlist, args = getopt.getopt(args_orig, 'hc:', ["help"])
 		for o,v in optlist:
 			if o == '-c':
@@ -1429,6 +1431,7 @@ class GitStats:
 			elif o in ('-h', '--help'):
 				usage()
 				sys.exit()
+                GNUPLOT_COMMON = GNUPLOT_COMMON % conf['image_resolution']
 
 		if len(args) < 2:
 			usage()
