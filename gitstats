@@ -49,6 +49,7 @@ conf = {
 	'processes': 8,
 	'start_date': '',
         'image_resolution': '1280,640',
+        'date_format': '%Y-%m-%d',
         'authors_merge': '{}'
 }
 
@@ -312,7 +313,7 @@ class GitDataCollector(DataCollector):
 					stamp = int(parts[0])
 				except ValueError:
 					stamp = 0
-				self.tags[tag] = { 'stamp': stamp, 'hash' : hash, 'date' : datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d'), 'commits': 0, 'authors': {} }
+				self.tags[tag] = { 'stamp': stamp, 'hash' : hash, 'date' : datetime.datetime.fromtimestamp(stamp).strftime(conf['date_format']), 'commits': 0, 'authors': {} }
 
 		# collect info on tags, starting from latest
 		tags_sorted_by_date_desc = map(lambda el : el[1], reversed(sorted(map(lambda el : (el[1]['date'], el[0]), self.tags.items()))))
@@ -425,7 +426,7 @@ class GitDataCollector(DataCollector):
 			self.commits_by_year[yy] = self.commits_by_year.get(yy, 0) + 1
 
 			# authors: active days
-			yymmdd = date.strftime('%Y-%m-%d')
+			yymmdd = date.strftime(conf['date_format'])
 			if 'last_active_day' not in self.authors[author]:
 				self.authors[author]['last_active_day'] = yymmdd
 				self.authors[author]['active_days'] = set([yymmdd])
@@ -658,8 +659,8 @@ class GitDataCollector(DataCollector):
 			date_first = datetime.datetime.fromtimestamp(a['first_commit_stamp'])
 			date_last = datetime.datetime.fromtimestamp(a['last_commit_stamp'])
 			delta = date_last - date_first
-			a['date_first'] = date_first.strftime('%Y-%m-%d')
-			a['date_last'] = date_last.strftime('%Y-%m-%d')
+			a['date_first'] = date_first.strftime(conf['date_format'])
+			a['date_last'] = date_last.strftime(conf['date_format'])
 			a['timedelta'] = delta
 			if 'lines_added' not in a: a['lines_added'] = 0
 			if 'lines_removed' not in a: a['lines_removed'] = 0
@@ -720,7 +721,7 @@ class GitDataCollector(DataCollector):
 
 	def revToDate(self, rev):
 		stamp = int(getpipeoutput(['git log --pretty=format:%%at "%s" -n 1' % rev]))
-		return datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d')
+		return datetime.datetime.fromtimestamp(stamp).strftime(conf['date_format'])
 
 class ReportCreator:
 	"""Creates the actual report based on given data."""
@@ -1096,13 +1097,13 @@ class HTMLReportCreator(ReportCreator):
 		# use set to get rid of duplicate/unnecessary entries
 		files_by_date = set()
 		for stamp in sorted(data.files_by_stamp.keys()):
-			files_by_date.add('%s %d' % (datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d'), data.files_by_stamp[stamp]))
+			files_by_date.add('%s %d' % (datetime.datetime.fromtimestamp(stamp).strftime(conf['date_format']), data.files_by_stamp[stamp]))
 
 		fg = open(path + '/files_by_date.dat', 'w')
 		for line in sorted(list(files_by_date)):
 			fg.write('%s\n' % line)
 		#for stamp in sorted(data.files_by_stamp.keys()):
-		#	fg.write('%s %d\n' % (datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d'), data.files_by_stamp[stamp]))
+		#	fg.write('%s %d\n' % (datetime.datetime.fromtimestamp(stamp).strftime(conf['date_format']), data.files_by_stamp[stamp]))
 		fg.close()
 
 		f.write('<img src="files_by_date.png" alt="Files by Date">')
@@ -1287,15 +1288,15 @@ set output 'files_by_date.png'
 unset key
 set yrange [0:]
 set xdata time
-set timefmt "%Y-%m-%d"
-set format x "%Y-%m-%d"
+set timefmt "%s"
+set format x "%s"
 set grid y
 set ylabel "Files"
 set xtics rotate
 set ytics autofreq
 set bmargin 6
 plot 'files_by_date.dat' using 1:2 w steps
-""")
+""" % (conf['date_format'], conf['date_format']))
 		f.close()
 
 		# Lines of Code
@@ -1307,14 +1308,14 @@ set output 'lines_of_code.png'
 unset key
 set yrange [0:]
 set xdata time
-set timefmt "%s"
-set format x "%Y-%m-%d"
+set timefmt "%%s"
+set format x "%s"
 set grid y
 set ylabel "Lines"
 set xtics rotate
 set bmargin 6
 plot 'lines_of_code.dat' using 1:2 w lines
-""")
+""" % conf['date_format'])
 		f.close()
 
 		# Lines of Code Added per author
@@ -1328,12 +1329,12 @@ set key left top
 set yrange [0:]
 set xdata time
 set timefmt "%%s"
-set format x "%%s"
+set format x "%s"
 set grid y
 set ylabel "Lines"
 set xtics rotate
 set bmargin 6
-plot """ % conf['image_resolution']
+plot """ % (conf['image_resolution'], conf['date_format'])
 )
 		i = 1
 		plots = []
@@ -1357,12 +1358,12 @@ set key left top
 set yrange [0:]
 set xdata time
 set timefmt "%%s"
-set format x "%%s"
+set format x "%s"
 set grid y
 set ylabel "Commits"
 set xtics rotate
 set bmargin 6
-plot """ % conf['image_resolution']
+plot """ % (conf['image_resolution'], conf['date_format'])
 )
 		i = 1
 		plots = []
