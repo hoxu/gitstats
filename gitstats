@@ -201,7 +201,7 @@ class DataCollector:
 			self.projectname = os.path.basename(os.path.abspath(dir))
 		else:
 			self.projectname = conf['project_name']
-	
+
 	##
 	# Load cacheable data
 	def loadCache(self, cachefile):
@@ -216,7 +216,7 @@ class DataCollector:
 			f.seek(0)
 			self.cache = pickle.load(f)
 		f.close()
-	
+
 	##
 	# Produce any additional statistics from the extracted data.
 	def refine(self):
@@ -226,7 +226,7 @@ class DataCollector:
 	# : get a dictionary of author
 	def getAuthorInfo(self, author):
 		return None
-	
+
 	def getActivityByDayOfWeek(self):
 		return {}
 
@@ -241,31 +241,31 @@ class DataCollector:
 	# Get a list of authors
 	def getAuthors(self):
 		return []
-	
+
 	def getFirstCommitDate(self):
 		return datetime.datetime.now()
-	
+
 	def getLastCommitDate(self):
 		return datetime.datetime.now()
-	
+
 	def getStampCreated(self):
 		return self.stamp_created
-	
+
 	def getTags(self):
 		return []
-	
+
 	def getTotalAuthors(self):
 		return -1
-	
+
 	def getTotalCommits(self):
 		return -1
-		
+
 	def getTotalFiles(self):
 		return -1
-	
+
 	def getTotalLOC(self):
 		return -1
-	
+
 	##
 	# Save cacheable data
 	def saveCache(self, cachefile):
@@ -633,7 +633,7 @@ class GitDataCollector(DataCollector):
 				else:
 					print 'Warning: failed to handle line "%s"' % line
 					(files, inserted, deleted) = (0, 0, 0)
-	
+
 	def refine(self):
 		# authors
 		# name -> {place_by_commits, commits_frac, date_first, date_last, timedelta}
@@ -653,7 +653,7 @@ class GitDataCollector(DataCollector):
 			a['timedelta'] = delta
 			if 'lines_added' not in a: a['lines_added'] = 0
 			if 'lines_removed' not in a: a['lines_removed'] = 0
-	
+
 	def getActiveDays(self):
 		return self.active_days
 
@@ -665,12 +665,12 @@ class GitDataCollector(DataCollector):
 
 	def getAuthorInfo(self, author):
 		return self.authors[author]
-	
+
 	def getAuthors(self, limit = None):
 		res = getkeyssortedbyvaluekey(self.authors, 'commits')
 		res.reverse()
 		return res[:limit]
-	
+
 	def getCommitDeltaDays(self):
 		return (self.last_commit_stamp / 86400 - self.first_commit_stamp / 86400) + 1
 
@@ -679,35 +679,35 @@ class GitDataCollector(DataCollector):
 
 	def getDomains(self):
 		return self.domains.keys()
-	
+
 	def getFirstCommitDate(self):
 		return datetime.datetime.fromtimestamp(self.first_commit_stamp)
-	
+
 	def getLastCommitDate(self):
 		return datetime.datetime.fromtimestamp(self.last_commit_stamp)
-	
+
 	def getTags(self):
 		lines = getpipeoutput(['git show-ref --tags', 'cut -d/ -f3'])
 		return lines.split('\n')
-	
+
 	def getTagDate(self, tag):
 		return self.revToDate('tags/' + tag)
-	
+
 	def getTotalAuthors(self):
 		return self.total_authors
-	
+
 	def getTotalCommits(self):
 		return self.total_commits
 
 	def getTotalFiles(self):
 		return self.total_files
-	
+
 	def getTotalLOC(self):
 		return self.total_lines
 
 	def getTotalSize(self):
 		return self.total_size
-	
+
 	def revToDate(self, rev):
 		stamp = int(getpipeoutput(['git log --pretty=format:%%at "%s" -n 1' % rev]))
 		return datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d')
@@ -716,7 +716,7 @@ class ReportCreator:
 	"""Creates the actual report based on given data."""
 	def __init__(self):
 		pass
-	
+
 	def create(self, data, path):
 		self.data = data
 		self.path = path
@@ -1094,7 +1094,7 @@ class HTMLReportCreator(ReportCreator):
 		#for stamp in sorted(data.files_by_stamp.keys()):
 		#	fg.write('%s %d\n' % (datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d'), data.files_by_stamp[stamp]))
 		fg.close()
-			
+
 		f.write('<img src="files_by_date.png" alt="Files by Date">')
 
 		#f.write('<h2>Average file size by date</h2>')
@@ -1166,7 +1166,7 @@ class HTMLReportCreator(ReportCreator):
 		f.close()
 
 		self.createGraphs(path)
-	
+
 	def createGraphs(self, path):
 		print 'Generating graphs...'
 
@@ -1399,7 +1399,7 @@ plot """
 </ul>
 </div>
 """)
-		
+
 def usage():
 	print """
 Usage: gitstats [options] <gitpath..> <outputpath>
