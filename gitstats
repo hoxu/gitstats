@@ -49,7 +49,13 @@ conf = {
 	'processes': 8,
 	'start_date': '',
         'image_resolution': '1280,640',
+        'authors_merge': '{}'
 }
+
+def get_real_author(author):
+    if author in conf['authors_merge'].keys():
+        return conf['authors_merge'][author]
+    return author
 
 def getpipeoutput(cmds, quiet = False):
 	global exectime_external
@@ -322,7 +328,7 @@ class GitDataCollector(DataCollector):
 			for line in output.split('\n'):
 				parts = re.split('\s+', line, 2)
 				commits = int(parts[1])
-				author = parts[2]
+				author = get_real_author(parts[2])
 				self.tags[tag]['commits'] += commits
 				self.tags[tag]['authors'][author] = commits
 
@@ -339,6 +345,7 @@ class GitDataCollector(DataCollector):
 			timezone = parts[3]
 			author, mail = parts[4].split('<', 1)
 			author = author.rstrip()
+                        author = get_real_author(author)
 			mail = mail.rstrip('>')
 			domain = '?'
 			if mail.find('@') != -1:
@@ -551,6 +558,7 @@ class GitDataCollector(DataCollector):
 				if pos != -1:
 					try:
 						(stamp, author) = (int(line[:pos]), line[pos+1:])
+                                                author = get_real_author(author)
 						self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted, 'lines': total_lines }
 
 						date = datetime.datetime.fromtimestamp(stamp)
@@ -607,6 +615,7 @@ class GitDataCollector(DataCollector):
 					try:
 						oldstamp = stamp
 						(stamp, author) = (int(line[:pos]), line[pos+1:])
+                                                author = get_real_author(author)
 						if oldstamp > stamp:
 							# clock skew, keep old timestamp to avoid having ugly graph
 							stamp = oldstamp
@@ -1431,6 +1440,7 @@ class GitStats:
 			elif o in ('-h', '--help'):
 				usage()
 				sys.exit()
+                conf['authors_merge'] = eval(conf['authors_merge'])
                 GNUPLOT_COMMON = GNUPLOT_COMMON % conf['image_resolution']
 
 		if len(args) < 2:
