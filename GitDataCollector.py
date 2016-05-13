@@ -36,9 +36,7 @@ class GitDataCollector(DataCollector):
         ext, blob_id = ext_blob
         return (ext, blob_id, int(getpipeoutput(['git cat-file blob %s' % blob_id, 'wc -l']).split()[0]))
 
-    def get_real_author(self, author):
-        if isinstance(self.conf['authors_merge'],str):
-            self.conf['authors_merge'] = eval(self.conf['authors_merge'])
+    def get_merged_author(self, author):
         if author in self.conf['authors_merge'].keys():
             return self.conf['authors_merge'][author]
         return author
@@ -94,7 +92,7 @@ class GitDataCollector(DataCollector):
             for line in output.split('\n'):
                 parts = re.split('\s+', line, 2)
                 commits = int(parts[1])
-                author = self.get_real_author(parts[2])
+                author = self.get_merged_author(parts[2])
                 self.tags[tag]['commits'] += commits
                 self.tags[tag]['authors'][author] = commits
 
@@ -111,7 +109,7 @@ class GitDataCollector(DataCollector):
             timezone = parts[3]
             author, mail = parts[4].split('<', 1)
             author = author.rstrip()
-            author = self.get_real_author(author)
+            author = self.get_merged_author(author)
             mail = mail.rstrip('>')
             domain = '?'
             if mail.find('@') != -1:
@@ -324,7 +322,7 @@ class GitDataCollector(DataCollector):
                 if pos != -1:
                     try:
                         (stamp, author) = (int(line[:pos]), line[pos+1:])
-                        author = self.get_real_author(author)
+                        author = self.get_merged_author(author)
                         self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted, 'lines': total_lines }
 
                         date = datetime.datetime.fromtimestamp(stamp)
@@ -381,7 +379,7 @@ class GitDataCollector(DataCollector):
                     try:
                         oldstamp = stamp
                         (stamp, author) = (int(line[:pos]), line[pos+1:])
-                        author = self.get_real_author(author)
+                        author = self.get_merged_author(author)
                         if oldstamp > stamp:
                             # clock skew, keep old timestamp to avoid having ugly graph
                             stamp = oldstamp

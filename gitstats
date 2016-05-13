@@ -133,7 +133,7 @@ if __name__=='__main__':
         elif o in ('-h', '--help'):
             usage()
             sys.exit()
-            conf['authors_merge'] = eval(conf['authors_merge'])
+    conf['authors_merge'] = eval(conf['authors_merge'])
 
 
     g = GitStats(conf)
