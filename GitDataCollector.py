@@ -6,6 +6,9 @@ from DataCollector import DataCollector
 from helper import *
 
 class GitDataCollector(DataCollector):
+    def __init__(self, conf):
+        DataCollector.__init__(self)
+        self.conf = conf
 
     def getkeyssortedbyvalues(self, dict):
         return map(lambda el : el[1], sorted(map(lambda el : (el[1], el[0]), dict.items())))
@@ -60,8 +63,8 @@ class GitDataCollector(DataCollector):
             return '--since="%s" "%s"' % (self.conf['start_date'], commit_range)
         return commit_range
 
-    def collect(self, dir):
-        DataCollector.collect(self, dir)
+    def collect(self, dir, project_name):
+        DataCollector.collect(self, dir, project_name)
 
         self.total_authors += int(getpipeoutput(['git shortlog -s %s' % self.getlogrange(), 'wc -l']))
         #self.total_lines = int(getoutput('git-ls-files -z |xargs -0 cat |wc -l'))

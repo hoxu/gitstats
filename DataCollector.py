@@ -8,11 +8,9 @@ import zlib
 
 class DataCollector:
     """Manages data collection from a revision control repository."""
-    def __init__(self, conf):
+    def __init__(self):
         self.stamp_created = time.time()
         self.cache = {}
-
-        self.conf = conf
 
         self.total_authors = 0
         self.activity_by_hour_of_day = {} # hour -> commits
@@ -71,12 +69,12 @@ class DataCollector:
 
     ##
     # This should be the main function to extract data from the repository.
-    def collect(self, dir):
+    def collect(self, dir, project_name = None):
         self.dir = dir
-        if len(self.conf['project_name']) == 0:
-            self.projectname = os.path.basename(os.path.abspath(dir))
+        if project_name:
+            self.projectname = project_name
         else:
-            self.projectname = self.conf['project_name']
+            self.projectname = os.path.basename(os.path.abspath(dir))
 
     ##
     # Load cacheable data
