@@ -13,9 +13,6 @@ class GitDataCollector(DataCollector):
     def getkeyssortedbyvalues(self, dict):
         return map(lambda el : el[1], sorted(map(lambda el : (el[1], el[0]), dict.items())))
 
-    # dict['author'] = { 'commits': 512 } - ...key(dict, 'commits')
-    def getkeyssortedbyvaluekey(self, d, key):
-        return map(lambda el : el[1], sorted(map(lambda el : (d[el][key], el), d.keys())))
 
     def getstatsummarycounts(self, line):
         numbers = re.findall('\d+', line)
@@ -437,59 +434,12 @@ class GitDataCollector(DataCollector):
             if 'lines_added' not in a: a['lines_added'] = 0
             if 'lines_removed' not in a: a['lines_removed'] = 0
 
-    def getActiveDays(self):
-        return self.active_days
-
-    def getActivityByDayOfWeek(self):
-        return self.activity_by_day_of_week
-
-    def getActivityByHourOfDay(self):
-        return self.activity_by_hour_of_day
-
-    def getAuthorInfo(self, author):
-        return self.authors[author]
-
-    def getAuthors(self, limit = None):
-        res = self.getkeyssortedbyvaluekey(self.authors, 'commits')
-        res.reverse()
-        return res[:limit]
-
-    def getCommitDeltaDays(self):
-        return (self.last_commit_stamp / 86400 - self.first_commit_stamp / 86400) + 1
-
-    def getDomainInfo(self, domain):
-        return self.domains[domain]
-
-    def getDomains(self):
-        return self.domains.keys()
-
-    def getFirstCommitDate(self):
-        return datetime.datetime.fromtimestamp(self.first_commit_stamp)
-
-    def getLastCommitDate(self):
-        return datetime.datetime.fromtimestamp(self.last_commit_stamp)
-
     def getTags(self):
         lines = getpipeoutput(['git show-ref --tags', 'cut -d/ -f3'])
         return lines.split('\n')
 
     def getTagDate(self, tag):
         return self.revToDate('tags/' + tag)
-
-    def getTotalAuthors(self):
-        return self.total_authors
-
-    def getTotalCommits(self):
-        return self.total_commits
-
-    def getTotalFiles(self):
-        return self.total_files
-
-    def getTotalLOC(self):
-        return self.total_lines
-
-    def getTotalSize(self):
-        return self.total_size
 
     def revToDate(self, rev):
         stamp = int(getpipeoutput(['git log --pretty=format:%%at "%s" -n 1' % rev]))

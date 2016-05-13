@@ -92,55 +92,6 @@ class DataCollector:
         f.close()
 
     ##
-    # Produce any additional statistics from the extracted data.
-    def refine(self):
-        pass
-
-    ##
-    # : get a dictionary of author
-    def getAuthorInfo(self, author):
-        return None
-
-    def getActivityByDayOfWeek(self):
-        return {}
-
-    def getActivityByHourOfDay(self):
-        return {}
-
-    # : get a dictionary of domains
-    def getDomainInfo(self, domain):
-        return None
-
-    ##
-    # Get a list of authors
-    def getAuthors(self):
-        return []
-
-    def getFirstCommitDate(self):
-        return datetime.datetime.now()
-
-    def getLastCommitDate(self):
-        return datetime.datetime.now()
-
-    def getStampCreated(self):
-        return self.stamp_created
-
-    def getTags(self):
-        return []
-
-    def getTotalAuthors(self):
-        return -1
-
-    def getTotalCommits(self):
-        return -1
-
-    def getTotalFiles(self):
-        return -1
-
-    def getTotalLOC(self):
-        return -1
-
-    ##
     # Save cacheable data
     def saveCache(self, cachefile):
         print('Saving cache...')
@@ -155,3 +106,71 @@ class DataCollector:
         except OSError:
             pass
         os.rename(tempfile, cachefile)
+
+    ##
+    # Produce any additional statistics from the extracted data.
+    def refine(self):
+        pass
+
+    # dict['author'] = { 'commits': 512 } - ...key(dict, 'commits')
+    def getkeyssortedbyvaluekey(self, d, key):
+        return map(lambda el : el[1], sorted(map(lambda el : (d[el][key], el), d.keys())))
+
+    ##
+    # : get a dictionary of author
+    def getAuthorInfo(self, author):
+        return self.authors[author]
+
+    def getActivityByDayOfWeek(self):
+        return self.activity_by_day_of_week
+
+    def getActivityByHourOfDay(self):
+        return self.activity_by_hour_of_day
+
+    def getActiveDays(self):
+        return self.active_days
+
+    def getDomains(self):
+        return self.domains.keys()
+
+    # : get a dictionary of domains
+    def getDomainInfo(self, domain):
+        return self.domains[domain]
+
+    ##
+    # Get a list of authors
+    def getAuthors(self, limit = None):
+        res = self.getkeyssortedbyvaluekey(self.authors, 'commits')
+        res.reverse()
+        return res[:limit]
+
+    def getFirstCommitDate(self):
+        return datetime.datetime.fromtimestamp(self.first_commit_stamp)
+
+    def getLastCommitDate(self):
+        return datetime.datetime.fromtimestamp(self.last_commit_stamp)
+
+    def getCommitDeltaDays(self):
+        return (self.last_commit_stamp / 86400 - self.first_commit_stamp / 86400) + 1
+
+    def getStampCreated(self):
+        return self.stamp_created
+
+    def getTags(self):
+        return self.tags.keys().sort()
+
+    def getTotalAuthors(self):
+        return self.total_authors
+
+    def getTotalCommits(self):
+        return self.total_commits
+
+    def getTotalFiles(self):
+        return self.total_files
+
+    def getTotalLOC(self):
+        return self.total_lines
+
+    def getTotalSize(self):
+        return self.total_size
+
