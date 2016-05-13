@@ -55,13 +55,7 @@ class GitDataCollector(DataCollector):
             return '--since="%s" "%s"' % (self.conf['start_date'], commit_range)
         return commit_range
 
-    def collect(self, dir, project_name):
-        DataCollector.collect(self, dir, project_name)
-
-        self.total_authors += int(getpipeoutput(['git shortlog -s %s' % self.getlogrange(), 'wc -l']))
-        # self.total_lines = int(getoutput('git-ls-files -z |xargs -0 cat |wc -l'))
-
-        # tags
+    def _collect_tags(self):
         lines = getpipeoutput(['git show-ref --tags']).split('\n')
         for line in lines:
             if len(line) == 0:
@@ -72,7 +66,6 @@ class GitDataCollector(DataCollector):
             output = getpipeoutput(['git log "%s" --pretty=format:"%%at %%aN" -n 1' % hash])
             if len(output) > 0:
                 parts = output.split(' ')
-                stamp = 0
                 try:
                     stamp = int(parts[0])
                 except ValueError:
@@ -100,124 +93,178 @@ class GitDataCollector(DataCollector):
                 self.tags[tag]['commits'] += commits
                 self.tags[tag]['authors'][author] = commits
 
-        # Collect revision statistics
-        # Outputs "<stamp> <date> <time> <timezone> <author> '<' <mail> '>'"
+    def _collect_revision_stamps(self, parts):
+        try:
+            stamp = int(parts[0])
+        except ValueError:
+            stamp = 0
+        if stamp > self.last_commit_stamp:
+            self.last_commit_stamp = stamp
+        if self.first_commit_stamp == 0 or stamp < self.first_commit_stamp:
+            self.first_commit_stamp = stamp
+        return stamp
+
+    def _collect_activity_by_hour(self, date):
+        hour = date.hour
+        self.activity_by_hour_of_day[hour] = self.activity_by_hour_of_day.get(hour, 0) + 1
+        # most active hour?
+        if self.activity_by_hour_of_day[hour] > self.activity_by_hour_of_day_busiest:
+            self.activity_by_hour_of_day_busiest = self.activity_by_hour_of_day[hour]
+
+    def _collect_activty_by_day(self, date):
+        day = date.weekday()
+        self.activity_by_day_of_week[day] = self.activity_by_day_of_week.get(day, 0) + 1
+
+    def _collect_domain_stats(self, parts):
+        mail = parts[4].split('<', 1)[1]
+        mail = mail.rstrip('>')
+        domain = '?'
+        if mail.find('@') != -1:
+            domain = mail.rsplit('@', 1)[1]
+        if domain not in self.domains:
+            self.domains[domain] = {}
+        return domain
+
+    def _collect_commits(self, domain):
+        self.domains[domain]['commits'] = self.domains[domain].get('commits', 0) + 1
+
+    def _collect_hour_of_week(self, date):
+        day = date.weekday
+        hour = date.hour
+        if day not in self.activity_by_hour_of_week:
+            self.activity_by_hour_of_week[day] = {}
+        self.activity_by_hour_of_week[day][hour] = self.activity_by_hour_of_week[day].get(hour, 0) + 1
+
+    def _collect_most_active_hour(self, date):
+        day = date.weekday
+        hour = date.hour
+        if self.activity_by_hour_of_week[day][hour] > self.activity_by_hour_of_week_busiest:
+            self.activity_by_hour_of_week_busiest = self.activity_by_hour_of_week[day][hour]
+
+    def _collect_month(self, date):
+        month = date.month
+        self.activity_by_month_of_year[month] = self.activity_by_month_of_year.get(month, 0) + 1
+
+    def _collect_weekly_yearly_activity(self, date):
+        yyw = date.strftime('%Y-%W')
+        self.activity_by_year_week[yyw] = self.activity_by_year_week.get(yyw, 0) + 1
+        if self.activity_by_year_week_peak < self.activity_by_year_week[yyw]:
+            self.activity_by_year_week_peak = self.activity_by_year_week[yyw]
+
+    def _collect_author(self, parts):
+        author = parts[4].split('<', 1)[0]
+        author = author.rstrip()
+        author = self.get_merged_author(author)
+        if author not in self.authors:
+            self.authors[author] = {}
+        return author
+
+    def _collect_author_commits(self, author, stamp):
+        if 'last_commit_stamp' not in self.authors[author]:
+            self.authors[author]['last_commit_stamp'] = stamp
+        if stamp > self.authors[author]['last_commit_stamp']:
+            self.authors[author]['last_commit_stamp'] = stamp
+        if 'first_commit_stamp' not in self.authors[author]:
+            self.authors[author]['first_commit_stamp'] = stamp
+        if stamp < self.authors[author]['first_commit_stamp']:
+            self.authors[author]['first_commit_stamp'] = stamp
+
+    def _collect_author_of_year(self, date, author):
+        yymm = date.strftime('%Y-%m')
+        if yymm in self.author_of_month:
+            self.author_of_month[yymm][author] = self.author_of_month[yymm].get(author, 0) + 1
+        else:
+            self.author_of_month[yymm] = {}
+            self.author_of_month[yymm][author] = 1
+        self.commits_by_month[yymm] = self.commits_by_month.get(yymm, 0) + 1
+
+        yy = date.year
+        if yy in self.author_of_year:
+            self.author_of_year[yy][author] = self.author_of_year[yy].get(author, 0) + 1
+        else:
+            self.author_of_year[yy] = {}
+            self.author_of_year[yy][author] = 1
+        self.commits_by_year[yy] = self.commits_by_year.get(yy, 0) + 1
+
+    def _collect_author_active_days(self, date, author):
+        yymmdd = date.strftime(self.conf['date_format'])
+        if 'last_active_day' not in self.authors[author]:
+            self.authors[author]['last_active_day'] = yymmdd
+            self.authors[author]['active_days'] = set([yymmdd])
+        elif yymmdd != self.authors[author]['last_active_day']:
+            self.authors[author]['last_active_day'] = yymmdd
+            self.authors[author]['active_days'].add(yymmdd)
+
+    def _collect_project_active_days(self, date):
+        yymmdd = date.strftime(self.conf['date_format'])
+        if yymmdd != self.last_active_day:
+            self.last_active_day = yymmdd
+            self.active_days.add(yymmdd)
+
+    def _collect_timezone(self, parts):
+        timezone = parts[3]
+        self.commits_by_timezone[timezone] = self.commits_by_timezone.get(timezone, 0) + 1
+
+    def _collect_revision_statistics(self):# Outputs "<stamp> <date> <time> <timezone> <author> '<' <mail> '>'"
         lines = getpipeoutput(['git rev-list --pretty=format:"%%at %%ai %%aN <%%aE>" %s' % self.getlogrange('HEAD'),
                                'grep -v ^commit']).split('\n')
         for line in lines:
-            line = str(line)
             parts = line.split(' ', 4)
-            author = ''
-            try:
-                stamp = int(parts[0])
-            except ValueError:
-                stamp = 0
-            timezone = parts[3]
-            author, mail = parts[4].split('<', 1)
-            author = author.rstrip()
-            author = self.get_merged_author(author)
-            mail = mail.rstrip('>')
-            domain = '?'
-            if mail.find('@') != -1:
-                domain = mail.rsplit('@', 1)[1]
-            date = datetime.datetime.fromtimestamp(float(stamp))
 
             # First and last commit stamp (may be in any order because of cherry-picking and patches)
-            if stamp > self.last_commit_stamp:
-                self.last_commit_stamp = stamp
-            if self.first_commit_stamp == 0 or stamp < self.first_commit_stamp:
-                self.first_commit_stamp = stamp
+            stamp = self._collect_revision_stamps(parts)
+
+            date = datetime.datetime.fromtimestamp(float(stamp))
 
             # activity
             # hour
-            hour = date.hour
-            self.activity_by_hour_of_day[hour] = self.activity_by_hour_of_day.get(hour, 0) + 1
-            # most active hour?
-            if self.activity_by_hour_of_day[hour] > self.activity_by_hour_of_day_busiest:
-                self.activity_by_hour_of_day_busiest = self.activity_by_hour_of_day[hour]
+            self._collect_activity_by_hour(date)
 
             # day of week
-            day = date.weekday()
-            self.activity_by_day_of_week[day] = self.activity_by_day_of_week.get(day, 0) + 1
+            self._collect_activty_by_day(date)
 
             # domain stats
-            if domain not in self.domains:
-                self.domains[domain] = {}
+            domain = self._collect_domain_stats(parts)
+
             # commits
-            self.domains[domain]['commits'] = self.domains[domain].get('commits', 0) + 1
+            self._collect_commits(domain)
 
             # hour of week
-            if day not in self.activity_by_hour_of_week:
-                self.activity_by_hour_of_week[day] = {}
-            self.activity_by_hour_of_week[day][hour] = self.activity_by_hour_of_week[day].get(hour, 0) + 1
+            self._collect_hour_of_week(date)
+
             # most active hour?
-            if self.activity_by_hour_of_week[day][hour] > self.activity_by_hour_of_week_busiest:
-                self.activity_by_hour_of_week_busiest = self.activity_by_hour_of_week[day][hour]
+            self._collect_most_active_hour(date)
 
             # month of year
-            month = date.month
-            self.activity_by_month_of_year[month] = self.activity_by_month_of_year.get(month, 0) + 1
+            self._collect_month(date)
 
             # yearly/weekly activity
-            yyw = date.strftime('%Y-%W')
-            self.activity_by_year_week[yyw] = self.activity_by_year_week.get(yyw, 0) + 1
-            if self.activity_by_year_week_peak < self.activity_by_year_week[yyw]:
-                self.activity_by_year_week_peak = self.activity_by_year_week[yyw]
+            self._collect_weekly_yearly_activity(date)
 
             # author stats
-            if author not in self.authors:
-                self.authors[author] = {}
-            # commits, note again that commits may be in any date order because of cherry-picking and patches
-            if 'last_commit_stamp' not in self.authors[author]:
-                self.authors[author]['last_commit_stamp'] = stamp
-            if stamp > self.authors[author]['last_commit_stamp']:
-                self.authors[author]['last_commit_stamp'] = stamp
-            if 'first_commit_stamp' not in self.authors[author]:
-                self.authors[author]['first_commit_stamp'] = stamp
-            if stamp < self.authors[author]['first_commit_stamp']:
-                self.authors[author]['first_commit_stamp'] = stamp
+            author = self._collect_author(parts)
+
+            #  commits, note again that commits may be in any date order because of cherry-picking and patches
+            self._collect_author_commits(author, stamp)
 
             # author of the month/year
-            yymm = date.strftime('%Y-%m')
-            if yymm in self.author_of_month:
-                self.author_of_month[yymm][author] = self.author_of_month[yymm].get(author, 0) + 1
-            else:
-                self.author_of_month[yymm] = {}
-                self.author_of_month[yymm][author] = 1
-            self.commits_by_month[yymm] = self.commits_by_month.get(yymm, 0) + 1
-
-            yy = date.year
-            if yy in self.author_of_year:
-                self.author_of_year[yy][author] = self.author_of_year[yy].get(author, 0) + 1
-            else:
-                self.author_of_year[yy] = {}
-                self.author_of_year[yy][author] = 1
-            self.commits_by_year[yy] = self.commits_by_year.get(yy, 0) + 1
+            self._collect_author_of_year(date, author)
 
             # authors: active days
-            yymmdd = date.strftime(self.conf['date_format'])
-            if 'last_active_day' not in self.authors[author]:
-                self.authors[author]['last_active_day'] = yymmdd
-                self.authors[author]['active_days'] = set([yymmdd])
-            elif yymmdd != self.authors[author]['last_active_day']:
-                self.authors[author]['last_active_day'] = yymmdd
-                self.authors[author]['active_days'].add(yymmdd)
+            self._collect_author_active_days(date, author)
 
             # project: active days
-            if yymmdd != self.last_active_day:
-                self.last_active_day = yymmdd
-                self.active_days.add(yymmdd)
+            self._collect_project_active_days(date)
 
             # timezone
-            self.commits_by_timezone[timezone] = self.commits_by_timezone.get(timezone, 0) + 1
+            self._collect_timezone(parts)
 
-        # outputs "<stamp> <files>" for each revision
+    def _collect_statistics(self):# outputs "<stamp> <files>" for each revision
         revlines = getpipeoutput(
             ['git rev-list --pretty=format:"%%at %%T" %s' % self.getlogrange('HEAD'), 'grep -v ^commit']).strip().split(
             '\n')
         lines = []
         revs_to_read = []
-        time_rev_count = []
         # Look up rev in cache and take info from cache if found
         # If not append rev to list of rev to read from repo
         for revline in revlines:
@@ -256,6 +303,7 @@ class GitDataCollector(DataCollector):
             except ValueError:
                 print('Warning: failed to parse line "%s"' % line)
 
+    def _collect_file_statistics(self):
         # extensions and size of files
         lines = getpipeoutput(['git ls-tree -r -l -z %s' % self.getcommitrange('HEAD', end_only=True)]).split('\000')
         blobs_to_read = []
@@ -306,8 +354,7 @@ class GitDataCollector(DataCollector):
             self.cache['lines_in_blob'][blob_id] = linecount
             self.extensions[ext]['lines'] += self.cache['lines_in_blob'][blob_id]
 
-        # line statistics
-        # outputs:
+    def _collect_line_statistics(self):# outputs:
         #  N files changed, N insertions (+), N deletions(-)
         # <stamp> <author>
         self.changes_by_date = {}  # stamp -> { files, ins, del }
@@ -323,7 +370,6 @@ class GitDataCollector(DataCollector):
         inserted = 0;
         deleted = 0;
         total_lines = 0
-        author = None
         for line in lines:
             if len(line) == 0:
                 continue
@@ -335,8 +381,7 @@ class GitDataCollector(DataCollector):
                 pos = line.find(' ')
                 if pos != -1:
                     try:
-                        (stamp, author) = (int(line[:pos]), line[pos + 1:])
-                        author = self.get_merged_author(author)
+                        stamp = (int(line[:pos]), line[pos + 1:])[0]
                         self.changes_by_date[stamp] = {'files': files, 'ins': inserted, 'del': deleted,
                                                        'lines': total_lines}
 
@@ -370,8 +415,7 @@ class GitDataCollector(DataCollector):
                     # self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted }
         self.total_lines += total_lines
 
-        # Per-author statistics
-
+    def _collect_author_statistics(self):
         # defined for stamp, author only if author commited at this timestamp.
         self.changes_by_date_by_author = {}  # stamp -> author -> lines_added
 
@@ -382,10 +426,8 @@ class GitDataCollector(DataCollector):
             ['git log --shortstat --date-order --pretty=format:"%%at %%aN" %s' % (self.getlogrange('HEAD'))]).split(
             '\n')
         lines.reverse()
-        files = 0;
         inserted = 0;
         deleted = 0
-        author = None
         stamp = 0
         for line in lines:
             if len(line) == 0:
@@ -427,6 +469,31 @@ class GitDataCollector(DataCollector):
                 else:
                     print('Warning: failed to handle line "%s"' % line)
                     (files, inserted, deleted) = (0, 0, 0)
+
+    def collect(self, dir, project_name):
+        super().collect(dir, project_name)
+
+        # TODO: fix for merged authors
+        self.total_authors += int(getpipeoutput(['git shortlog -s %s' % self.getlogrange(), 'wc -l']))
+        # self.total_lines = int(getoutput('git-ls-files -z |xargs -0 cat |wc -l'))
+
+        # tags
+        self._collect_tags()
+
+        # Collect revision statistics
+        self._collect_revision_statistics()
+
+        # Collect statistics
+        self._collect_statistics()
+
+        # Collect file statistics
+        self._collect_file_statistics()
+
+        # line statistics
+        self._collect_line_statistics()
+
+        # Per-author statistics
+        self._collect_author_statistics()
 
     def refine(self):
         # authors
