@@ -1,4 +1,4 @@
-PREFIX=/usr/local
+PREFIX=/usr
 BINDIR=$(PREFIX)/bin
 RESOURCEDIR=$(PREFIX)/share/gitstats
 RESOURCES=gitstats.css sortable.js *.gif

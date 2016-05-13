@@ -1,24 +1,12 @@
 #!/usr/bin/env python2
 # Copyright (c) 2007-2014 Heikki Hokkanen <hoxu@users.sf.net> & others (see doc/AUTHOR)
 # GPLv2 / GPLv3
-import datetime
 import getopt
-import glob
 import os
-import pickle
-import platform
-import re
-import shutil
-import subprocess
 import sys
-import time
-import zlib
 
-from DataCollector import DataCollector
 from GitDataCollector import GitDataCollector
-from ReportCreator import ReportCreator
 from HTMLReportCreator import HTMLReportCreator
-from helper import *
 
 if sys.version_info < (2, 6):
     print >> sys.stderr, "Python 2.6 or higher is required for gitstats"
@@ -26,20 +14,10 @@ if sys.version_info < (2, 6):
 
 from multiprocessing import Pool
 
-os.environ['LC_ALL'] = 'C'
-
-GNUPLOT_COMMON = 'set terminal png transparent size %s\nset size 1.0,1.0\n'
-WEEKDAYS = ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
-
 #exectime_internal = 0.0
 #exectime_external = 0.0
 #time_start = time.time()
 
-# By default, gnuplot is searched from path, but can be overridden with the
-# environment variable "GNUPLOT"
-gnuplot_cmd = 'gnuplot'
-if 'GNUPLOT' in os.environ:
-    gnuplot_cmd = os.environ['GNUPLOT']
 
 conf = {
     'max_domains': 10,
@@ -71,71 +49,62 @@ Default config values:
 Please see the manual page for more details.
 """ % conf
 
-
 class GitStats:
-    def run(self, args_orig):
-        global GNUPLOT_COMMON
-        optlist, args = getopt.getopt(args_orig, 'hc:', ["help"])
-        for o,v in optlist:
-            if o == '-c':
-                key, value = v.split('=', 1)
-                if key not in conf:
-                    raise KeyError('no such key "%s" in config' % key)
-                if isinstance(conf[key], int):
-                    conf[key] = int(value)
-                else:
-                    conf[key] = value
-            elif o in ('-h', '--help'):
-                usage()
-                sys.exit()
-                conf['authors_merge'] = eval(conf['authors_merge'])
-                GNUPLOT_COMMON = GNUPLOT_COMMON % conf['image_resolution']
+    def __init__(self, conf):
+        self.conf = conf
+        self.data = GitDataCollector(conf)
 
-        if len(args) < 2:
-            usage()
-            sys.exit(0)
-
-        outputpath = os.path.abspath(args[-1])
-        rundir = os.getcwd()
-
+    def _create_outputdir(self, path):
         try:
-            os.makedirs(outputpath)
+            os.makedirs(path)
         except OSError:
             pass
-        if not os.path.isdir(outputpath):
-            print 'FATAL: Output path is not a directory or does not exist'
+        if not os.path.isdir(path):
+            print 'FATAL: Output path %s is not a directory or does not exist' % path
             sys.exit(1)
+        print 'Output path: %s' % path
+
+    def _collect_data(self, path):
+        print 'Git path: %s' % path
+
+        prevdir = os.getcwd()
+        os.chdir(path)
+
+        print 'Collecting data...'
+        self.data.collect(path, self.conf['project_name'])
+
+        os.chdir(prevdir)
+
+    def _refine_data(self, cachefile):
+        print 'Refining data...'
+        self.data.saveCache(cachefile)
+        self.data.refine()
+
+    def _generate_report(self, conf, outputpath):
+        print 'Generating report...'
+        report = HTMLReportCreator(conf)
+        report.create(self.data, outputpath)
+
+    def run(self, outputpath, paths):
+        outputpath = os.path.abspath(outputpath)
+        rundir = os.getcwd()
+
+        self._create_outputdir(outputpath)
 
         #if not getgnuplotversion():
         #    print 'gnuplot not found'
         #    sys.exit(1)
 
-        print 'Output path: %s' % outputpath
         cachefile = os.path.join(outputpath, 'gitstats.cache')
 
-        data = GitDataCollector(conf)
-        data.loadCache(cachefile)
+        self.data.loadCache(cachefile)
 
-        for gitpath in args[0:-1]:
-            print 'Git path: %s' % gitpath
+        for gitpath in paths:
+            self._collect_data(gitpath)
 
-            prevdir = os.getcwd()
-            os.chdir(gitpath)
+        self._refine_data(cachefile)
 
-            print 'Collecting data...'
-            data.collect(gitpath)
-
-            os.chdir(prevdir)
-
-        print 'Refining data...'
-        data.saveCache(cachefile)
-        data.refine()
-
-        os.chdir(rundir)
-
-        print 'Generating report...'
-        report = HTMLReportCreator(conf)
-        report.create(data, outputpath)
+        self._generate_report(conf, outputpath)
 
         #time_end = time.time()
         #exectime_internal = time_end - time_start
@@ -147,6 +116,26 @@ class GitStats:
             print
 
 if __name__=='__main__':
-    g = GitStats()
-    g.run(sys.argv[1:])
+    if len(sys.argv) < 2:
+        usage()
+        sys.exit(0)
+
+    optlist, args = getopt.getopt(sys.argv[1:], 'hc:', ["help"])
+    for o,v in optlist:
+        if o == '-c':
+            key, value = v.split('=', 1)
+            if key not in conf:
+                raise KeyError('no such key "%s" in config' % key)
+            if isinstance(conf[key], int):
+                conf[key] = int(value)
+            else:
+                conf[key] = value
+        elif o in ('-h', '--help'):
+            usage()
+            sys.exit()
+            conf['authors_merge'] = eval(conf['authors_merge'])
+
+
+    g = GitStats(conf)
+    g.run(args[-1], args[0:-1])
 
