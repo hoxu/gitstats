@@ -16,20 +16,20 @@ def is_linux():
 def getpipeoutput(cmds, quiet = False):
     start = time.time()
     if not quiet and is_linux() and os.isatty(1):
-        print '>> ' + ' | '.join(cmds),
+        print('>> ' + ' | '.join(cmds), end=' ')
         sys.stdout.flush()
     p = subprocess.Popen(cmds[0], stdout = subprocess.PIPE, shell = True)
     processes=[p]
     for x in cmds[1:]:
         p = subprocess.Popen(x, stdin = p.stdout, stdout = subprocess.PIPE, shell = True)
         processes.append(p)
-    output = p.communicate()[0]
+    output = p.communicate()[0].decode()
     for p in processes:
         p.wait()
     end = time.time()
     if not quiet:
         if is_linux() and os.isatty(1):
-            print '\r',
-        print '[%.5f] >> %s' % (end - start, ' | '.join(cmds))
+            print('\r', end=' ')
+        print('[%.5f] >> %s' % (end - start, ' | '.join(cmds)))
     #exectime_external += (end - start)
     return output.rstrip('\n')

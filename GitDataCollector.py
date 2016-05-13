@@ -37,7 +37,7 @@ class GitDataCollector(DataCollector):
         return (ext, blob_id, int(getpipeoutput(['git cat-file blob %s' % blob_id, 'wc -l']).split()[0]))
 
     def get_merged_author(self, author):
-        if author in self.conf['authors_merge'].keys():
+        if author in list(self.conf['authors_merge'].keys()):
             return self.conf['authors_merge'][author]
         return author
 
@@ -79,7 +79,7 @@ class GitDataCollector(DataCollector):
                 self.tags[tag] = { 'stamp': stamp, 'hash' : hash, 'date' : datetime.datetime.fromtimestamp(stamp).strftime(self.conf['date_format']), 'commits': 0, 'authors': {} }
 
         # collect info on tags, starting from latest
-        tags_sorted_by_date_desc = map(lambda el : el[1], reversed(sorted(map(lambda el : (el[1]['date'], el[0]), self.tags.items()))))
+        tags_sorted_by_date_desc = [el[1] for el in reversed(sorted([(el[1]['date'], el[0]) for el in list(self.tags.items())]))]
         prev = None
         for tag in reversed(tags_sorted_by_date_desc):
             cmd = 'git shortlog -s "%s"' % tag
@@ -100,6 +100,7 @@ class GitDataCollector(DataCollector):
         # Outputs "<stamp> <date> <time> <timezone> <author> '<' <mail> '>'"
         lines = getpipeoutput(['git rev-list --pretty=format:"%%at %%ai %%aN <%%aE>" %s' % self.getlogrange('HEAD'), 'grep -v ^commit']).split('\n')
         for line in lines:
+            line = str(line)
             parts = line.split(' ', 4)
             author = ''
             try:
@@ -216,10 +217,10 @@ class GitDataCollector(DataCollector):
             time, rev = revline.split(' ')
             #if cache empty then add time and rev to list of new rev's
             #otherwise try to read needed info from cache
-            if 'files_in_tree' not in self.cache.keys():
+            if 'files_in_tree' not in list(self.cache.keys()):
                 revs_to_read.append((time,rev))
                 continue
-            if rev in self.cache['files_in_tree'].keys():
+            if rev in list(self.cache['files_in_tree'].keys()):
                 lines.append('%d %d' % (int(time), self.cache['files_in_tree'][rev]))
             else:
                 revs_to_read.append((time,rev))
@@ -246,7 +247,7 @@ class GitDataCollector(DataCollector):
             try:
                 self.files_by_stamp[int(stamp)] = int(files)
             except ValueError:
-                print 'Warning: failed to parse line "%s"' % line
+                print('Warning: failed to parse line "%s"' % line)
 
         # extensions and size of files
         lines = getpipeoutput(['git ls-tree -r -l -z %s' % self.getcommitrange('HEAD', end_only = True)]).split('\000')
@@ -277,10 +278,10 @@ class GitDataCollector(DataCollector):
             self.extensions[ext]['files'] += 1
             #if cache empty then add ext and blob id to list of new blob's
             #otherwise try to read needed info from cache
-            if 'lines_in_blob' not in self.cache.keys():
+            if 'lines_in_blob' not in list(self.cache.keys()):
                 blobs_to_read.append((ext,blob_id))
                 continue
-            if blob_id in self.cache['lines_in_blob'].keys():
+            if blob_id in list(self.cache['lines_in_blob'].keys()):
                 self.extensions[ext]['lines'] += self.cache['lines_in_blob'][blob_id]
             else:
                 blobs_to_read.append((ext,blob_id))
@@ -316,6 +317,8 @@ class GitDataCollector(DataCollector):
             if len(line) == 0:
                 continue
 
+            line = str(line)
+
             # <stamp> <author>
             if re.search('files? changed', line) == None:
                 pos = line.find(' ')
@@ -336,21 +339,21 @@ class GitDataCollector(DataCollector):
 
                         files, inserted, deleted = 0, 0, 0
                     except ValueError:
-                        print 'Warning: unexpected line "%s"' % line
+                        print('Warning: unexpected line "%s"' % line)
                 else:
-                    print 'Warning: unexpected line "%s"' % line
+                    print('Warning: unexpected line "%s"' % line)
             else:
                 numbers = self.getstatsummarycounts(line)
 
                 if len(numbers) == 3:
-                    (files, inserted, deleted) = map(lambda el : int(el), numbers)
+                    (files, inserted, deleted) = [int(el) for el in numbers]
                     total_lines += inserted
                     total_lines -= deleted
                     self.total_lines_added += inserted
                     self.total_lines_removed += deleted
 
                 else:
-                    print 'Warning: failed to handle line "%s"' % line
+                    print('Warning: failed to handle line "%s"' % line)
                     (files, inserted, deleted) = (0, 0, 0)
                 #self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted }
         self.total_lines += total_lines
@@ -396,16 +399,16 @@ class GitDataCollector(DataCollector):
                         self.changes_by_date_by_author[stamp][author]['commits'] = self.authors[author]['commits']
                         files, inserted, deleted = 0, 0, 0
                     except ValueError:
-                        print 'Warning: unexpected line "%s"' % line
+                        print('Warning: unexpected line "%s"' % line)
                 else:
-                    print 'Warning: unexpected line "%s"' % line
+                    print('Warning: unexpected line "%s"' % line)
             else:
                 numbers = self.getstatsummarycounts(line);
 
                 if len(numbers) == 3:
-                    (files, inserted, deleted) = map(lambda el : int(el), numbers)
+                    (files, inserted, deleted) = [int(el) for el in numbers]
                 else:
-                    print 'Warning: failed to handle line "%s"' % line
+                    print('Warning: failed to handle line "%s"' % line)
                     (files, inserted, deleted) = (0, 0, 0)
 
     def refine(self):
@@ -416,7 +419,7 @@ class GitDataCollector(DataCollector):
         for i, name in enumerate(self.authors_by_commits):
             self.authors[name]['place_by_commits'] = i + 1
 
-        for name in self.authors.keys():
+        for name in list(self.authors.keys()):
             a = self.authors[name]
             a['commits_frac'] = (100 * float(a['commits'])) / self.getTotalCommits()
             date_first = datetime.datetime.fromtimestamp(a['first_commit_stamp'])

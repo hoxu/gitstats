@@ -7,11 +7,11 @@ from helper import *
 
 class HTMLReportCreator(ReportCreator):
     def getkeyssortedbyvalues(self, dict):
-        return map(lambda el : el[1], sorted(map(lambda el : (el[1], el[0]), dict.items())))
+        return [el[1] for el in sorted([(el[1], el[0]) for el in list(dict.items())])]
 
     # dict['author'] = { 'commits': 512 } - ...key(dict, 'commits')
     def getkeyssortedbyvaluekey(self, d, key):
-        return map(lambda el : el[1], sorted(map(lambda el : (d[el][key], el), d.keys())))
+        return [el[1] for el in sorted([(d[el][key], el) for el in list(d.keys())])]
 
     def html_linkify(self, text):
         return text.lower().replace(' ', '_')
@@ -58,7 +58,7 @@ class HTMLReportCreator(ReportCreator):
                     shutil.copyfile(src, path + '/' + file)
                     break
             else:
-                print 'Warning: "%s" not found, so not copied (searched: %s)' % (file, basedirs)
+                print('Warning: "%s" not found, so not copied (searched: %s)' % (file, basedirs))
 
         f = open(path + "/index.html", 'w')
         format = '%Y-%m-%d %H:%M:%S'
@@ -256,7 +256,7 @@ class HTMLReportCreator(ReportCreator):
         f.write('<th>Timezone</th><th>Commits</th>')
         f.write('</tr>')
         max_commits_on_tz = max(data.commits_by_timezone.values())
-        for i in sorted(data.commits_by_timezone.keys(), key = lambda n : int(n)):
+        for i in sorted(list(data.commits_by_timezone.keys()), key = lambda n : int(n)):
             commits = data.commits_by_timezone[i]
             r = 127 + int((float(commits) / max_commits_on_tz) * 128)
             f.write('<tr><th>%s</th><td style="background-color: rgb(%d, 0, 0)">%d</td></tr>' % (i, r, commits))
@@ -320,7 +320,7 @@ class HTMLReportCreator(ReportCreator):
             fgl.write('%d' % stamp)
             fgc.write('%d' % stamp)
             for author in self.authors_to_plot:
-                if author in data.changes_by_date_by_author[stamp].keys():
+                if author in list(data.changes_by_date_by_author[stamp].keys()):
                     lines_by_authors[author] = data.changes_by_date_by_author[stamp][author]['lines_added']
                     commits_by_authors[author] = data.changes_by_date_by_author[stamp][author]['commits']
                 fgl.write(' %d' % lines_by_authors[author])
@@ -467,7 +467,7 @@ class HTMLReportCreator(ReportCreator):
         f.write('<table class="tags">')
         f.write('<tr><th>Name</th><th>Date</th><th>Commits</th><th>Authors</th></tr>')
         # sort the tags by date desc
-        tags_sorted_by_date_desc = map(lambda el : el[1], reversed(sorted(map(lambda el : (el[1]['date'], el[0]), data.tags.items()))))
+        tags_sorted_by_date_desc = [el[1] for el in reversed(sorted([(el[1]['date'], el[0]) for el in list(data.tags.items())]))]
         for tag in tags_sorted_by_date_desc:
             authorinfo = []
             self.authors_by_commits = self.getkeyssortedbyvalues(data.tags[tag]['authors'])
@@ -482,7 +482,7 @@ class HTMLReportCreator(ReportCreator):
         self.createGraphs(path)
 
     def createGraphs(self, path):
-        print 'Generating graphs...'
+        print('Generating graphs...')
 
         # hour of day
         f = open(path + '/hour_of_day.plot', 'w')
@@ -684,7 +684,7 @@ plot """ % (self.conf['image_resolution'], self.conf['date_format'])
         for f in files:
             out = getpipeoutput([gnuplot_cmd + ' "%s"' % f])
             if len(out) > 0:
-                print out
+                print(out)
 
     def printHeader(self, f, title = ''):
         f.write(

@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python3
 # Copyright (c) 2007-2014 Heikki Hokkanen <hoxu@users.sf.net> & others (see doc/AUTHOR)
 # GPLv2 / GPLv3
 import getopt
@@ -9,7 +9,7 @@ from GitDataCollector import GitDataCollector
 from HTMLReportCreator import HTMLReportCreator
 
 if sys.version_info < (2, 6):
-    print >> sys.stderr, "Python 2.6 or higher is required for gitstats"
+    print("Python 2.6 or higher is required for gitstats", file=sys.stderr)
     sys.exit(1)
 
 from multiprocessing import Pool
@@ -37,7 +37,7 @@ conf = {
 }
 
 def usage():
-    print """
+    print("""
 Usage: gitstats [options] <gitpath..> <outputpath>
 
 Options:
@@ -47,7 +47,7 @@ Default config values:
 %s
 
 Please see the manual page for more details.
-""" % conf
+""" % conf)
 
 class GitStats:
     def __init__(self, conf):
@@ -60,28 +60,28 @@ class GitStats:
         except OSError:
             pass
         if not os.path.isdir(path):
-            print 'FATAL: Output path %s is not a directory or does not exist' % path
+            print('FATAL: Output path %s is not a directory or does not exist' % path)
             sys.exit(1)
-        print 'Output path: %s' % path
+        print('Output path: %s' % path)
 
     def _collect_data(self, path):
-        print 'Git path: %s' % path
+        print('Git path: %s' % path)
 
         prevdir = os.getcwd()
         os.chdir(path)
 
-        print 'Collecting data...'
+        print('Collecting data...')
         self.data.collect(path, self.conf['project_name'])
 
         os.chdir(prevdir)
 
     def _refine_data(self, cachefile):
-        print 'Refining data...'
+        print('Refining data...')
         self.data.saveCache(cachefile)
         self.data.refine()
 
     def _generate_report(self, conf, outputpath):
-        print 'Generating report...'
+        print('Generating report...')
         report = HTMLReportCreator(conf)
         report.create(self.data, outputpath)
 
@@ -110,10 +110,10 @@ class GitStats:
         #exectime_internal = time_end - time_start
         #print 'Execution time %.5f secs, %.5f secs (%.2f %%) in external commands)' % (exectime_internal, exectime_external, (100.0 * exectime_external) / exectime_internal)
         if sys.stdin.isatty():
-            print 'You may now run:'
-            print
-            print '   sensible-browser \'%s\'' % os.path.join(outputpath, 'index.html').replace("'", "'\\''")
-            print
+            print('You may now run:')
+            print()
+            print('   sensible-browser \'%s\'' % os.path.join(outputpath, 'index.html').replace("'", "'\\''"))
+            print()
 
 if __name__=='__main__':
     if len(sys.argv) < 2:
