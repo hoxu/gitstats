@@ -1,6 +1,6 @@
-
 class ReportCreator:
     """Creates the actual report based on given data."""
+
     def __init__(self, conf):
         self.conf = conf
         self.version = None

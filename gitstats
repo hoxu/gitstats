@@ -12,11 +12,9 @@ if sys.version_info < (2, 6):
     print("Python 2.6 or higher is required for gitstats", file=sys.stderr)
     sys.exit(1)
 
-from multiprocessing import Pool
-
-#exectime_internal = 0.0
-#exectime_external = 0.0
-#time_start = time.time()
+# exectime_internal = 0.0
+# exectime_external = 0.0
+# time_start = time.time()
 
 
 conf = {
@@ -36,6 +34,7 @@ conf = {
     'authors_merge': '{}'
 }
 
+
 def usage():
     print("""
 Usage: gitstats [options] <gitpath..> <outputpath>
@@ -48,6 +47,7 @@ Default config values:
 
 Please see the manual page for more details.
 """ % conf)
+
 
 class GitStats:
     def __init__(self, conf):
@@ -91,7 +91,7 @@ class GitStats:
 
         self._create_outputdir(outputpath)
 
-        #if not getgnuplotversion():
+        # if not getgnuplotversion():
         #    print 'gnuplot not found'
         #    sys.exit(1)
 
@@ -106,22 +106,23 @@ class GitStats:
 
         self._generate_report(conf, outputpath)
 
-        #time_end = time.time()
-        #exectime_internal = time_end - time_start
-        #print 'Execution time %.5f secs, %.5f secs (%.2f %%) in external commands)' % (exectime_internal, exectime_external, (100.0 * exectime_external) / exectime_internal)
+        # time_end = time.time()
+        # exectime_internal = time_end - time_start
+        # print 'Execution time %.5f secs, %.5f secs (%.2f %%) in external commands)' % (exectime_internal, exectime_external, (100.0 * exectime_external) / exectime_internal)
         if sys.stdin.isatty():
             print('You may now run:')
             print()
             print('   sensible-browser \'%s\'' % os.path.join(outputpath, 'index.html').replace("'", "'\\''"))
             print()
 
-if __name__=='__main__':
+
+if __name__ == '__main__':
     if len(sys.argv) < 2:
         usage()
         sys.exit(0)
 
     optlist, args = getopt.getopt(sys.argv[1:], 'hc:', ["help"])
-    for o,v in optlist:
+    for o, v in optlist:
         if o == '-c':
             key, value = v.split('=', 1)
             if key not in conf:
@@ -135,7 +136,5 @@ if __name__=='__main__':
             sys.exit()
     conf['authors_merge'] = eval(conf['authors_merge'])
 
-
     g = GitStats(conf)
     g.run(args[-1], args[0:-1])
-

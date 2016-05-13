@@ -1,9 +1,10 @@
-import shutil
 import datetime
 import glob
+import shutil
 
 from ReportCreator import ReportCreator
 from helper import *
+
 
 class HTMLReportCreator(ReportCreator):
     def getkeyssortedbyvalues(self, dict):
@@ -24,7 +25,7 @@ class HTMLReportCreator(ReportCreator):
         if not self.version:
             gitstats_repo = os.path.dirname(os.path.abspath(__file__))
             self.version = getpipeoutput(["git --git-dir=%s/.git --work-tree=%s rev-parse --short %s" %
-                (gitstats_repo, gitstats_repo, self.getcommitrange('HEAD').split('\n')[0])])
+                                          (gitstats_repo, gitstats_repo, self.getcommitrange('HEAD').split('\n')[0])])
         return self.version
 
     def getgitversion(self):
@@ -33,7 +34,7 @@ class HTMLReportCreator(ReportCreator):
     def getgnuplotversion(self):
         return getpipeoutput(['%s --version' % gnuplot_cmd]).split('\n')[0]
 
-    def getcommitrange(self, defaultrange = 'HEAD', end_only = False):
+    def getcommitrange(self, defaultrange='HEAD', end_only=False):
         if len(self.conf['commit_end']) > 0:
             if end_only or len(self.conf['commit_begin']) == 0:
                 return self.conf['commit_end']
@@ -70,14 +71,24 @@ class HTMLReportCreator(ReportCreator):
 
         f.write('<dl>')
         f.write('<dt>Project name</dt><dd>%s</dd>' % (data.projectname))
-        f.write('<dt>Generated</dt><dd>%s (in %d seconds)</dd>' % (datetime.datetime.now().strftime(format), time.time() - data.getStampCreated()))
-        f.write('<dt>Generator</dt><dd><a href="http://gitstats.sourceforge.net/">GitStats</a> (version %s), %s, %s</dd>' % (self.getversion(), self.getgitversion(), self.getgnuplotversion()))
-        f.write('<dt>Report Period</dt><dd>%s to %s</dd>' % (data.getFirstCommitDate().strftime(format), data.getLastCommitDate().strftime(format)))
-        f.write('<dt>Age</dt><dd>%d days, %d active days (%3.2f%%)</dd>' % (data.getCommitDeltaDays(), len(data.getActiveDays()), (100.0 * len(data.getActiveDays()) / data.getCommitDeltaDays())))
+        f.write('<dt>Generated</dt><dd>%s (in %d seconds)</dd>' % (
+        datetime.datetime.now().strftime(format), time.time() - data.getStampCreated()))
+        f.write(
+            '<dt>Generator</dt><dd><a href="http://gitstats.sourceforge.net/">GitStats</a> (version %s), %s, %s</dd>' % (
+            self.getversion(), self.getgitversion(), self.getgnuplotversion()))
+        f.write('<dt>Report Period</dt><dd>%s to %s</dd>' % (
+        data.getFirstCommitDate().strftime(format), data.getLastCommitDate().strftime(format)))
+        f.write('<dt>Age</dt><dd>%d days, %d active days (%3.2f%%)</dd>' % (
+        data.getCommitDeltaDays(), len(data.getActiveDays()),
+        (100.0 * len(data.getActiveDays()) / data.getCommitDeltaDays())))
         f.write('<dt>Total Files</dt><dd>%s</dd>' % data.getTotalFiles())
-        f.write('<dt>Total Lines of Code</dt><dd>%s (%d added, %d removed)</dd>' % (data.getTotalLOC(), data.total_lines_added, data.total_lines_removed))
-        f.write('<dt>Total Commits</dt><dd>%s (average %.1f commits per active day, %.1f per all days)</dd>' % (data.getTotalCommits(), float(data.getTotalCommits()) / len(data.getActiveDays()), float(data.getTotalCommits()) / data.getCommitDeltaDays()))
-        f.write('<dt>Authors</dt><dd>%s (average %.1f commits per author)</dd>' % (data.getTotalAuthors(), (1.0 * data.getTotalCommits()) / data.getTotalAuthors()))
+        f.write('<dt>Total Lines of Code</dt><dd>%s (%d added, %d removed)</dd>' % (
+        data.getTotalLOC(), data.total_lines_added, data.total_lines_removed))
+        f.write('<dt>Total Commits</dt><dd>%s (average %.1f commits per active day, %.1f per all days)</dd>' % (
+        data.getTotalCommits(), float(data.getTotalCommits()) / len(data.getActiveDays()),
+        float(data.getTotalCommits()) / data.getCommitDeltaDays()))
+        f.write('<dt>Authors</dt><dd>%s (average %.1f commits per author)</dd>' % (
+        data.getTotalAuthors(), (1.0 * data.getTotalCommits()) / data.getTotalAuthors()))
         f.write('</dl>')
 
         f.write('</body>\n</html>')
@@ -90,9 +101,9 @@ class HTMLReportCreator(ReportCreator):
         f.write('<h1>Activity</h1>')
         self.printNav(f)
 
-        #f.write('<h2>Last 30 days</h2>')
+        # f.write('<h2>Last 30 days</h2>')
 
-        #f.write('<h2>Last 12 months</h2>')
+        # f.write('<h2>Last 12 months</h2>')
 
         # Weekly activity
         WEEKS = 32
@@ -119,7 +130,9 @@ class HTMLReportCreator(ReportCreator):
             if weeks[i] in data.activity_by_year_week:
                 percentage = float(data.activity_by_year_week[weeks[i]]) / data.activity_by_year_week_peak
             height = max(1, int(200 * percentage))
-            f.write('<td style="text-align: center; vertical-align: bottom">%d<div style="display: block; background-color: red; width: 20px; height: %dpx"></div></td>' % (commits, height))
+            f.write(
+                '<td style="text-align: center; vertical-align: bottom">%d<div style="display: block; background-color: red; width: 20px; height: %dpx"></div></td>' % (
+                commits, height))
 
         # bottom row: year/week
         f.write('</tr><tr>')
@@ -149,7 +162,8 @@ class HTMLReportCreator(ReportCreator):
         for i in range(0, 24):
             if i in hour_of_day:
                 r = 127 + int((float(hour_of_day[i]) / data.activity_by_hour_of_day_busiest) * 128)
-                f.write('<td style="background-color: rgb(%d, 0, 0)">%.2f</td>' % (r, (100.0 * hour_of_day[i]) / totalcommits))
+                f.write('<td style="background-color: rgb(%d, 0, 0)">%.2f</td>' % (
+                r, (100.0 * hour_of_day[i]) / totalcommits))
             else:
                 f.write('<td>0.00</td>')
         f.write('</tr></table>')
@@ -215,12 +229,13 @@ class HTMLReportCreator(ReportCreator):
         f.write(self.html_header(2, 'Month of Year'))
         f.write('<div class="vtable"><table>')
         f.write('<tr><th>Month</th><th>Commits (%)</th></tr>')
-        fp = open (path + '/month_of_year.dat', 'w')
+        fp = open(path + '/month_of_year.dat', 'w')
         for mm in range(1, 13):
             commits = 0
             if mm in data.activity_by_month_of_year:
                 commits = data.activity_by_month_of_year[mm]
-            f.write('<tr><td>%d</td><td>%d (%.2f %%)</td></tr>' % (mm, commits, (100.0 * commits) / data.getTotalCommits()))
+            f.write(
+                '<tr><td>%d</td><td>%d (%.2f %%)</td></tr>' % (mm, commits, (100.0 * commits) / data.getTotalCommits()))
             fp.write('%d %d\n' % (mm, commits))
         fp.close()
         f.write('</table></div>')
@@ -228,9 +243,12 @@ class HTMLReportCreator(ReportCreator):
 
         # Commits by year/month
         f.write(self.html_header(2, 'Commits by year/month'))
-        f.write('<div class="vtable"><table><tr><th>Month</th><th>Commits</th><th>Lines added</th><th>Lines removed</th></tr>')
+        f.write(
+            '<div class="vtable"><table><tr><th>Month</th><th>Commits</th><th>Lines added</th><th>Lines removed</th></tr>')
         for yymm in reversed(sorted(data.commits_by_month.keys())):
-            f.write('<tr><td>%s</td><td>%d</td><td>%d</td><td>%d</td></tr>' % (yymm, data.commits_by_month.get(yymm,0), data.lines_added_by_month.get(yymm,0), data.lines_removed_by_month.get(yymm,0)))
+            f.write('<tr><td>%s</td><td>%d</td><td>%d</td><td>%d</td></tr>' % (
+            yymm, data.commits_by_month.get(yymm, 0), data.lines_added_by_month.get(yymm, 0),
+            data.lines_removed_by_month.get(yymm, 0)))
         f.write('</table></div>')
         f.write('<img src="commits_by_year_month.png" alt="Commits by year/month">')
         fg = open(path + '/commits_by_year_month.dat', 'w')
@@ -240,9 +258,12 @@ class HTMLReportCreator(ReportCreator):
 
         # Commits by year
         f.write(self.html_header(2, 'Commits by Year'))
-        f.write('<div class="vtable"><table><tr><th>Year</th><th>Commits (% of all)</th><th>Lines added</th><th>Lines removed</th></tr>')
+        f.write(
+            '<div class="vtable"><table><tr><th>Year</th><th>Commits (% of all)</th><th>Lines added</th><th>Lines removed</th></tr>')
         for yy in reversed(sorted(data.commits_by_year.keys())):
-            f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td></tr>' % (yy, data.commits_by_year.get(yy,0), (100.0 * data.commits_by_year.get(yy,0)) / data.getTotalCommits(), data.lines_added_by_year.get(yy,0), data.lines_removed_by_year.get(yy,0)))
+            f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td></tr>' % (
+            yy, data.commits_by_year.get(yy, 0), (100.0 * data.commits_by_year.get(yy, 0)) / data.getTotalCommits(),
+            data.lines_added_by_year.get(yy, 0), data.lines_removed_by_year.get(yy, 0)))
         f.write('</table></div>')
         f.write('<img src="commits_by_year.png" alt="Commits by Year">')
         fg = open(path + '/commits_by_year.dat', 'w')
@@ -256,7 +277,7 @@ class HTMLReportCreator(ReportCreator):
         f.write('<th>Timezone</th><th>Commits</th>')
         f.write('</tr>')
         max_commits_on_tz = max(data.commits_by_timezone.values())
-        for i in sorted(list(data.commits_by_timezone.keys()), key = lambda n : int(n)):
+        for i in sorted(list(data.commits_by_timezone.keys()), key=lambda n: int(n)):
             commits = data.commits_by_timezone[i]
             r = 127 + int((float(commits) / max_commits_on_tz) * 128)
             f.write('<tr><th>%s</th><td style="background-color: rgb(%d, 0, 0)">%d</td></tr>' % (i, r, commits))
@@ -277,10 +298,15 @@ class HTMLReportCreator(ReportCreator):
         f.write(self.html_header(2, 'List of Authors'))
 
         f.write('<table class="authors sortable" id="authors">')
-        f.write('<tr><th>Author</th><th>Commits (%)</th><th>+ lines</th><th>- lines</th><th>First commit</th><th>Last commit</th><th class="unsortable">Age</th><th>Active days</th><th># by commits</th></tr>')
+        f.write(
+            '<tr><th>Author</th><th>Commits (%)</th><th>+ lines</th><th>- lines</th><th>First commit</th><th>Last commit</th><th class="unsortable">Age</th><th>Active days</th><th># by commits</th></tr>')
         for author in data.getAuthors(self.conf['max_authors']):
             info = data.getAuthorInfo(author)
-            f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td></tr>' % (author, info['commits'], info['commits_frac'], info['lines_added'], info['lines_removed'], info['date_first'], info['date_last'], info['timedelta'], len(info['active_days']), info['place_by_commits']))
+            f.write(
+                '<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td></tr>' % (
+                author, info['commits'], info['commits_frac'], info['lines_added'], info['lines_removed'],
+                info['date_first'], info['date_last'], info['timedelta'], len(info['active_days']),
+                info['place_by_commits']))
         f.write('</table>')
 
         allauthors = data.getAuthors()
@@ -301,7 +327,7 @@ class HTMLReportCreator(ReportCreator):
         fgl = open(path + '/lines_of_code_by_author.dat', 'w')
         fgc = open(path + '/commits_by_author.dat', 'w')
 
-        lines_by_authors = {} # cumulated added lines by
+        lines_by_authors = {}  # cumulated added lines by
         # author. to save memory,
         # changes_by_date_by_author[stamp][author] is defined
         # only at points where author commits.
@@ -310,7 +336,7 @@ class HTMLReportCreator(ReportCreator):
 
         # Don't rely on getAuthors to give the same order each
         # time. Be robust and keep the list in a variable.
-        commits_by_authors = {} # cumulated added lines by
+        commits_by_authors = {}  # cumulated added lines by
 
         self.authors_to_plot = data.getAuthors(self.conf['max_authors'])
         for author in self.authors_to_plot:
@@ -333,32 +359,40 @@ class HTMLReportCreator(ReportCreator):
         # Authors :: Author of Month
         f.write(self.html_header(2, 'Author of Month'))
         f.write('<table class="sortable" id="aom">')
-        f.write('<tr><th>Month</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' % self.conf['authors_top'])
+        f.write(
+            '<tr><th>Month</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' %
+            self.conf['authors_top'])
         for yymm in reversed(sorted(data.author_of_month.keys())):
             authordict = data.author_of_month[yymm]
             authors = self.getkeyssortedbyvalues(authordict)
             authors.reverse()
             commits = data.author_of_month[yymm][authors[0]]
-            next = ', '.join(authors[1:self.conf['authors_top']+1])
-            f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (yymm, authors[0], commits, (100.0 * commits) / data.commits_by_month[yymm], data.commits_by_month[yymm], next, len(authors)))
+            next = ', '.join(authors[1:self.conf['authors_top'] + 1])
+            f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (
+            yymm, authors[0], commits, (100.0 * commits) / data.commits_by_month[yymm], data.commits_by_month[yymm],
+            next, len(authors)))
 
         f.write('</table>')
 
         f.write(self.html_header(2, 'Author of Year'))
-        f.write('<table class="sortable" id="aoy"><tr><th>Year</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' % self.conf['authors_top'])
+        f.write(
+            '<table class="sortable" id="aoy"><tr><th>Year</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' %
+            self.conf['authors_top'])
         for yy in reversed(sorted(data.author_of_year.keys())):
             authordict = data.author_of_year[yy]
             authors = self.getkeyssortedbyvalues(authordict)
             authors.reverse()
             commits = data.author_of_year[yy][authors[0]]
-            next = ', '.join(authors[1:self.conf['authors_top']+1])
-            f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (yy, authors[0], commits, (100.0 * commits) / data.commits_by_year[yy], data.commits_by_year[yy], next, len(authors)))
+            next = ', '.join(authors[1:self.conf['authors_top'] + 1])
+            f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (
+            yy, authors[0], commits, (100.0 * commits) / data.commits_by_year[yy], data.commits_by_year[yy], next,
+            len(authors)))
         f.write('</table>')
 
         # Domains
         f.write(self.html_header(2, 'Commits by Domains'))
         domains_by_commits = self.getkeyssortedbyvaluekey(data.domains, 'commits')
-        domains_by_commits.reverse() # most first
+        domains_by_commits.reverse()  # most first
         f.write('<div class="vtable"><table>')
         f.write('<tr><th>Domains</th><th>Total (%)</th></tr>')
         fp = open(path + '/domains.dat', 'w')
@@ -369,8 +403,9 @@ class HTMLReportCreator(ReportCreator):
             commits = 0
             n += 1
             info = data.getDomainInfo(domain)
-            fp.write('%s %d %d\n' % (domain, n , info['commits']))
-            f.write('<tr><th>%s</th><td>%d (%.2f%%)</td></tr>' % (domain, info['commits'], (100.0 * info['commits'] / totalcommits)))
+            fp.write('%s %d %d\n' % (domain, n, info['commits']))
+            f.write('<tr><th>%s</th><td>%d (%.2f%%)</td></tr>' % (
+            domain, info['commits'], (100.0 * info['commits'] / totalcommits)))
         f.write('</table></div>')
         f.write('<img src="domains.png" alt="Commits by Domains">')
         fp.close()
@@ -389,7 +424,8 @@ class HTMLReportCreator(ReportCreator):
         f.write('<dt>Total files</dt><dd>%d</dd>' % data.getTotalFiles())
         f.write('<dt>Total lines</dt><dd>%d</dd>' % data.getTotalLOC())
         try:
-            f.write('<dt>Average file size</dt><dd>%.2f bytes</dd>' % (float(data.getTotalSize()) / data.getTotalFiles()))
+            f.write(
+                '<dt>Average file size</dt><dd>%.2f bytes</dd>' % (float(data.getTotalSize()) / data.getTotalFiles()))
         except ZeroDivisionError:
             pass
         f.write('</dl>\n')
@@ -400,22 +436,24 @@ class HTMLReportCreator(ReportCreator):
         # use set to get rid of duplicate/unnecessary entries
         files_by_date = set()
         for stamp in sorted(data.files_by_stamp.keys()):
-            files_by_date.add('%s %d' % (datetime.datetime.fromtimestamp(stamp).strftime(self.conf['date_format']), data.files_by_stamp[stamp]))
+            files_by_date.add('%s %d' % (
+            datetime.datetime.fromtimestamp(stamp).strftime(self.conf['date_format']), data.files_by_stamp[stamp]))
 
         fg = open(path + '/files_by_date.dat', 'w')
         for line in sorted(list(files_by_date)):
             fg.write('%s\n' % line)
-        #for stamp in sorted(data.files_by_stamp.keys()):
+        # for stamp in sorted(data.files_by_stamp.keys()):
         #    fg.write('%s %d\n' % (datetime.datetime.fromtimestamp(stamp).strftime(self.conf['date_format']), data.files_by_stamp[stamp]))
         fg.close()
 
         f.write('<img src="files_by_date.png" alt="Files by Date">')
 
-        #f.write('<h2>Average file size by date</h2>')
+        # f.write('<h2>Average file size by date</h2>')
 
         # Files :: Extensions
         f.write(self.html_header(2, 'Extensions'))
-        f.write('<table class="sortable" id="ext"><tr><th>Extension</th><th>Files (%)</th><th>Lines (%)</th><th>Lines/file</th></tr>')
+        f.write(
+            '<table class="sortable" id="ext"><tr><th>Extension</th><th>Files (%)</th><th>Lines (%)</th><th>Lines/file</th></tr>')
         for ext in sorted(data.extensions.keys()):
             files = data.extensions[ext]['files']
             lines = data.extensions[ext]['lines']
@@ -423,7 +461,8 @@ class HTMLReportCreator(ReportCreator):
                 loc_percentage = (100.0 * lines) / data.getTotalLOC()
             except ZeroDivisionError:
                 loc_percentage = 0
-            f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d (%.2f%%)</td><td>%d</td></tr>' % (ext, files, (100.0 * files) / data.getTotalFiles(), lines, loc_percentage, lines / files))
+            f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d (%.2f%%)</td><td>%d</td></tr>' % (
+            ext, files, (100.0 * files) / data.getTotalFiles(), lines, loc_percentage, lines / files))
         f.write('</table>')
 
         f.write('</body></html>')
@@ -467,13 +506,15 @@ class HTMLReportCreator(ReportCreator):
         f.write('<table class="tags">')
         f.write('<tr><th>Name</th><th>Date</th><th>Commits</th><th>Authors</th></tr>')
         # sort the tags by date desc
-        tags_sorted_by_date_desc = [el[1] for el in reversed(sorted([(el[1]['date'], el[0]) for el in list(data.tags.items())]))]
+        tags_sorted_by_date_desc = [el[1] for el in
+                                    reversed(sorted([(el[1]['date'], el[0]) for el in list(data.tags.items())]))]
         for tag in tags_sorted_by_date_desc:
             authorinfo = []
             self.authors_by_commits = self.getkeyssortedbyvalues(data.tags[tag]['authors'])
             for i in reversed(self.authors_by_commits):
                 authorinfo.append('%s (%d)' % (i, data.tags[tag]['authors'][i]))
-            f.write('<tr><td>%s</td><td>%s</td><td>%d</td><td>%s</td></tr>' % (tag, data.tags[tag]['date'], data.tags[tag]['commits'], ', '.join(authorinfo)))
+            f.write('<tr><td>%s</td><td>%s</td><td>%d</td><td>%s</td></tr>' % (
+            tag, data.tags[tag]['date'], data.tags[tag]['commits'], ', '.join(authorinfo)))
         f.write('</table>')
 
         f.write('</body></html>')
@@ -488,157 +529,157 @@ class HTMLReportCreator(ReportCreator):
         f = open(path + '/hour_of_day.plot', 'w')
         f.write(self.GNUPLOT_COMMON)
         f.write(
-"""
-set output 'hour_of_day.png'
-unset key
-set xrange [0.5:24.5]
-set yrange [0:]
-set xtics 4
-set grid y
-set ylabel "Commits"
-plot 'hour_of_day.dat' using 1:2:(0.5) w boxes fs solid
-""")
+            """
+            set output 'hour_of_day.png'
+            unset key
+            set xrange [0.5:24.5]
+            set yrange [0:]
+            set xtics 4
+            set grid y
+            set ylabel "Commits"
+            plot 'hour_of_day.dat' using 1:2:(0.5) w boxes fs solid
+            """)
         f.close()
 
         # day of week
         f = open(path + '/day_of_week.plot', 'w')
         f.write(self.GNUPLOT_COMMON)
         f.write(
-"""
-set output 'day_of_week.png'
-unset key
-set xrange [0.5:7.5]
-set yrange [0:]
-set xtics 1
-set grid y
-set ylabel "Commits"
-plot 'day_of_week.dat' using 1:3:(0.5):xtic(2) w boxes fs solid
-""")
+            """
+            set output 'day_of_week.png'
+            unset key
+            set xrange [0.5:7.5]
+            set yrange [0:]
+            set xtics 1
+            set grid y
+            set ylabel "Commits"
+            plot 'day_of_week.dat' using 1:3:(0.5):xtic(2) w boxes fs solid
+            """)
         f.close()
 
         # Domains
         f = open(path + '/domains.plot', 'w')
         f.write(self.GNUPLOT_COMMON)
         f.write(
-"""
-set output 'domains.png'
-unset key
-unset xtics
-set yrange [0:]
-set grid y
-set ylabel "Commits"
-plot 'domains.dat' using 2:3:(0.5) with boxes fs solid, '' using 2:3:1 with labels rotate by 45 offset 0,1
-""")
+            """
+            set output 'domains.png'
+            unset key
+            unset xtics
+            set yrange [0:]
+            set grid y
+            set ylabel "Commits"
+            plot 'domains.dat' using 2:3:(0.5) with boxes fs solid, '' using 2:3:1 with labels rotate by 45 offset 0,1
+            """)
         f.close()
 
         # Month of Year
         f = open(path + '/month_of_year.plot', 'w')
         f.write(self.GNUPLOT_COMMON)
         f.write(
-"""
-set output 'month_of_year.png'
-unset key
-set xrange [0.5:12.5]
-set yrange [0:]
-set xtics 1
-set grid y
-set ylabel "Commits"
-plot 'month_of_year.dat' using 1:2:(0.5) w boxes fs solid
-""")
+            """
+            set output 'month_of_year.png'
+            unset key
+            set xrange [0.5:12.5]
+            set yrange [0:]
+            set xtics 1
+            set grid y
+            set ylabel "Commits"
+            plot 'month_of_year.dat' using 1:2:(0.5) w boxes fs solid
+            """)
         f.close()
 
         # commits_by_year_month
         f = open(path + '/commits_by_year_month.plot', 'w')
         f.write(self.GNUPLOT_COMMON)
         f.write(
-"""
-set output 'commits_by_year_month.png'
-unset key
-set yrange [0:]
-set xdata time
-set timefmt "%Y-%m"
-set format x "%Y-%m"
-set xtics rotate
-set bmargin 5
-set grid y
-set ylabel "Commits"
-plot 'commits_by_year_month.dat' using 1:2:(0.5) w boxes fs solid
-""")
+            """
+            set output 'commits_by_year_month.png'
+            unset key
+            set yrange [0:]
+            set xdata time
+            set timefmt "%Y-%m"
+            set format x "%Y-%m"
+            set xtics rotate
+            set bmargin 5
+            set grid y
+            set ylabel "Commits"
+            plot 'commits_by_year_month.dat' using 1:2:(0.5) w boxes fs solid
+            """)
         f.close()
 
         # commits_by_year
         f = open(path + '/commits_by_year.plot', 'w')
         f.write(self.GNUPLOT_COMMON)
         f.write(
-"""
-set output 'commits_by_year.png'
-unset key
-set yrange [0:]
-set xtics 1 rotate
-set grid y
-set ylabel "Commits"
-set yrange [0:]
-plot 'commits_by_year.dat' using 1:2:(0.5) w boxes fs solid
-""")
+            """
+            set output 'commits_by_year.png'
+            unset key
+            set yrange [0:]
+            set xtics 1 rotate
+            set grid y
+            set ylabel "Commits"
+            set yrange [0:]
+            plot 'commits_by_year.dat' using 1:2:(0.5) w boxes fs solid
+            """)
         f.close()
 
         # Files by date
         f = open(path + '/files_by_date.plot', 'w')
         f.write(self.GNUPLOT_COMMON)
         f.write(
-"""
-set output 'files_by_date.png'
-unset key
-set yrange [0:]
-set xdata time
-set timefmt "%s"
-set format x "%s"
-set grid y
-set ylabel "Files"
-set xtics rotate
-set ytics autofreq
-set bmargin 6
-plot 'files_by_date.dat' using 1:2 w steps
-""" % (self.conf['date_format'], self.conf['date_format']))
+            """
+            set output 'files_by_date.png'
+            unset key
+            set yrange [0:]
+            set xdata time
+            set timefmt "%s"
+            set format x "%s"
+            set grid y
+            set ylabel "Files"
+            set xtics rotate
+            set ytics autofreq
+            set bmargin 6
+            plot 'files_by_date.dat' using 1:2 w steps
+            """ % (self.conf['date_format'], self.conf['date_format']))
         f.close()
 
         # Lines of Code
         f = open(path + '/lines_of_code.plot', 'w')
         f.write(self.GNUPLOT_COMMON)
         f.write(
-"""
-set output 'lines_of_code.png'
-unset key
-set yrange [0:]
-set xdata time
-set timefmt "%%s"
-set format x "%s"
-set grid y
-set ylabel "Lines"
-set xtics rotate
-set bmargin 6
-plot 'lines_of_code.dat' using 1:2 w lines
-""" % self.conf['date_format'])
+            """
+            set output 'lines_of_code.png'
+            unset key
+            set yrange [0:]
+            set xdata time
+            set timefmt "%%s"
+            set format x "%s"
+            set grid y
+            set ylabel "Lines"
+            set xtics rotate
+            set bmargin 6
+            plot 'lines_of_code.dat' using 1:2 w lines
+            """ % self.conf['date_format'])
         f.close()
 
         # Lines of Code Added per author
         f = open(path + '/lines_of_code_by_author.plot', 'w')
         f.write(self.GNUPLOT_COMMON)
         f.write(
-"""
-set terminal png transparent size %s
-set output 'lines_of_code_by_author.png'
-set key left top
-set yrange [0:]
-set xdata time
-set timefmt "%%s"
-set format x "%s"
-set grid y
-set ylabel "Lines"
-set xtics rotate
-set bmargin 6
-plot """ % (self.conf['image_resolution'], self.conf['date_format'])
-)
+            """
+            set terminal png transparent size %s
+            set output 'lines_of_code_by_author.png'
+            set key left top
+            set yrange [0:]
+            set xdata time
+            set timefmt "%%s"
+            set format x "%s"
+            set grid y
+            set ylabel "Lines"
+            set xtics rotate
+            set bmargin 6
+            plot """ % (self.conf['image_resolution'], self.conf['date_format'])
+        )
         i = 1
         plots = []
         for a in self.authors_to_plot:
@@ -654,20 +695,20 @@ plot """ % (self.conf['image_resolution'], self.conf['date_format'])
         f = open(path + '/commits_by_author.plot', 'w')
         f.write(self.GNUPLOT_COMMON)
         f.write(
-"""
-set terminal png transparent size %s
-set output 'commits_by_author.png'
-set key left top
-set yrange [0:]
-set xdata time
-set timefmt "%%s"
-set format x "%s"
-set grid y
-set ylabel "Commits"
-set xtics rotate
-set bmargin 6
-plot """ % (self.conf['image_resolution'], self.conf['date_format'])
-)
+            """
+            set terminal png transparent size %s
+            set output 'commits_by_author.png'
+            set key left top
+            set yrange [0:]
+            set xdata time
+            set timefmt "%%s"
+            set format x "%s"
+            set grid y
+            set ylabel "Commits"
+            set xtics rotate
+            set bmargin 6
+            plot """ % (self.conf['image_resolution'], self.conf['date_format'])
+        )
         i = 1
         plots = []
         for a in self.authors_to_plot:
@@ -686,19 +727,19 @@ plot """ % (self.conf['image_resolution'], self.conf['date_format'])
             if len(out) > 0:
                 print(out)
 
-    def printHeader(self, f, title = ''):
+    def printHeader(self, f, title=''):
         f.write(
-"""<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>GitStats - %s</title>
-    <link rel="stylesheet" href="%s" type="text/css">
-    <meta name="generator" content="GitStats %s">
-    <script type="text/javascript" src="sortable.js"></script>
-</head>
-<body>
-""" % (self.title, self.conf['style'], self.getversion()))
+            """<!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>GitStats - %s</title>
+                <link rel="stylesheet" href="%s" type="text/css">
+                <meta name="generator" content="GitStats %s">
+                <script type="text/javascript" src="sortable.js"></script>
+            </head>
+            <body>
+            """ % (self.title, self.conf['style'], self.getversion()))
 
     def printNav(self, f):
         f.write("""

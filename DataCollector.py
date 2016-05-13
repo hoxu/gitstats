@@ -1,45 +1,47 @@
 #!/usr/bin/env python2
 
-import os
 import datetime
-import time
+import os
 import pickle
+import time
 import zlib
+
 
 class DataCollector:
     """Manages data collection from a revision control repository."""
+
     def __init__(self):
         self.stamp_created = time.time()
         self.cache = {}
 
         self.total_authors = 0
-        self.activity_by_hour_of_day = {} # hour -> commits
-        self.activity_by_day_of_week = {} # day -> commits
-        self.activity_by_month_of_year = {} # month [1-12] -> commits
-        self.activity_by_hour_of_week = {} # weekday -> hour -> commits
+        self.activity_by_hour_of_day = {}  # hour -> commits
+        self.activity_by_day_of_week = {}  # day -> commits
+        self.activity_by_month_of_year = {}  # month [1-12] -> commits
+        self.activity_by_hour_of_week = {}  # weekday -> hour -> commits
         self.activity_by_hour_of_day_busiest = 0
         self.activity_by_hour_of_week_busiest = 0
-        self.activity_by_year_week = {} # yy_wNN -> commits
+        self.activity_by_year_week = {}  # yy_wNN -> commits
         self.activity_by_year_week_peak = 0
 
-        self.authors = {} # name -> {commits, first_commit_stamp, last_commit_stamp, last_active_day, active_days, lines_added, lines_removed}
+        self.authors = {}  # name -> {commits, first_commit_stamp, last_commit_stamp, last_active_day, active_days, lines_added, lines_removed}
 
         self.total_commits = 0
         self.total_files = 0
         self.authors_by_commits = 0
 
         # domains
-        self.domains = {} # domain -> commits
+        self.domains = {}  # domain -> commits
 
         # author of the month
-        self.author_of_month = {} # month -> author -> commits
-        self.author_of_year = {} # year -> author -> commits
-        self.commits_by_month = {} # month -> commits
-        self.commits_by_year = {} # year -> commits
-        self.lines_added_by_month = {} # month -> lines added
-        self.lines_added_by_year = {} # year -> lines added
-        self.lines_removed_by_month = {} # month -> lines removed
-        self.lines_removed_by_year = {} # year -> lines removed
+        self.author_of_month = {}  # month -> author -> commits
+        self.author_of_year = {}  # year -> author -> commits
+        self.commits_by_month = {}  # month -> commits
+        self.commits_by_year = {}  # year -> commits
+        self.lines_added_by_month = {}  # month -> lines added
+        self.lines_added_by_year = {}  # year -> lines added
+        self.lines_removed_by_month = {}  # month -> lines removed
+        self.lines_removed_by_year = {}  # year -> lines removed
         self.first_commit_stamp = 0
         self.last_commit_stamp = 0
         self.last_active_day = None
@@ -54,22 +56,22 @@ class DataCollector:
         self.total_size = 0
 
         # timezone
-        self.commits_by_timezone = {} # timezone -> commits
+        self.commits_by_timezone = {}  # timezone -> commits
 
         # tags
         self.tags = {}
 
-        self.files_by_stamp = {} # stamp -> files
+        self.files_by_stamp = {}  # stamp -> files
 
         # extensions
-        self.extensions = {} # extension -> files, lines
+        self.extensions = {}  # extension -> files, lines
 
         # line statistics
-        self.changes_by_date = {} # stamp -> { files, ins, del }
+        self.changes_by_date = {}  # stamp -> { files, ins, del }
 
     ##
     # This should be the main function to extract data from the repository.
-    def collect(self, dir, project_name = None):
+    def collect(self, dir, project_name=None):
         self.dir = dir
         if project_name:
             self.projectname = project_name
@@ -97,7 +99,7 @@ class DataCollector:
         print('Saving cache...')
         tempfile = cachefile + '.tmp'
         f = open(tempfile, 'wb')
-        #pickle.dump(self.cache, f)
+        # pickle.dump(self.cache, f)
         data = zlib.compress(pickle.dumps(self.cache))
         f.write(data)
         f.close()
@@ -114,7 +116,7 @@ class DataCollector:
 
     # dict['author'] = { 'commits': 512 } - ...key(dict, 'commits')
     def getkeyssortedbyvaluekey(self, d, key):
-        return map(lambda el : el[1], sorted(map(lambda el : (d[el][key], el), d.keys())))
+        return [el[1] for el in sorted([(d[el][key], el) for el in list(d.keys())])]
 
     ##
     # : get a dictionary of author
@@ -131,7 +133,7 @@ class DataCollector:
         return self.active_days
 
     def getDomains(self):
-        return self.domains.keys()
+        return list(self.domains.keys())
 
     # : get a dictionary of domains
     def getDomainInfo(self, domain):
@@ -139,7 +141,7 @@ class DataCollector:
 
     ##
     # Get a list of authors
-    def getAuthors(self, limit = None):
+    def getAuthors(self, limit=None):
         res = self.getkeyssortedbyvaluekey(self.authors, 'commits')
         res.reverse()
         return res[:limit]
@@ -157,7 +159,7 @@ class DataCollector:
         return self.stamp_created
 
     def getTags(self):
-        return self.tags.keys().sort()
+        return list(self.tags.keys()).sort()
 
     def getTotalAuthors(self):
         return self.total_authors
@@ -173,4 +175,3 @@ class DataCollector:
 
     def getTotalSize(self):
         return self.total_size
-

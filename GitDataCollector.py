@@ -1,25 +1,26 @@
 import datetime
-from multiprocessing import Pool
 import re
+from multiprocessing import Pool
 
 from DataCollector import DataCollector
 from helper import *
 
+
 class GitDataCollector(DataCollector):
     def __init__(self, conf):
-        DataCollector.__init__(self)
+        super().__init__()
         self.conf = conf
 
     def getstatsummarycounts(self, line):
         numbers = re.findall('\d+', line)
-        if   len(numbers) == 1:
+        if len(numbers) == 1:
             # neither insertions nor deletions: may probably only happen for "0 files changed"
-            numbers.append(0);
-            numbers.append(0);
+            numbers.append(0)
+            numbers.append(0)
         elif len(numbers) == 2 and line.find('(+)') != -1:
-            numbers.append(0);    # only insertions were printed on line
+            numbers.append(0)  # only insertions were printed on line
         elif len(numbers) == 2 and line.find('(-)') != -1:
-            numbers.insert(1, 0); # only deletions were printed on line
+            numbers.insert(1, 0)  # only deletions were printed on line
         return numbers
 
     def getnumoffilesfromrev(self, time_rev):
@@ -41,14 +42,14 @@ class GitDataCollector(DataCollector):
             return self.conf['authors_merge'][author]
         return author
 
-    def getcommitrange(self, defaultrange = 'HEAD', end_only = False):
+    def getcommitrange(self, defaultrange='HEAD', end_only=False):
         if len(self.conf['commit_end']) > 0:
             if end_only or len(self.conf['commit_begin']) == 0:
                 return self.conf['commit_end']
             return '%s..%s' % (self.conf['commit_begin'], self.conf['commit_end'])
         return defaultrange
 
-    def getlogrange(self, defaultrange = 'HEAD', end_only = True):
+    def getlogrange(self, defaultrange='HEAD', end_only=True):
         commit_range = self.getcommitrange(defaultrange, end_only)
         if len(self.conf['start_date']) > 0:
             return '--since="%s" "%s"' % (self.conf['start_date'], commit_range)
@@ -58,7 +59,7 @@ class GitDataCollector(DataCollector):
         DataCollector.collect(self, dir, project_name)
 
         self.total_authors += int(getpipeoutput(['git shortlog -s %s' % self.getlogrange(), 'wc -l']))
-        #self.total_lines = int(getoutput('git-ls-files -z |xargs -0 cat |wc -l'))
+        # self.total_lines = int(getoutput('git-ls-files -z |xargs -0 cat |wc -l'))
 
         # tags
         lines = getpipeoutput(['git show-ref --tags']).split('\n')
@@ -76,10 +77,13 @@ class GitDataCollector(DataCollector):
                     stamp = int(parts[0])
                 except ValueError:
                     stamp = 0
-                self.tags[tag] = { 'stamp': stamp, 'hash' : hash, 'date' : datetime.datetime.fromtimestamp(stamp).strftime(self.conf['date_format']), 'commits': 0, 'authors': {} }
+                self.tags[tag] = {'stamp': stamp, 'hash': hash,
+                                  'date': datetime.datetime.fromtimestamp(stamp).strftime(self.conf['date_format']),
+                                  'commits': 0, 'authors': {}}
 
         # collect info on tags, starting from latest
-        tags_sorted_by_date_desc = [el[1] for el in reversed(sorted([(el[1]['date'], el[0]) for el in list(self.tags.items())]))]
+        tags_sorted_by_date_desc = [el[1] for el in
+                                    reversed(sorted([(el[1]['date'], el[0]) for el in list(self.tags.items())]))]
         prev = None
         for tag in reversed(tags_sorted_by_date_desc):
             cmd = 'git shortlog -s "%s"' % tag
@@ -98,7 +102,8 @@ class GitDataCollector(DataCollector):
 
         # Collect revision statistics
         # Outputs "<stamp> <date> <time> <timezone> <author> '<' <mail> '>'"
-        lines = getpipeoutput(['git rev-list --pretty=format:"%%at %%ai %%aN <%%aE>" %s' % self.getlogrange('HEAD'), 'grep -v ^commit']).split('\n')
+        lines = getpipeoutput(['git rev-list --pretty=format:"%%at %%ai %%aN <%%aE>" %s' % self.getlogrange('HEAD'),
+                               'grep -v ^commit']).split('\n')
         for line in lines:
             line = str(line)
             parts = line.split(' ', 4)
@@ -207,31 +212,33 @@ class GitDataCollector(DataCollector):
             self.commits_by_timezone[timezone] = self.commits_by_timezone.get(timezone, 0) + 1
 
         # outputs "<stamp> <files>" for each revision
-        revlines = getpipeoutput(['git rev-list --pretty=format:"%%at %%T" %s' % self.getlogrange('HEAD'), 'grep -v ^commit']).strip().split('\n')
+        revlines = getpipeoutput(
+            ['git rev-list --pretty=format:"%%at %%T" %s' % self.getlogrange('HEAD'), 'grep -v ^commit']).strip().split(
+            '\n')
         lines = []
         revs_to_read = []
         time_rev_count = []
-        #Look up rev in cache and take info from cache if found
-        #If not append rev to list of rev to read from repo
+        # Look up rev in cache and take info from cache if found
+        # If not append rev to list of rev to read from repo
         for revline in revlines:
             time, rev = revline.split(' ')
-            #if cache empty then add time and rev to list of new rev's
-            #otherwise try to read needed info from cache
+            # if cache empty then add time and rev to list of new rev's
+            # otherwise try to read needed info from cache
             if 'files_in_tree' not in list(self.cache.keys()):
-                revs_to_read.append((time,rev))
+                revs_to_read.append((time, rev))
                 continue
             if rev in list(self.cache['files_in_tree'].keys()):
                 lines.append('%d %d' % (int(time), self.cache['files_in_tree'][rev]))
             else:
-                revs_to_read.append((time,rev))
+                revs_to_read.append((time, rev))
 
-        #Read revisions from repo
+        # Read revisions from repo
         pool = Pool(processes=self.conf['processes'])
         time_rev_count = pool.map(self.getnumoffilesfromrev, revs_to_read)
         pool.terminate()
         pool.join()
 
-        #Update cache with new revisions and append then to general list
+        # Update cache with new revisions and append then to general list
         for (time, rev, count) in time_rev_count:
             if 'files_in_tree' not in self.cache:
                 self.cache['files_in_tree'] = {}
@@ -250,7 +257,7 @@ class GitDataCollector(DataCollector):
                 print('Warning: failed to parse line "%s"' % line)
 
         # extensions and size of files
-        lines = getpipeoutput(['git ls-tree -r -l -z %s' % self.getcommitrange('HEAD', end_only = True)]).split('\000')
+        lines = getpipeoutput(['git ls-tree -r -l -z %s' % self.getcommitrange('HEAD', end_only=True)]).split('\000')
         blobs_to_read = []
         for line in lines:
             if len(line) == 0:
@@ -266,7 +273,7 @@ class GitDataCollector(DataCollector):
             self.total_size += size
             self.total_files += 1
 
-            filename = fullpath.split('/')[-1] # strip directories
+            filename = fullpath.split('/')[-1]  # strip directories
             if filename.find('.') == -1 or filename.rfind('.') == 0:
                 ext = ''
             else:
@@ -276,23 +283,23 @@ class GitDataCollector(DataCollector):
             if ext not in self.extensions:
                 self.extensions[ext] = {'files': 0, 'lines': 0}
             self.extensions[ext]['files'] += 1
-            #if cache empty then add ext and blob id to list of new blob's
-            #otherwise try to read needed info from cache
+            # if cache empty then add ext and blob id to list of new blob's
+            # otherwise try to read needed info from cache
             if 'lines_in_blob' not in list(self.cache.keys()):
-                blobs_to_read.append((ext,blob_id))
+                blobs_to_read.append((ext, blob_id))
                 continue
             if blob_id in list(self.cache['lines_in_blob'].keys()):
                 self.extensions[ext]['lines'] += self.cache['lines_in_blob'][blob_id]
             else:
-                blobs_to_read.append((ext,blob_id))
+                blobs_to_read.append((ext, blob_id))
 
-        #Get info abount line count for new blob's that wasn't found in cache
+        # Get info abount line count for new blob's that wasn't found in cache
         pool = Pool(processes=self.conf['processes'])
         ext_blob_linecount = pool.map(self.getnumoflinesinblob, blobs_to_read)
         pool.terminate()
         pool.join()
 
-        #Update cache and write down info about number of number of lines
+        # Update cache and write down info about number of number of lines
         for (ext, blob_id, linecount) in ext_blob_linecount:
             if 'lines_in_blob' not in self.cache:
                 self.cache['lines_in_blob'] = {}
@@ -303,15 +310,19 @@ class GitDataCollector(DataCollector):
         # outputs:
         #  N files changed, N insertions (+), N deletions(-)
         # <stamp> <author>
-        self.changes_by_date = {} # stamp -> { files, ins, del }
+        self.changes_by_date = {}  # stamp -> { files, ins, del }
         # computation of lines of code by date is better done
         # on a linear history.
         extra = ''
         if self.conf['linear_linestats']:
             extra = '--first-parent -m'
-        lines = getpipeoutput(['git log --shortstat %s --pretty=format:"%%at %%aN" %s' % (extra, self.getlogrange('HEAD'))]).split('\n')
+        lines = getpipeoutput(
+            ['git log --shortstat %s --pretty=format:"%%at %%aN" %s' % (extra, self.getlogrange('HEAD'))]).split('\n')
         lines.reverse()
-        files = 0; inserted = 0; deleted = 0; total_lines = 0
+        files = 0;
+        inserted = 0;
+        deleted = 0;
+        total_lines = 0
         author = None
         for line in lines:
             if len(line) == 0:
@@ -324,9 +335,10 @@ class GitDataCollector(DataCollector):
                 pos = line.find(' ')
                 if pos != -1:
                     try:
-                        (stamp, author) = (int(line[:pos]), line[pos+1:])
+                        (stamp, author) = (int(line[:pos]), line[pos + 1:])
                         author = self.get_merged_author(author)
-                        self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted, 'lines': total_lines }
+                        self.changes_by_date[stamp] = {'files': files, 'ins': inserted, 'del': deleted,
+                                                       'lines': total_lines}
 
                         date = datetime.datetime.fromtimestamp(stamp)
                         yymm = date.strftime('%Y-%m')
@@ -334,7 +346,7 @@ class GitDataCollector(DataCollector):
                         self.lines_removed_by_month[yymm] = self.lines_removed_by_month.get(yymm, 0) + deleted
 
                         yy = date.year
-                        self.lines_added_by_year[yy] = self.lines_added_by_year.get(yy,0) + inserted
+                        self.lines_added_by_year[yy] = self.lines_added_by_year.get(yy, 0) + inserted
                         self.lines_removed_by_year[yy] = self.lines_removed_by_year.get(yy, 0) + deleted
 
                         files, inserted, deleted = 0, 0, 0
@@ -355,20 +367,24 @@ class GitDataCollector(DataCollector):
                 else:
                     print('Warning: failed to handle line "%s"' % line)
                     (files, inserted, deleted) = (0, 0, 0)
-                #self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted }
+                    # self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted }
         self.total_lines += total_lines
 
         # Per-author statistics
 
         # defined for stamp, author only if author commited at this timestamp.
-        self.changes_by_date_by_author = {} # stamp -> author -> lines_added
+        self.changes_by_date_by_author = {}  # stamp -> author -> lines_added
 
         # Similar to the above, but never use --first-parent
         # (we need to walk through every commit to know who
         # committed what, not just through mainline)
-        lines = getpipeoutput(['git log --shortstat --date-order --pretty=format:"%%at %%aN" %s' % (self.getlogrange('HEAD'))]).split('\n')
+        lines = getpipeoutput(
+            ['git log --shortstat --date-order --pretty=format:"%%at %%aN" %s' % (self.getlogrange('HEAD'))]).split(
+            '\n')
         lines.reverse()
-        files = 0; inserted = 0; deleted = 0
+        files = 0;
+        inserted = 0;
+        deleted = 0
         author = None
         stamp = 0
         for line in lines:
@@ -381,13 +397,13 @@ class GitDataCollector(DataCollector):
                 if pos != -1:
                     try:
                         oldstamp = stamp
-                        (stamp, author) = (int(line[:pos]), line[pos+1:])
+                        (stamp, author) = (int(line[:pos]), line[pos + 1:])
                         author = self.get_merged_author(author)
                         if oldstamp > stamp:
                             # clock skew, keep old timestamp to avoid having ugly graph
                             stamp = oldstamp
                         if author not in self.authors:
-                            self.authors[author] = { 'lines_added' : 0, 'lines_removed' : 0, 'commits' : 0}
+                            self.authors[author] = {'lines_added': 0, 'lines_removed': 0, 'commits': 0}
                         self.authors[author]['commits'] = self.authors[author].get('commits', 0) + 1
                         self.authors[author]['lines_added'] = self.authors[author].get('lines_added', 0) + inserted
                         self.authors[author]['lines_removed'] = self.authors[author].get('lines_removed', 0) + deleted
@@ -395,7 +411,8 @@ class GitDataCollector(DataCollector):
                             self.changes_by_date_by_author[stamp] = {}
                         if author not in self.changes_by_date_by_author[stamp]:
                             self.changes_by_date_by_author[stamp][author] = {}
-                        self.changes_by_date_by_author[stamp][author]['lines_added'] = self.authors[author]['lines_added']
+                        self.changes_by_date_by_author[stamp][author]['lines_added'] = self.authors[author][
+                            'lines_added']
                         self.changes_by_date_by_author[stamp][author]['commits'] = self.authors[author]['commits']
                         files, inserted, deleted = 0, 0, 0
                     except ValueError:
@@ -415,7 +432,7 @@ class GitDataCollector(DataCollector):
         # authors
         # name -> {place_by_commits, commits_frac, date_first, date_last, timedelta}
         self.authors_by_commits = self.getkeyssortedbyvaluekey(self.authors, 'commits')
-        self.authors_by_commits.reverse() # most first
+        self.authors_by_commits.reverse()  # most first
         for i, name in enumerate(self.authors_by_commits):
             self.authors[name]['place_by_commits'] = i + 1
 
