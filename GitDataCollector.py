@@ -10,10 +10,6 @@ class GitDataCollector(DataCollector):
         DataCollector.__init__(self)
         self.conf = conf
 
-    def getkeyssortedbyvalues(self, dict):
-        return map(lambda el : el[1], sorted(map(lambda el : (el[1], el[0]), dict.items())))
-
-
     def getstatsummarycounts(self, line):
         numbers = re.findall('\d+', line)
         if   len(numbers) == 1:
