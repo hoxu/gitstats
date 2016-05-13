@@ -2,7 +2,7 @@ import datetime
 import glob
 import shutil
 
-from ReportCreator import ReportCreator
+from reporter.ReportCreator import ReportCreator
 from helper import *
 
 

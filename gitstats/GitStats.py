@@ -5,54 +5,45 @@ import getopt
 import os
 import sys
 
-from GitDataCollector import GitDataCollector
-from HTMLReportCreator import HTMLReportCreator
-
-if sys.version_info < (2, 6):
-    print("Python 2.6 or higher is required for gitstats", file=sys.stderr)
-    sys.exit(1)
+from collector.GitDataCollector import GitDataCollector
+from reporter.HTMLReportCreator import HTMLReportCreator
 
 # exectime_internal = 0.0
 # exectime_external = 0.0
 # time_start = time.time()
 
-
-conf = {
-    'max_domains': 10,
-    'max_ext_length': 10,
-    'style': 'gitstats.css',
-    'max_authors': 20,
-    'authors_top': 5,
-    'commit_begin': '',
-    'commit_end': 'HEAD',
-    'linear_linestats': 1,
-    'project_name': '',
-    'processes': 8,
-    'start_date': '',
-    'image_resolution': '1280,640',
-    'date_format': '%Y-%m-%d',
-    'authors_merge': '{}'
-}
-
-
-def usage():
-    print("""
-Usage: gitstats [options] <gitpath..> <outputpath>
-
-Options:
--c key=value     Override configuration value
-
-Default config values:
-%s
-
-Please see the manual page for more details.
-""" % conf)
-
-
 class GitStats:
-    def __init__(self, conf):
-        self.conf = conf
-        self.data = GitDataCollector(conf)
+    def __init__(self):
+        self.conf = {
+            'max_domains': 10,
+            'max_ext_length': 10,
+            'style': 'gitstats.css',
+            'max_authors': 20,
+            'authors_top': 5,
+            'commit_begin': '',
+            'commit_end': 'HEAD',
+            'linear_linestats': 1,
+            'project_name': '',
+            'processes': 8,
+            'start_date': '',
+            'image_resolution': '1280,640',
+            'date_format': '%Y-%m-%d',
+            'authors_merge': '{}'
+        }
+        self.data = None
+
+    def _usage(self):
+        print("""
+    Usage: gitstats [options] <gitpath..> <outputpath>
+
+    Options:
+    -c key=value     Override configuration value
+
+    Default config values:
+    %s
+
+    Please see the manual page for more details.
+    """ % self.conf)
 
     def _create_outputdir(self, path):
         try:
@@ -85,9 +76,30 @@ class GitStats:
         report = HTMLReportCreator(conf)
         report.create(self.data, outputpath)
 
-    def run(self, outputpath, paths):
+    def parse_args(self):
+        if len(sys.argv) < 2:
+            self._usage()
+            sys.exit(0)
+
+        optlist, args = getopt.getopt(sys.argv[1:], 'hc:', ["help"])
+        for o, v in optlist:
+            if o == '-c':
+                key, value = v.split('=', 1)
+                if key not in self.conf:
+                    raise KeyError('no such key "%s" in config' % key)
+                if isinstance(self.conf[key], int):
+                    self.conf[key] = int(value)
+                else:
+                    self.conf[key] = value
+            elif o in ('-h', '--help'):
+                self._usage()
+                sys.exit()
+        self.conf['authors_merge'] = eval(self.conf['authors_merge'])
+        return args[-1], args[0:-1]
+
+    def run(self):
+        (outputpath, paths) = self.parse_args()
         outputpath = os.path.abspath(outputpath)
-        rundir = os.getcwd()
 
         self._create_outputdir(outputpath)
 
@@ -97,6 +109,7 @@ class GitStats:
 
         cachefile = os.path.join(outputpath, 'gitstats.cache')
 
+        self.data = GitDataCollector(self.conf)
         self.data.loadCache(cachefile)
 
         for gitpath in paths:
@@ -104,7 +117,7 @@ class GitStats:
 
         self._refine_data(cachefile)
 
-        self._generate_report(conf, outputpath)
+        self._generate_report(self.conf, outputpath)
 
         # time_end = time.time()
         # exectime_internal = time_end - time_start
@@ -117,24 +130,6 @@ class GitStats:
 
 
 if __name__ == '__main__':
-    if len(sys.argv) < 2:
-        usage()
-        sys.exit(0)
 
-    optlist, args = getopt.getopt(sys.argv[1:], 'hc:', ["help"])
-    for o, v in optlist:
-        if o == '-c':
-            key, value = v.split('=', 1)
-            if key not in conf:
-                raise KeyError('no such key "%s" in config' % key)
-            if isinstance(conf[key], int):
-                conf[key] = int(value)
-            else:
-                conf[key] = value
-        elif o in ('-h', '--help'):
-            usage()
-            sys.exit()
-    conf['authors_merge'] = eval(conf['authors_merge'])
-
-    g = GitStats(conf)
-    g.run(args[-1], args[0:-1])
+    g = GitStats()
+    g.run()
