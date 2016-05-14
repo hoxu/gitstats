@@ -3,17 +3,11 @@ import glob
 import shutil
 
 from reporter.ReportCreator import ReportCreator
+from reporter.PlotFileCreator import PlotFileCreator
 from helper import *
 
 
 class HTMLReportCreator(ReportCreator):
-    def getkeyssortedbyvalues(self, dict):
-        return [el[1] for el in sorted([(el[1], el[0]) for el in list(dict.items())])]
-
-    # dict['author'] = { 'commits': 512 } - ...key(dict, 'commits')
-    def getkeyssortedbyvaluekey(self, d, key):
-        return [el[1] for el in sorted([(d[el][key], el) for el in list(d.keys())])]
-
     def html_linkify(self, text):
         return text.lower().replace(' ', '_')
 
@@ -21,9 +15,10 @@ class HTMLReportCreator(ReportCreator):
         name = self.html_linkify(text)
         return '\n<h%d id="%s"><a href="#%s">%s</a></h%d>\n\n' % (level, name, name, text, level)
 
+
     def getversion(self):
         if not self.version:
-            gitstats_repo = os.path.dirname(os.path.abspath(__file__))
+            gitstats_repo = os.path.dirname(os.path.abspath(os.path.join(__file__,"../..")))
             self.version = getpipeoutput(["git --git-dir=%s/.git --work-tree=%s rev-parse --short %s" %
                                           (gitstats_repo, gitstats_repo, self.getcommitrange('HEAD').split('\n')[0])])
         return self.version
@@ -46,7 +41,6 @@ class HTMLReportCreator(ReportCreator):
         self.title = data.projectname
 
         self.WEEKDAYS = ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
-        self.GNUPLOT_COMMON = 'set terminal png transparent size %s\nset size 1.0,1.0\n' % self.conf['image_resolution']
 
         # copy static files. Looks in the binary directory, ../share/gitstats and /usr/share/gitstats
         binarypath = os.path.dirname(os.path.abspath(__file__))
@@ -364,7 +358,7 @@ class HTMLReportCreator(ReportCreator):
             self.conf['authors_top'])
         for yymm in reversed(sorted(data.author_of_month.keys())):
             authordict = data.author_of_month[yymm]
-            authors = self.getkeyssortedbyvalues(authordict)
+            authors = self.data.getkeyssortedbyvalues(authordict)
             authors.reverse()
             commits = data.author_of_month[yymm][authors[0]]
             next = ', '.join(authors[1:self.conf['authors_top'] + 1])
@@ -380,7 +374,7 @@ class HTMLReportCreator(ReportCreator):
             self.conf['authors_top'])
         for yy in reversed(sorted(data.author_of_year.keys())):
             authordict = data.author_of_year[yy]
-            authors = self.getkeyssortedbyvalues(authordict)
+            authors = self.data.getkeyssortedbyvalues(authordict)
             authors.reverse()
             commits = data.author_of_year[yy][authors[0]]
             next = ', '.join(authors[1:self.conf['authors_top'] + 1])
@@ -391,7 +385,7 @@ class HTMLReportCreator(ReportCreator):
 
         # Domains
         f.write(self.html_header(2, 'Commits by Domains'))
-        domains_by_commits = self.getkeyssortedbyvaluekey(data.domains, 'commits')
+        domains_by_commits = self.data.getkeyssortedbyvaluekey(data.domains, 'commits')
         domains_by_commits.reverse()  # most first
         f.write('<div class="vtable"><table>')
         f.write('<tr><th>Domains</th><th>Total (%)</th></tr>')
@@ -510,7 +504,7 @@ class HTMLReportCreator(ReportCreator):
                                     reversed(sorted([(el[1]['date'], el[0]) for el in list(data.tags.items())]))]
         for tag in tags_sorted_by_date_desc:
             authorinfo = []
-            self.authors_by_commits = self.getkeyssortedbyvalues(data.tags[tag]['authors'])
+            self.authors_by_commits = self.data.getkeyssortedbyvalues(data.tags[tag]['authors'])
             for i in reversed(self.authors_by_commits):
                 authorinfo.append('%s (%d)' % (i, data.tags[tag]['authors'][i]))
             f.write('<tr><td>%s</td><td>%s</td><td>%d</td><td>%s</td></tr>' % (
@@ -526,199 +520,100 @@ class HTMLReportCreator(ReportCreator):
         print('Generating graphs...')
 
         # hour of day
-        f = open(path + '/hour_of_day.plot', 'w')
-        f.write(self.GNUPLOT_COMMON)
-        f.write(
-            """
-            set output 'hour_of_day.png'
-            unset key
-            set xrange [0.5:24.5]
-            set yrange [0:]
-            set xtics 4
-            set grid y
-            set ylabel "Commits"
-            plot 'hour_of_day.dat' using 1:2:(0.5) w boxes fs solid
-            """)
-        f.close()
+        plot = "'hour_of_day.dat' using 1:2:(0.5) w boxes fs solid"
+        plot_file = PlotFileCreator(self.conf, path + '/hour_of_day.plot', 'hour_of_day.png', plot)
+        plot_file.ylabel = 'Commits'
+        plot_file.yrange = "[0:]"
+        plot_file.xrange = "[0.5:24.5]"
+        plot_file.xtics = "4"
+        plot_file.xtics_rotate = False
+        plot_file.create()
 
         # day of week
-        f = open(path + '/day_of_week.plot', 'w')
-        f.write(self.GNUPLOT_COMMON)
-        f.write(
-            """
-            set output 'day_of_week.png'
-            unset key
-            set xrange [0.5:7.5]
-            set yrange [0:]
-            set xtics 1
-            set grid y
-            set ylabel "Commits"
-            plot 'day_of_week.dat' using 1:3:(0.5):xtic(2) w boxes fs solid
-            """)
-        f.close()
+        plot = "'day_of_week.dat' using 1:3:(0.5):xtic(2) w boxes fs solid"
+        plot_file = PlotFileCreator(self.conf, path + '/day_of_week.plot', 'day_of_week.png', plot)
+        plot_file.ylabel = 'Commits'
+        plot_file.yrange = "[0:]"
+        plot_file.xrange = "[0.5:7.5]"
+        plot_file.xtics = "1"
+        plot_file.xtics_rotate = False
+        plot_file.create()
 
         # Domains
-        f = open(path + '/domains.plot', 'w')
-        f.write(self.GNUPLOT_COMMON)
-        f.write(
-            """
-            set output 'domains.png'
-            unset key
-            unset xtics
-            set yrange [0:]
-            set grid y
-            set ylabel "Commits"
-            plot 'domains.dat' using 2:3:(0.5) with boxes fs solid, '' using 2:3:1 with labels rotate by 45 offset 0,1
-            """)
-        f.close()
+        plot = "'domains.dat' using 2:3:(0.5) with boxes fs solid, '' using 2:3:1 with labels rotate by 45 offset 0,1"
+        plot_file = PlotFileCreator(self.conf, path + '/domains.plot', 'domains.png', plot)
+        plot_file.ylabel = 'Commits'
+        plot_file.xtics_rotate = False
+        plot_file.create()
 
         # Month of Year
-        f = open(path + '/month_of_year.plot', 'w')
-        f.write(self.GNUPLOT_COMMON)
-        f.write(
-            """
-            set output 'month_of_year.png'
-            unset key
-            set xrange [0.5:12.5]
-            set yrange [0:]
-            set xtics 1
-            set grid y
-            set ylabel "Commits"
-            plot 'month_of_year.dat' using 1:2:(0.5) w boxes fs solid
-            """)
-        f.close()
+        plot = "'month_of_year.dat' using 1:2:(0.5) w boxes fs solid"
+        plot_file = PlotFileCreator(self.conf, path + '/month_of_year.plot', 'month_of_year.png', plot)
+        plot_file.ylabel = 'Commits'
+        plot_file.yrange = "[0:]"
+        plot_file.xrange = "[0.5:12.5]"
+        plot_file.xtics = "1"
+        plot_file.xtics_rotate = False
+        plot_file.create()
 
         # commits_by_year_month
-        f = open(path + '/commits_by_year_month.plot', 'w')
-        f.write(self.GNUPLOT_COMMON)
-        f.write(
-            """
-            set output 'commits_by_year_month.png'
-            unset key
-            set yrange [0:]
-            set xdata time
-            set timefmt "%Y-%m"
-            set format x "%Y-%m"
-            set xtics rotate
-            set bmargin 5
-            set grid y
-            set ylabel "Commits"
-            plot 'commits_by_year_month.dat' using 1:2:(0.5) w boxes fs solid
-            """)
-        f.close()
+        plot = "'commits_by_year_month.dat' using 1:2:(0.5) w boxes fs solid"
+        plot_file = PlotFileCreator(self.conf, path + '/commits_by_year_month.plot', 'commits_by_year_month.png', plot)
+        plot_file.set_time("%Y-%m")
+        plot_file.ylabel = 'Commits'
+        plot_file.create()
 
         # commits_by_year
-        f = open(path + '/commits_by_year.plot', 'w')
-        f.write(self.GNUPLOT_COMMON)
-        f.write(
-            """
-            set output 'commits_by_year.png'
-            unset key
-            set yrange [0:]
-            set xtics 1 rotate
-            set grid y
-            set ylabel "Commits"
-            set yrange [0:]
-            plot 'commits_by_year.dat' using 1:2:(0.5) w boxes fs solid
-            """)
-        f.close()
+        plot = "'commits_by_year.dat' using 1:2:(0.5) w boxes fs solid"
+        plot_file = PlotFileCreator(self.conf, path + '/commits_by_year.plot', 'commits_by_year.png', plot)
+        plot_file.set_time_from_string()
+        plot_file.ylabel = 'Commits'
+        plot_file.xtics = "1"
+        plot_file.create()
 
         # Files by date
-        f = open(path + '/files_by_date.plot', 'w')
-        f.write(self.GNUPLOT_COMMON)
-        f.write(
-            """
-            set output 'files_by_date.png'
-            unset key
-            set yrange [0:]
-            set xdata time
-            set timefmt "%s"
-            set format x "%s"
-            set grid y
-            set ylabel "Files"
-            set xtics rotate
-            set ytics autofreq
-            set bmargin 6
-            plot 'files_by_date.dat' using 1:2 w steps
-            """ % (self.conf['date_format'], self.conf['date_format']))
-        f.close()
+        plot = "'files_by_date.dat' using 1:2 w steps"
+        plot_file = PlotFileCreator(self.conf, path + '/files_by_date.plot', 'files_by_date.png', plot)
+        plot_file.set_time_from_string()
+        plot_file.ylabel = "Lines"
+        plot_file.additional = "set ytics autofreq"
+        plot_file.create()
 
         # Lines of Code
-        f = open(path + '/lines_of_code.plot', 'w')
-        f.write(self.GNUPLOT_COMMON)
-        f.write(
-            """
-            set output 'lines_of_code.png'
-            unset key
-            set yrange [0:]
-            set xdata time
-            set timefmt "%%s"
-            set format x "%s"
-            set grid y
-            set ylabel "Lines"
-            set xtics rotate
-            set bmargin 6
-            plot 'lines_of_code.dat' using 1:2 w lines
-            """ % self.conf['date_format'])
-        f.close()
+        plot = "'lines_of_code.dat' using 1:2 w lines"
+        plot_file = PlotFileCreator(self.conf, path + '/lines_of_code.plot', 'lines_of_code.png', plot)
+        plot_file.set_time_from_string()
+        plot_file.ylabel = "Lines"
+        plot_file.create()
 
         # Lines of Code Added per author
-        f = open(path + '/lines_of_code_by_author.plot', 'w')
-        f.write(self.GNUPLOT_COMMON)
-        f.write(
-            """
-            set terminal png transparent size %s
-            set output 'lines_of_code_by_author.png'
-            set key left top
-            set yrange [0:]
-            set xdata time
-            set timefmt "%%s"
-            set format x "%s"
-            set grid y
-            set ylabel "Lines"
-            set xtics rotate
-            set bmargin 6
-            plot """ % (self.conf['image_resolution'], self.conf['date_format'])
-        )
         i = 1
         plots = []
         for a in self.authors_to_plot:
-            i = i + 1
+            i += 1
             author = a.replace("\"", "\\\"").replace("`", "")
             plots.append("""'lines_of_code_by_author.dat' using 1:%d title "%s" w lines""" % (i, author))
-        f.write(", ".join(plots))
-        f.write('\n')
-
-        f.close()
+        plots = ", ".join(plots)
+        plot_file = PlotFileCreator(self.conf, path + '/lines_of_code_by_author.plot', 'lines_of_code_by_author.png', plots)
+        plot_file.ylabel = "Lines"
+        plot_file.key = "set key left top"
+        plot_file.set_time_from_string()
+        plot_file.create()
 
         # Commits per author
-        f = open(path + '/commits_by_author.plot', 'w')
-        f.write(self.GNUPLOT_COMMON)
-        f.write(
-            """
-            set terminal png transparent size %s
-            set output 'commits_by_author.png'
-            set key left top
-            set yrange [0:]
-            set xdata time
-            set timefmt "%%s"
-            set format x "%s"
-            set grid y
-            set ylabel "Commits"
-            set xtics rotate
-            set bmargin 6
-            plot """ % (self.conf['image_resolution'], self.conf['date_format'])
-        )
         i = 1
         plots = []
         for a in self.authors_to_plot:
-            i = i + 1
+            i += 1
             author = a.replace("\"", "\\\"").replace("`", "")
             plots.append("""'commits_by_author.dat' using 1:%d title "%s" w lines""" % (i, author))
-        f.write(", ".join(plots))
-        f.write('\n')
+        plots = ", ".join(plots)
+        plot_file = PlotFileCreator(self.conf, path + '/commits_by_author.plot', 'commits_by_author.png', plots)
+        plot_file.ylabel = "Commits"
+        plot_file.key = "set key left top"
+        plot_file.set_time_from_string()
+        plot_file.create()
 
-        f.close()
 
         os.chdir(path)
         files = glob.glob(path + '/*.plot')

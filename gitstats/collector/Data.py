@@ -131,3 +131,7 @@ class Data(object):
     def getkeyssortedbyvaluekey(self, d, key):
         return [el[1] for el in sorted([(d[el][key], el) for el in list(d.keys())])]
 
+
+    def getkeyssortedbyvalues(self, dict):
+        return [el[1] for el in sorted([(el[1], el[0]) for el in list(dict.items())])]
+
