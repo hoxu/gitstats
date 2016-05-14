@@ -17,7 +17,7 @@ class LineStrategy(StatisticsCollectorStrategy):
         # computation of lines of code by date is better done
         # on a linear history.
         extra = ''
-        if self.conf['linear_linestats']:
+        if self.conf.linear_linestats:
             extra = '--first-parent -m'
         lines = getpipeoutput(
             ['git log --shortstat %s --pretty=format:"%%at %%aN" %s' % (extra, self.getlogrange('HEAD'))]).split('\n')

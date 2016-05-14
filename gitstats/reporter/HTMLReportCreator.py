@@ -30,10 +30,10 @@ class HTMLReportCreator(ReportCreator):
         return getpipeoutput(['%s --version' % gnuplot_cmd]).split('\n')[0]
 
     def getcommitrange(self, defaultrange='HEAD', end_only=False):
-        if len(self.conf['commit_end']) > 0:
-            if end_only or len(self.conf['commit_begin']) == 0:
-                return self.conf['commit_end']
-            return '%s..%s' % (self.conf['commit_begin'], self.conf['commit_end'])
+        if len(self.conf.commit_end) > 0:
+            if end_only or len(self.conf.commit_begin) == 0:
+                return self.conf.commit_end
+            return '%s..%s' % (self.conf.commit_begin, self.conf.commit_end)
         return defaultrange
 
     def _create_index(self, data, path):
@@ -274,7 +274,7 @@ class HTMLReportCreator(ReportCreator):
         f.write('<table class="authors sortable" id="authors">')
         f.write(
             '<tr><th>Author</th><th>Commits (%)</th><th>+ lines</th><th>- lines</th><th>First commit</th><th>Last commit</th><th class="unsortable">Age</th><th>Active days</th><th># by commits</th></tr>')
-        for author in data.getAuthors(self.conf['max_authors']):
+        for author in data.getAuthors(self.conf.max_authors):
             info = data.getAuthorInfo(author)
             f.write(
                 '<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td></tr>' % (
@@ -284,19 +284,19 @@ class HTMLReportCreator(ReportCreator):
         f.write('</table>')
 
         allauthors = data.getAuthors()
-        if len(allauthors) > self.conf['max_authors']:
-            rest = allauthors[self.conf['max_authors']:]
+        if len(allauthors) > self.conf.max_authors:
+            rest = allauthors[self.conf.max_authors:]
             f.write('<p class="moreauthors">These didn\'t make it to the top: %s</p>' % ', '.join(rest))
 
         f.write(self.html_header(2, 'Cumulated Added Lines of Code per Author'))
         f.write('<img src="lines_of_code_by_author.png" alt="Lines of code per Author">')
-        if len(allauthors) > self.conf['max_authors']:
-            f.write('<p class="moreauthors">Only top %d authors shown</p>' % self.conf['max_authors'])
+        if len(allauthors) > self.conf.max_authors:
+            f.write('<p class="moreauthors">Only top %d authors shown</p>' % self.conf.max_authors)
 
         f.write(self.html_header(2, 'Commits per Author'))
         f.write('<img src="commits_by_author.png" alt="Commits per Author">')
-        if len(allauthors) > self.conf['max_authors']:
-            f.write('<p class="moreauthors">Only top %d authors shown</p>' % self.conf['max_authors'])
+        if len(allauthors) > self.conf.max_authors:
+            f.write('<p class="moreauthors">Only top %d authors shown</p>' % self.conf.max_authors)
 
         fgl = open(path + '/lines_of_code_by_author.dat', 'w')
         fgc = open(path + '/commits_by_author.dat', 'w')
@@ -312,7 +312,7 @@ class HTMLReportCreator(ReportCreator):
         # time. Be robust and keep the list in a variable.
         commits_by_authors = {}  # cumulated added lines by
 
-        self.authors_to_plot = data.getAuthors(self.conf['max_authors'])
+        self.authors_to_plot = data.getAuthors(self.conf.max_authors)
         for author in self.authors_to_plot:
             lines_by_authors[author] = 0
             commits_by_authors[author] = 0
@@ -335,13 +335,13 @@ class HTMLReportCreator(ReportCreator):
         f.write('<table class="sortable" id="aom">')
         f.write(
             '<tr><th>Month</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' %
-            self.conf['authors_top'])
+            self.conf.authors_top)
         for yymm in reversed(sorted(data.author_of_month.keys())):
             authordict = data.author_of_month[yymm]
             authors = self.data.getkeyssortedbyvalues(authordict)
             authors.reverse()
             commits = data.author_of_month[yymm][authors[0]]
-            next = ', '.join(authors[1:self.conf['authors_top'] + 1])
+            next = ', '.join(authors[1:self.conf.authors_top + 1])
             f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (
                 yymm, authors[0], commits, (100.0 * commits) / data.commits_by_month[yymm], data.commits_by_month[yymm],
                 next, len(authors)))
@@ -351,13 +351,13 @@ class HTMLReportCreator(ReportCreator):
         f.write(self.html_header(2, 'Author of Year'))
         f.write(
             '<table class="sortable" id="aoy"><tr><th>Year</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' %
-            self.conf['authors_top'])
+            self.conf.authors_top)
         for yy in reversed(sorted(data.author_of_year.keys())):
             authordict = data.author_of_year[yy]
             authors = self.data.getkeyssortedbyvalues(authordict)
             authors.reverse()
             commits = data.author_of_year[yy][authors[0]]
-            next = ', '.join(authors[1:self.conf['authors_top'] + 1])
+            next = ', '.join(authors[1:self.conf.authors_top + 1])
             f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (
                 yy, authors[0], commits, (100.0 * commits) / data.commits_by_year[yy], data.commits_by_year[yy], next,
                 len(authors)))
@@ -372,7 +372,7 @@ class HTMLReportCreator(ReportCreator):
         fp = open(path + '/domains.dat', 'w')
         n = 0
         for domain in domains_by_commits:
-            if n == self.conf['max_domains']:
+            if n == self.conf.max_domains:
                 break
             n += 1
             info = data.getDomainInfo(domain)
@@ -409,13 +409,13 @@ class HTMLReportCreator(ReportCreator):
         files_by_date = set()
         for stamp in sorted(data.files_by_stamp.keys()):
             files_by_date.add('%s %d' % (
-                datetime.datetime.fromtimestamp(stamp).strftime(self.conf['date_format']), data.files_by_stamp[stamp]))
+                datetime.datetime.fromtimestamp(stamp).strftime(self.conf.date_format), data.files_by_stamp[stamp]))
 
         fg = open(path + '/files_by_date.dat', 'w')
         for line in sorted(list(files_by_date)):
             fg.write('%s\n' % line)
         # for stamp in sorted(data.files_by_stamp.keys()):
-        #    fg.write('%s %d\n' % (datetime.datetime.fromtimestamp(stamp).strftime(self.conf['date_format']), data.files_by_stamp[stamp]))
+        #    fg.write('%s %d\n' % (datetime.datetime.fromtimestamp(stamp).strftime(self.conf.date_format']), data.files_by_stamp[stamp]))
         fg.close()
 
         f.write('<img src="files_by_date.png" alt="Files by Date">')
@@ -500,7 +500,7 @@ class HTMLReportCreator(ReportCreator):
         binarypath = os.path.dirname(os.path.abspath(__file__))
         secondarypath = os.path.join(binarypath, '..', 'share', 'gitstats')
         basedirs = [binarypath, secondarypath, '/usr/share/gitstats']
-        for file in (self.conf['style'], 'sortable.js', 'arrow-up.gif', 'arrow-down.gif', 'arrow-none.gif'):
+        for file in (self.conf.style, 'sortable.js', 'arrow-up.gif', 'arrow-down.gif', 'arrow-none.gif'):
             for base in basedirs:
                 src = base + '/' + file
                 if os.path.exists(src):
@@ -648,7 +648,7 @@ class HTMLReportCreator(ReportCreator):
                 <script type="text/javascript" src="sortable.js"></script>
             </head>
             <body>
-            """ % (self.title, self.conf['style'], self.getversion()))
+            """ % (self.title, self.conf.style, self.getversion()))
 
     def printNav(self, f):
         f.write("""

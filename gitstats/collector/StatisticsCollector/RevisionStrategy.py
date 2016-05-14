@@ -157,7 +157,7 @@ class RevisionStrategy(StatisticsCollectorStrategy):
         self.data.commits_by_year[yy] = self.data.commits_by_year.get(yy, 0) + 1
 
     def _collect_author_active_days(self, date, author):
-        yymmdd = date.strftime(self.conf['date_format'])
+        yymmdd = date.strftime(self.conf.date_format)
         if 'last_active_day' not in self.data.authors[author]:
             self.data.authors[author]['last_active_day'] = yymmdd
             self.data.authors[author]['active_days'] = set([yymmdd])
@@ -166,7 +166,7 @@ class RevisionStrategy(StatisticsCollectorStrategy):
             self.data.authors[author]['active_days'].add(yymmdd)
 
     def _collect_project_active_days(self, date):
-        yymmdd = date.strftime(self.conf['date_format'])
+        yymmdd = date.strftime(self.conf.date_format)
         if yymmdd != self.data.last_active_day:
             self.data.last_active_day = yymmdd
             self.data.active_days.add(yymmdd)

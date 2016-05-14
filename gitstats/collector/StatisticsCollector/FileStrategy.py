@@ -39,7 +39,7 @@ class FileStrategy(StatisticsCollectorStrategy):
                 ext = ''
             else:
                 ext = filename[(filename.rfind('.') + 1):]
-            if len(ext) > self.conf['max_ext_length']:
+            if len(ext) > self.conf.max_ext_length:
                 ext = ''
             if ext not in self.data.extensions:
                 self.data.extensions[ext] = {'files': 0, 'lines': 0}
@@ -55,7 +55,7 @@ class FileStrategy(StatisticsCollectorStrategy):
                 blobs_to_read.append((ext, blob_id))
 
         # Get info abount line count for new blob's that wasn't found in cache
-        pool = Pool(processes=self.conf['processes'])
+        pool = Pool(processes=self.conf.processes)
         ext_blob_linecount = pool.map(self.getnumoflinesinblob, blobs_to_read)
         pool.terminate()
         pool.join()

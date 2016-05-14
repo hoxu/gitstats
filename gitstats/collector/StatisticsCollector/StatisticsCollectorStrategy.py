@@ -7,8 +7,8 @@ class StatisticsCollectorStrategy(object):
         self.conf = conf
 
     def get_merged_author(self, author):
-        if author in list(self.conf['authors_merge'].keys()):
-            return self.conf['authors_merge'][author]
+        if author in list(self.conf.authors_merge.keys()):
+            return self.conf.authors_merge[author]
         return author
 
     def getstatsummarycounts(self, line):
@@ -24,16 +24,16 @@ class StatisticsCollectorStrategy(object):
         return numbers
 
     def getcommitrange(self, defaultrange='HEAD', end_only=False):
-        if len(self.conf['commit_end']) > 0:
-            if end_only or len(self.conf['commit_begin']) == 0:
-                return self.conf['commit_end']
-            return '%s..%s' % (self.conf['commit_begin'], self.conf['commit_end'])
+        if len(self.conf.commit_end) > 0:
+            if end_only or len(self.conf.commit_begin) == 0:
+                return self.conf.commit_end
+            return '%s..%s' % (self.conf.commit_begin, self.conf.commit_end)
         return defaultrange
 
     def getlogrange(self, defaultrange='HEAD', end_only=True):
         commit_range = self.getcommitrange(defaultrange, end_only)
-        if len(self.conf['start_date']) > 0:
-            return '--since="%s" "%s"' % (self.conf['start_date'], commit_range)
+        if len(self.conf.start_date) > 0:
+            return '--since="%s" "%s"' % (self.conf.start_date, commit_range)
         return commit_range
 
     def collect(self):

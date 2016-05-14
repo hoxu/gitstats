@@ -39,7 +39,7 @@ class RevisionHistoryStrategy(StatisticsCollectorStrategy):
                 revs_to_read.append((time, rev))
 
         # Read revisions from repo
-        pool = Pool(processes=self.conf['processes'])
+        pool = Pool(processes=self.conf.processes)
         time_rev_count = pool.map(self.getnumoffilesfromrev, revs_to_read)
         pool.terminate()
         pool.join()

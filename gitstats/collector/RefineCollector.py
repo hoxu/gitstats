@@ -19,8 +19,8 @@ class GitRefineCollector(object):
             date_first = datetime.datetime.fromtimestamp(a['first_commit_stamp'])
             date_last = datetime.datetime.fromtimestamp(a['last_commit_stamp'])
             delta = date_last - date_first
-            a['date_first'] = date_first.strftime(self.conf['date_format'])
-            a['date_last'] = date_last.strftime(self.conf['date_format'])
+            a['date_first'] = date_first.strftime(self.conf.date_format)
+            a['date_last'] = date_last.strftime(self.conf.date_format)
             a['timedelta'] = delta
             if 'lines_added' not in a: a['lines_added'] = 0
             if 'lines_removed' not in a: a['lines_removed'] = 0

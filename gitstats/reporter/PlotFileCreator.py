@@ -3,7 +3,7 @@ class PlotFileCreator(object):
         self.conf = conf
         self.input = input
         self.output = output
-        self.header = "set terminal png transparent size %s" % self.conf['image_resolution']
+        self.header = "set terminal png transparent size %s" % self.conf.image_resolution
         self.key = "unset key"
         self.yrange = "[0:]"
         self.xrange = ""
@@ -27,7 +27,7 @@ class PlotFileCreator(object):
         if timefmt:
             self.formatx = timefmt
         else:
-            self.formatx = self.conf['date_format']
+            self.formatx = self.conf.date_format
         self.timefmt = "%s"
 
     def set_time(self, timefmt):

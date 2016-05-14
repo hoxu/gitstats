@@ -25,7 +25,7 @@ class TagStrategy(StatisticsCollectorStrategy):
                 except ValueError:
                     stamp = 0
                 self.data.tags[tag] = {'stamp': stamp, 'hash': hash,
-                                  'date': datetime.datetime.fromtimestamp(stamp).strftime(self.conf['date_format']),
+                                  'date': datetime.datetime.fromtimestamp(stamp).strftime(self.conf.date_format),
                                   'commits': 0, 'authors': {}}
 
         # collect info on tags, starting from latest

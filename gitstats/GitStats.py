@@ -11,6 +11,7 @@ import time
 from collector.Data import Data
 from collector.DataCollector import DataCollector
 from reporter.HTMLReportCreator import HTMLReportCreator
+from Configuration import Configuration
 
 
 exectime_internal = 0.0
@@ -19,22 +20,7 @@ time_start = time.time()
 
 class GitStats(object):
     def __init__(self):
-        self.conf = {
-            'max_domains': 10,
-            'max_ext_length': 10,
-            'style': 'gitstats.css',
-            'max_authors': 20,
-            'authors_top': 5,
-            'commit_begin': '',
-            'commit_end': 'HEAD',
-            'linear_linestats': 1,
-            'project_name': '',
-            'processes': 8,
-            'start_date': '',
-            'image_resolution': '1280,640',
-            'date_format': '%Y-%m-%d',
-            'authors_merge': '{}'
-        }
+        self.conf = Configuration()
         self.data = Data()
         self.collector = DataCollector(self.data, self.conf)
         self.cache = {}
@@ -113,21 +99,7 @@ class GitStats(object):
         if len(sys.argv) < 2:
             self._usage()
             sys.exit(0)
-
-        optlist, args = getopt.getopt(sys.argv[1:], 'hc:', ["help"])
-        for o, v in optlist:
-            if o == '-c':
-                key, value = v.split('=', 1)
-                if key not in self.conf:
-                    raise KeyError('no such key "%s" in config' % key)
-                if isinstance(self.conf[key], int):
-                    self.conf[key] = int(value)
-                else:
-                    self.conf[key] = value
-            elif o in ('-h', '--help'):
-                self._usage()
-                sys.exit()
-        self.conf['authors_merge'] = eval(self.conf['authors_merge'])
+        args = sys.argv[1:]
         return args[-1], args[0:-1]
 
     def run(self):
@@ -142,7 +114,7 @@ class GitStats(object):
 
         cachefile = os.path.join(outputpath, 'gitstats.cache')
 
-        self.data.projectname = self.conf['project_name']
+        self.data.projectname = self.conf.project_name
 
         self.loadCache(cachefile)
         self.data.cache = self.cache
