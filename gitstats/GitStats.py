@@ -4,15 +4,20 @@
 import getopt
 import os
 import sys
+import pickle
+import zlib
+import time
 
-from collector.GitDataCollector import GitDataCollector
+from collector.Data import Data
+from collector.DataCollector import DataCollector
 from reporter.HTMLReportCreator import HTMLReportCreator
 
-# exectime_internal = 0.0
-# exectime_external = 0.0
-# time_start = time.time()
 
-class GitStats:
+exectime_internal = 0.0
+exectime_external = 0.0
+time_start = time.time()
+
+class GitStats(object):
     def __init__(self):
         self.conf = {
             'max_domains': 10,
@@ -30,7 +35,9 @@ class GitStats:
             'date_format': '%Y-%m-%d',
             'authors_merge': '{}'
         }
-        self.data = None
+        self.data = Data()
+        self.collector = DataCollector(self.data, self.conf)
+        self.cache = {}
 
     def _usage(self):
         print("""
@@ -62,19 +69,45 @@ class GitStats:
         os.chdir(path)
 
         print('Collecting data...')
-        self.data.collect(path, self.conf['project_name'])
+        self.collector.collect()
 
         os.chdir(prevdir)
-
-    def _refine_data(self, cachefile):
-        print('Refining data...')
-        self.data.saveCache(cachefile)
-        self.data.refine()
 
     def _generate_report(self, conf, outputpath):
         print('Generating report...')
         report = HTMLReportCreator(conf)
         report.create(self.data, outputpath)
+
+    ##
+    # Load cacheable data
+    def loadCache(self, cachefile):
+        if not os.path.exists(cachefile):
+            return
+        print('Loading cache...')
+        f = open(cachefile, 'rb')
+        try:
+            self.cache = pickle.loads(zlib.decompress(f.read()))
+        except:
+            # temporary hack to upgrade non-compressed caches
+            f.seek(0)
+            self.cache = pickle.load(f)
+        f.close()
+
+    ##
+    # Save cacheable data
+    def saveCache(self, cachefile):
+        print('Saving cache...')
+        tempfile = cachefile + '.tmp'
+        f = open(tempfile, 'wb')
+        # pickle.dump(self.cache, f)
+        data = zlib.compress(pickle.dumps(self.cache))
+        f.write(data)
+        f.close()
+        try:
+            os.remove(cachefile)
+        except OSError:
+            pass
+        os.rename(tempfile, cachefile)
 
     def parse_args(self):
         if len(sys.argv) < 2:
@@ -109,19 +142,21 @@ class GitStats:
 
         cachefile = os.path.join(outputpath, 'gitstats.cache')
 
-        self.data = GitDataCollector(self.conf)
-        self.data.loadCache(cachefile)
+        self.data.projectname = self.conf['project_name']
+
+        self.loadCache(cachefile)
+        self.data.cache = self.cache
 
         for gitpath in paths:
             self._collect_data(gitpath)
 
-        self._refine_data(cachefile)
+        self.saveCache(cachefile)
 
         self._generate_report(self.conf, outputpath)
 
-        # time_end = time.time()
-        # exectime_internal = time_end - time_start
-        # print 'Execution time %.5f secs, %.5f secs (%.2f %%) in external commands)' % (exectime_internal, exectime_external, (100.0 * exectime_external) / exectime_internal)
+        time_end = time.time()
+        exectime_internal = time_end - time_start
+        print('Execution time %.5f secs, %.5f secs (%.2f %%) in external commands)' % (exectime_internal, exectime_external, (100.0 * exectime_external) / exectime_internal))
         if sys.stdin.isatty():
             print('You may now run:')
             print()

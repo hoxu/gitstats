@@ -15,6 +15,8 @@ def is_linux():
     return platform.system() == 'Linux'
 
 
+
+
 def getpipeoutput(cmds, quiet=False):
     start = time.time()
     if not quiet and is_linux() and os.isatty(1):

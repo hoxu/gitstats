@@ -1,4 +1,4 @@
-class ReportCreator:
+class ReportCreator(object):
     """Creates the actual report based on given data."""
 
     def __init__(self, conf):
