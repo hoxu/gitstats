@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # Copyright (c) 2007-2014 Heikki Hokkanen <hoxu@users.sf.net> & others (see doc/AUTHOR)
 # GPLv2 / GPLv3
-import getopt
+import argparse
 import os
 import sys
 import pickle
@@ -30,10 +30,10 @@ class GitStats(object):
     Usage: gitstats [options] <gitpath..> <outputpath>
 
     Options:
-    -c key=value     Override configuration value
+    -c config_file     Override configuration value
 
     Default config values:
-    %s
+%s
 
     Please see the manual page for more details.
     """ % self.conf)
@@ -95,15 +95,19 @@ class GitStats(object):
             pass
         os.rename(tempfile, cachefile)
 
-    def parse_args(self):
+    def run(self):
         if len(sys.argv) < 2:
             self._usage()
             sys.exit(0)
-        args = sys.argv[1:]
-        return args[-1], args[0:-1]
 
-    def run(self):
-        (outputpath, paths) = self.parse_args()
+        parser = argparse.ArgumentParser(description='GitStats')
+        parser.add_argument('-c','--config', dest='config')
+
+        (args, remaining_args) = parser.parse_known_args()
+        if args.config:
+            self.conf.load(args.config)
+        outputpath = remaining_args[-1]
+        paths = remaining_args[0:-1]
         outputpath = os.path.abspath(outputpath)
 
         self._create_outputdir(outputpath)
@@ -137,6 +141,5 @@ class GitStats(object):
 
 
 if __name__ == '__main__':
-
     g = GitStats()
     g.run()
