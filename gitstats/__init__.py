@@ -1,4 +1,4 @@
-from GitStats import GitStats
+from gitstats.GitStats import GitStats
 
 def main():
     g = GitStats()

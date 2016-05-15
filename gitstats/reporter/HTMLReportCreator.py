@@ -4,9 +4,9 @@ import shutil
 import os
 import time
 
-from reporter.ReportCreator import ReportCreator
-from reporter.PlotFileCreator import PlotFileCreator
-from RunExternal import RunExternal
+from gitstats.reporter.ReportCreator import ReportCreator
+from gitstats.reporter.PlotFileCreator import PlotFileCreator
+from gitstats.RunExternal import RunExternal
 
 
 class HTMLReportCreator(ReportCreator):

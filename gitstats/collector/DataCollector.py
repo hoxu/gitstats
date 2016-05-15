@@ -1,6 +1,6 @@
-from collector.StatisticsCollector import *
-from collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
-from collector.RefineCollector import GitRefineCollector
+from gitstats.collector.StatisticsCollector import *
+from gitstats.collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
+from gitstats.collector.RefineCollector import GitRefineCollector
 
 
 class DataCollector(object):

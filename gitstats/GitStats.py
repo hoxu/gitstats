@@ -8,11 +8,11 @@ import pickle
 import zlib
 import time
 
-from collector.Data import Data
-from collector.DataCollector import DataCollector
-from reporter.HTMLReportCreator import HTMLReportCreator
-from Configuration import Configuration
-from RunExternal import RunExternal
+from gitstats.collector.Data import Data
+from gitstats.collector.DataCollector import DataCollector
+from gitstats.reporter.HTMLReportCreator import HTMLReportCreator
+from gitstats.Configuration import Configuration
+from gitstats.RunExternal import RunExternal
 
 
 exectime_internal = 0.0

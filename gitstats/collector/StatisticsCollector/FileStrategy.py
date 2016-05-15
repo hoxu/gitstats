@@ -1,8 +1,8 @@
 import re
 from multiprocessing import Pool
 
-from RunExternal import RunExternal
-from collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
+from gitstats.RunExternal import RunExternal
+from gitstats.collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
 
 
 class FileStrategy(StatisticsCollectorStrategy):
