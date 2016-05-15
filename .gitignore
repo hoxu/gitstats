@@ -1,3 +1,6 @@
 *.pyc
 **/.idea/*
+build/*
+dist/*
+gitstats.egg-info/*
 
