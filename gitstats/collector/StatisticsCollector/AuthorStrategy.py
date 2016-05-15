@@ -1,6 +1,6 @@
 import re
 
-from helper import *
+from RunExternal import RunExternal
 from collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
 
 
@@ -10,7 +10,7 @@ class AuthorStrategy(StatisticsCollectorStrategy):
         
     def collect(self):
         # TODO: fix for merged authors
-        self.data.total_authors += int(getpipeoutput(['git shortlog -s %s' % self.getlogrange(), 'wc -l']))
+        self.data.total_authors += int(RunExternal.execute(['git shortlog -s %s' % self.getlogrange(), 'wc -l']))
         # self.total_lines = int(getoutput('git-ls-files -z |xargs -0 cat |wc -l'))
 
 
@@ -20,7 +20,7 @@ class AuthorStrategy(StatisticsCollectorStrategy):
         # Similar to the above, but never use --first-parent
         # (we need to walk through every commit to know who
         # committed what, not just through mainline)
-        lines = getpipeoutput(
+        lines = RunExternal.execute(
             ['git log --shortstat --date-order --pretty=format:"%%at %%aN" %s' % (self.getlogrange('HEAD'))]).split(
             '\n')
         lines.reverse()

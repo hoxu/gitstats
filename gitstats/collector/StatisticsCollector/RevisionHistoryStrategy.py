@@ -1,6 +1,6 @@
 from multiprocessing import Pool
 
-from helper import *
+from RunExternal import RunExternal
 from collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
 
 
@@ -13,14 +13,13 @@ class RevisionHistoryStrategy(StatisticsCollectorStrategy):
         Get number of files changed in commit
         """
         time, rev = time_rev
-        return (int(time), rev, int(getpipeoutput(['git ls-tree -r --name-only "%s"' % rev, 'wc -l']).split('\n')[0]))
+        return (int(time), rev, int(RunExternal.execute(['git ls-tree -r --name-only "%s"' % rev, 'wc -l']).split('\n')[0]))
 
 
     def collect(self):
         # outputs "<stamp> <files>" for each revision
-        revlines = getpipeoutput(
-            ['git rev-list --pretty=format:"%%at %%T" %s' % self.getlogrange('HEAD'),
-             'grep -v ^commit']).strip().split(
+        revlines = RunExternal.execute(['git rev-list --pretty=format:"%%at %%T" %s' % self.getlogrange('HEAD'),
+                                       'grep -v ^commit']).strip().split(
             '\n')
         lines = []
         revs_to_read = []

@@ -1,7 +1,7 @@
 import datetime
 import re
 
-from helper import *
+from RunExternal import RunExternal
 from collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
 
 
@@ -10,14 +10,14 @@ class TagStrategy(StatisticsCollectorStrategy):
         super().__init__(data, conf)
         
     def collect(self):
-        lines = getpipeoutput(['git show-ref --tags']).split('\n')
+        lines = RunExternal.execute(['git show-ref --tags']).split('\n')
         for line in lines:
             if len(line) == 0:
                 continue
             (hash, tag) = line.split(' ')
 
             tag = tag.replace('refs/tags/', '')
-            output = getpipeoutput(['git log "%s" --pretty=format:"%%at %%aN" -n 1' % hash])
+            output = RunExternal.execute(['git log "%s" --pretty=format:"%%at %%aN" -n 1' % hash])
             if len(output) > 0:
                 parts = output.split(' ')
                 try:
@@ -36,7 +36,7 @@ class TagStrategy(StatisticsCollectorStrategy):
             cmd = 'git shortlog -s "%s"' % tag
             if prev != None:
                 cmd += ' "^%s"' % prev
-            output = getpipeoutput([cmd])
+            output = RunExternal.execute([cmd])
             if len(output) == 0:
                 continue
             prev = tag

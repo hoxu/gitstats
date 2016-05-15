@@ -1,10 +1,12 @@
 import datetime
 import glob
 import shutil
+import os
+import time
 
 from reporter.ReportCreator import ReportCreator
 from reporter.PlotFileCreator import PlotFileCreator
-from helper import *
+from RunExternal import RunExternal
 
 
 class HTMLReportCreator(ReportCreator):
@@ -19,15 +21,16 @@ class HTMLReportCreator(ReportCreator):
     def getversion(self):
         if not self.version:
             gitstats_repo = os.path.dirname(os.path.abspath(os.path.join(__file__,"../..")))
-            self.version = getpipeoutput(["git --git-dir=%s/.git --work-tree=%s rev-parse --short %s" %
-                                          (gitstats_repo, gitstats_repo, self.getcommitrange('HEAD').split('\n')[0])])
+            self.version = RunExternal.execute(["git --git-dir=%s/.git --work-tree=%s rev-parse --short %s" %
+                                               (gitstats_repo, gitstats_repo,
+                                                self.getcommitrange('HEAD').split('\n')[0])])
         return self.version
 
     def getgitversion(self):
-        return getpipeoutput(['git --version']).split('\n')[0]
+        return RunExternal.execute(['git --version']).split('\n')[0]
 
     def getgnuplotversion(self):
-        return getpipeoutput(['%s --version' % gnuplot_cmd]).split('\n')[0]
+        return RunExternal.execute(['%s --version' % self.conf.gnuplot_cmd]).split('\n')[0]
 
     def getcommitrange(self, defaultrange='HEAD', end_only=False):
         if len(self.conf.commit_end) > 0:
@@ -632,7 +635,7 @@ class HTMLReportCreator(ReportCreator):
         os.chdir(path)
         files = glob.glob(path + '/*.plot')
         for f in files:
-            out = getpipeoutput([gnuplot_cmd + ' "%s"' % f])
+            out = RunExternal.execute([self.conf.gnuplot_cmd + ' "%s"' % f])
             if len(out) > 0:
                 print(out)
 

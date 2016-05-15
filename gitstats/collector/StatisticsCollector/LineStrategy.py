@@ -1,7 +1,7 @@
 import re
 import datetime
 
-from helper import *
+from RunExternal import RunExternal
 from collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
 
 
@@ -19,7 +19,7 @@ class LineStrategy(StatisticsCollectorStrategy):
         extra = ''
         if self.conf.linear_linestats:
             extra = '--first-parent -m'
-        lines = getpipeoutput(
+        lines = RunExternal.execute(
             ['git log --shortstat %s --pretty=format:"%%at %%aN" %s' % (extra, self.getlogrange('HEAD'))]).split('\n')
         lines.reverse()
         files = 0;

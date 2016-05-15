@@ -12,6 +12,7 @@ from collector.Data import Data
 from collector.DataCollector import DataCollector
 from reporter.HTMLReportCreator import HTMLReportCreator
 from Configuration import Configuration
+from RunExternal import RunExternal
 
 
 exectime_internal = 0.0
@@ -106,6 +107,12 @@ class GitStats(object):
         (args, remaining_args) = parser.parse_known_args()
         if args.config:
             self.conf.load(args.config)
+
+        # By default, gnuplot is searched from path, but can be overridden with the
+        # environment variable "GNUPLOT"
+        if 'GNUPLOT' in os.environ:
+            self.conf.gnuplot_cmd = os.environ['GNUPLOT']
+
         outputpath = remaining_args[-1]
         paths = remaining_args[0:-1]
         outputpath = os.path.abspath(outputpath)
@@ -132,7 +139,7 @@ class GitStats(object):
 
         time_end = time.time()
         exectime_internal = time_end - time_start
-        print('Execution time %.5f secs, %.5f secs (%.2f %%) in external commands)' % (exectime_internal, exectime_external, (100.0 * exectime_external) / exectime_internal))
+        print('Execution time %.5f secs, %.5f secs (%.2f %%) in external commands)' % (exectime_internal, RunExternal.exectime_external, (100.0 * RunExternal.exectime_external) / exectime_internal))
         if sys.stdin.isatty():
             print('You may now run:')
             print()

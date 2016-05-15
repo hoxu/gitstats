@@ -1,7 +1,7 @@
 import re
 from multiprocessing import Pool
 
-from helper import *
+from RunExternal import RunExternal
 from collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
 
 
@@ -14,11 +14,11 @@ class FileStrategy(StatisticsCollectorStrategy):
         Get number of lines in blob
         """
         ext, blob_id = ext_blob
-        return (ext, blob_id, int(getpipeoutput(['git cat-file blob %s' % blob_id, 'wc -l']).split()[0]))
+        return (ext, blob_id, int(RunExternal.execute(['git cat-file blob %s' % blob_id, 'wc -l']).split()[0]))
 
     def collect(self):
         # extensions and size of files
-        lines = getpipeoutput(['git ls-tree -r -l -z %s' % self.getcommitrange('HEAD', end_only=True)]).split('\000')
+        lines = RunExternal.execute(['git ls-tree -r -l -z %s' % self.getcommitrange('HEAD', end_only=True)]).split('\000')
         blobs_to_read = []
         for line in lines:
             if len(line) == 0:

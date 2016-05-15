@@ -1,6 +1,6 @@
 import datetime
 
-from helper import *
+from RunExternal import RunExternal
 from collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
 
 
@@ -10,8 +10,9 @@ class RevisionStrategy(StatisticsCollectorStrategy):
 
     def collect(self):
         # Outputs "<stamp> <date> <time> <timezone> <author> '<' <mail> '>'"
-        lines = getpipeoutput(['git rev-list --pretty=format:"%%at %%ai %%aN <%%aE>" %s' % self.getlogrange('HEAD'),
-                               'grep -v ^commit']).split('\n')
+        lines = RunExternal.execute(
+            ['git rev-list --pretty=format:"%%at %%ai %%aN <%%aE>" %s' % self.getlogrange('HEAD'),
+             'grep -v ^commit']).split('\n')
         for line in lines:
             parts = line.split(' ', 4)
 
