@@ -7,26 +7,27 @@ from gitstats.collector.StatisticsCollector.StatisticsCollectorStrategy import S
 class RevisionHistoryStrategy(StatisticsCollectorStrategy):
     def __init__(self, data, conf):
         super().__init__(data, conf)
-        
-    def getnumoffilesfromrev(self, time_rev):
+
+    @staticmethod
+    def get_num_of_files_from_rev(time_rev):
         """
         Get number of files changed in commit
         """
         time, rev = time_rev
-        return (int(time), rev, int(RunExternal.execute(['git ls-tree -r --name-only "%s"' % rev, 'wc -l']).split('\n')[0]))
-
+        return (
+            int(time), rev, int(RunExternal.execute(['git ls-tree -r --name-only "%s"' % rev, 'wc -l']).split('\n')[0]))
 
     def collect(self):
         # outputs "<stamp> <files>" for each revision
-        revlines = RunExternal.execute(['git rev-list --pretty=format:"%%at %%T" %s' % self.getlogrange('HEAD'),
-                                       'grep -v ^commit']).strip().split(
+        rev_lines = RunExternal.execute(['git rev-list --pretty=format:"%%at %%T" %s' % self.get_log_range('HEAD'),
+                                        'grep -v ^commit']).strip().split(
             '\n')
         lines = []
         revs_to_read = []
         # Look up rev in cache and take info from cache if found
         # If not append rev to list of rev to read from repo
-        for revline in revlines:
-            time, rev = revline.split(' ')
+        for rev_line in rev_lines:
+            time, rev = rev_line.split(' ')
             # if cache empty then add time and rev to list of new rev's
             # otherwise try to read needed info from cache
             if 'files_in_tree' not in list(self.data.cache.keys()):
@@ -39,7 +40,7 @@ class RevisionHistoryStrategy(StatisticsCollectorStrategy):
 
         # Read revisions from repo
         pool = Pool(processes=self.conf.processes)
-        time_rev_count = pool.map(self.getnumoffilesfromrev, revs_to_read)
+        time_rev_count = pool.map(self.get_num_of_files_from_rev, revs_to_read)
         pool.terminate()
         pool.join()
 

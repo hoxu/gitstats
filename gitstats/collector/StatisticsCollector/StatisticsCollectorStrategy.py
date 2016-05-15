@@ -11,8 +11,10 @@ class StatisticsCollectorStrategy(object):
             return self.conf.authors_merge[author]
         return author
 
-    def getstatsummarycounts(self, line):
-        numbers = re.findall('\d+', line)
+    @staticmethod
+    def get_stat_summary_counts(line):
+        numbers = []
+        numbers += re.findall(r'\d+', line)
         if len(numbers) == 1:
             # neither insertions nor deletions: may probably only happen for "0 files changed"
             numbers.append(0)
@@ -23,15 +25,15 @@ class StatisticsCollectorStrategy(object):
             numbers.insert(1, 0)  # only deletions were printed on line
         return numbers
 
-    def getcommitrange(self, defaultrange='HEAD', end_only=False):
+    def get_commit_range(self, default_range='HEAD', end_only=False):
         if len(self.conf.commit_end) > 0:
             if end_only or len(self.conf.commit_begin) == 0:
                 return self.conf.commit_end
             return '%s..%s' % (self.conf.commit_begin, self.conf.commit_end)
-        return defaultrange
+        return default_range
 
-    def getlogrange(self, defaultrange='HEAD', end_only=True):
-        commit_range = self.getcommitrange(defaultrange, end_only)
+    def get_log_range(self, default_range='HEAD', end_only=True):
+        commit_range = self.get_commit_range(default_range, end_only)
         if len(self.conf.start_date) > 0:
             return '--since="%s" "%s"' % (self.conf.start_date, commit_range)
         return commit_range

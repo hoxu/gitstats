@@ -1,5 +1,5 @@
-import re
 import datetime
+import re
 
 from gitstats.RunExternal import RunExternal
 from gitstats.collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
@@ -8,7 +8,7 @@ from gitstats.collector.StatisticsCollector.StatisticsCollectorStrategy import S
 class LineStrategy(StatisticsCollectorStrategy):
     def __init__(self, data, conf):
         super().__init__(data, conf)
-        
+
     def collect(self):
         # outputs:
         #  N files changed, N insertions (+), N deletions(-)
@@ -17,14 +17,14 @@ class LineStrategy(StatisticsCollectorStrategy):
         # computation of lines of code by date is better done
         # on a linear history.
         extra = ''
-        if self.conf.linear_linestats:
+        if self.conf.linear_line_stats:
             extra = '--first-parent -m'
         lines = RunExternal.execute(
-            ['git log --shortstat %s --pretty=format:"%%at %%aN" %s' % (extra, self.getlogrange('HEAD'))]).split('\n')
+            ['git log --shortstat %s --pretty=format:"%%at %%aN" %s' % (extra, self.get_log_range('HEAD'))]).split('\n')
         lines.reverse()
-        files = 0;
-        inserted = 0;
-        deleted = 0;
+        files = 0
+        inserted = 0
+        deleted = 0
         total_lines = 0
         for line in lines:
             if len(line) == 0:
@@ -33,18 +33,19 @@ class LineStrategy(StatisticsCollectorStrategy):
             line = str(line)
 
             # <stamp> <author>
-            if re.search('files? changed', line) == None:
+            if re.search('files? changed', line) is None:
                 pos = line.find(' ')
                 if pos != -1:
                     try:
                         stamp = (int(line[:pos]), line[pos + 1:])[0]
                         self.data.changes_by_date[stamp] = {'files': files, 'ins': inserted, 'del': deleted,
-                                                       'lines': total_lines}
+                                                            'lines': total_lines}
 
                         date = datetime.datetime.fromtimestamp(stamp)
-                        yymm = date.strftime('%Y-%m')
-                        self.data.lines_added_by_month[yymm] = self.data.lines_added_by_month.get(yymm, 0) + inserted
-                        self.data.lines_removed_by_month[yymm] = self.data.lines_removed_by_month.get(yymm, 0) + deleted
+                        yy_mm = date.strftime('%Y-%m')
+                        self.data.lines_added_by_month[yy_mm] = self.data.lines_added_by_month.get(yy_mm, 0) + inserted
+                        self.data.lines_removed_by_month[yy_mm] = self.data.lines_removed_by_month.get(yy_mm,
+                                                                                                       0) + deleted
 
                         yy = date.year
                         self.data.lines_added_by_year[yy] = self.data.lines_added_by_year.get(yy, 0) + inserted
@@ -56,7 +57,7 @@ class LineStrategy(StatisticsCollectorStrategy):
                 else:
                     print('Warning: unexpected line "%s"' % line)
             else:
-                numbers = self.getstatsummarycounts(line)
+                numbers = self.get_stat_summary_counts(line)
 
                 if len(numbers) == 3:
                     (files, inserted, deleted) = [int(el) for el in numbers]

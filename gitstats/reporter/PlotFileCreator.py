@@ -1,8 +1,8 @@
 class PlotFileCreator(object):
-    def __init__(self, conf, input, output, plot):
+    def __init__(self, conf, input_plot, output_png, plot_dat):
         self.conf = conf
-        self.input = input
-        self.output = output
+        self.input = input_plot
+        self.output = output_png
         self.header = "set terminal png transparent size %s" % self.conf.image_resolution
         self.key = "unset key"
         self.yrange = "[0:]"
@@ -15,7 +15,7 @@ class PlotFileCreator(object):
         self.bmargin = 6
         self.timefmt = ""
         self.formatx = ""
-        self.plot = plot
+        self.plot = plot_dat
         self.plot_using = ""
         self.additional = ""
 
@@ -23,7 +23,7 @@ class PlotFileCreator(object):
         self.xlabel = xlabel
         self.ylabel = ylabel
 
-    def set_time_from_string(self, timefmt = None):
+    def set_time_from_string(self, timefmt=None):
         if timefmt:
             self.formatx = timefmt
         else:

@@ -11,7 +11,7 @@ class RevisionStrategy(StatisticsCollectorStrategy):
     def collect(self):
         # Outputs "<stamp> <date> <time> <timezone> <author> '<' <mail> '>'"
         lines = RunExternal.execute(
-            ['git rev-list --pretty=format:"%%at %%ai %%aN <%%aE>" %s' % self.getlogrange('HEAD'),
+            ['git rev-list --pretty=format:"%%at %%ai %%aN <%%aE>" %s' % self.get_log_range('HEAD'),
              'grep -v ^commit']).split('\n')
         for line in lines:
             parts = line.split(' ', 4)
@@ -26,7 +26,7 @@ class RevisionStrategy(StatisticsCollectorStrategy):
             self._collect_activity_by_hour(date)
 
             # day of week
-            self._collect_activty_by_day(date)
+            self._collect_activity_by_day(date)
 
             # domain stats
             domain = self._collect_domain_stats(parts)
@@ -82,7 +82,7 @@ class RevisionStrategy(StatisticsCollectorStrategy):
         if self.data.activity_by_hour_of_day[hour] > self.data.activity_by_hour_of_day_busiest:
             self.data.activity_by_hour_of_day_busiest = self.data.activity_by_hour_of_day[hour]
 
-    def _collect_activty_by_day(self, date):
+    def _collect_activity_by_day(self, date):
         day = date.weekday()
         self.data.activity_by_day_of_week[day] = self.data.activity_by_day_of_week.get(day, 0) + 1
 
@@ -141,13 +141,13 @@ class RevisionStrategy(StatisticsCollectorStrategy):
             self.data.authors[author]['first_commit_stamp'] = stamp
 
     def _collect_author_of_year(self, date, author):
-        yymm = date.strftime('%Y-%m')
-        if yymm in self.data.author_of_month:
-            self.data.author_of_month[yymm][author] = self.data.author_of_month[yymm].get(author, 0) + 1
+        yy_mm = date.strftime('%Y-%m')
+        if yy_mm in self.data.author_of_month:
+            self.data.author_of_month[yy_mm][author] = self.data.author_of_month[yy_mm].get(author, 0) + 1
         else:
-            self.data.author_of_month[yymm] = {}
-            self.data.author_of_month[yymm][author] = 1
-        self.data.commits_by_month[yymm] = self.data.commits_by_month.get(yymm, 0) + 1
+            self.data.author_of_month[yy_mm] = {}
+            self.data.author_of_month[yy_mm][author] = 1
+        self.data.commits_by_month[yy_mm] = self.data.commits_by_month.get(yy_mm, 0) + 1
 
         yy = date.year
         if yy in self.data.author_of_year:
@@ -158,19 +158,19 @@ class RevisionStrategy(StatisticsCollectorStrategy):
         self.data.commits_by_year[yy] = self.data.commits_by_year.get(yy, 0) + 1
 
     def _collect_author_active_days(self, date, author):
-        yymmdd = date.strftime(self.conf.date_format)
+        yy_mm_dd = date.strftime(self.conf.date_format)
         if 'last_active_day' not in self.data.authors[author]:
-            self.data.authors[author]['last_active_day'] = yymmdd
-            self.data.authors[author]['active_days'] = set([yymmdd])
-        elif yymmdd != self.data.authors[author]['last_active_day']:
-            self.data.authors[author]['last_active_day'] = yymmdd
-            self.data.authors[author]['active_days'].add(yymmdd)
+            self.data.authors[author]['last_active_day'] = yy_mm_dd
+            self.data.authors[author]['active_days'] = {yy_mm_dd}
+        elif yy_mm_dd != self.data.authors[author]['last_active_day']:
+            self.data.authors[author]['last_active_day'] = yy_mm_dd
+            self.data.authors[author]['active_days'].add(yy_mm_dd)
 
     def _collect_project_active_days(self, date):
-        yymmdd = date.strftime(self.conf.date_format)
-        if yymmdd != self.data.last_active_day:
-            self.data.last_active_day = yymmdd
-            self.data.active_days.add(yymmdd)
+        yy_mm_dd = date.strftime(self.conf.date_format)
+        if yy_mm_dd != self.data.last_active_day:
+            self.data.last_active_day = yy_mm_dd
+            self.data.active_days.add(yy_mm_dd)
 
     def _collect_timezone(self, parts):
         timezone = parts[3]

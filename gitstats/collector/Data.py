@@ -7,7 +7,7 @@ class Data(object):
         self.stamp_created = time.time()
         self.cache = {}
 
-        self.projectname = None
+        self.project_name = None
 
         self.total_authors = 0
         self.activity_by_hour_of_day = {}  # hour -> commits
@@ -19,7 +19,9 @@ class Data(object):
         self.activity_by_year_week = {}  # yy_wNN -> commits
         self.activity_by_year_week_peak = 0
 
-        self.authors = {}  # name -> {commits, first_commit_stamp, last_commit_stamp, last_active_day, active_days, lines_added, lines_removed}
+        # name
+        # {commits, first_commit_stamp, last_commit_stamp, last_active_day, active_days, lines_added, lines_removed}
+        self.authors = {}
 
         self.total_commits = 0
         self.total_files = 0
@@ -64,73 +66,71 @@ class Data(object):
         # line statistics
         self.changes_by_date = {}  # stamp -> { files, ins, del }
 
-
     ##
     # : get a dictionary of author
-    def getAuthorInfo(self, author):
+    def get_author_info(self, author):
         return self.authors[author]
 
-    def getActivityByDayOfWeek(self):
+    def get_activity_by_day_of_week(self):
         return self.activity_by_day_of_week
 
-    def getActivityByHourOfDay(self):
+    def get_activity_by_hour_of_day(self):
         return self.activity_by_hour_of_day
 
-    def getActiveDays(self):
+    def get_active_days(self):
         return self.active_days
 
-    def getDomains(self):
+    def get_domains(self):
         return list(self.domains.keys())
 
     # : get a dictionary of domains
-    def getDomainInfo(self, domain):
+    def get_domain_info(self, domain):
         return self.domains[domain]
 
     ##
     # Get a list of authors
-    def getAuthors(self, limit=None):
-        res = self.getkeyssortedbyvaluekey(self.authors, 'commits')
+    def get_authors(self, limit=None):
+        res = self.get_keys_sorted_by_value_key(self.authors, 'commits')
         res.reverse()
         return res[:limit]
 
-    def getFirstCommitDate(self):
+    def get_first_commit_date(self):
         return datetime.datetime.fromtimestamp(self.first_commit_stamp)
 
-    def getLastCommitDate(self):
+    def get_last_commit_date(self):
         return datetime.datetime.fromtimestamp(self.last_commit_stamp)
 
-    def getCommitDeltaDays(self):
+    def get_commit_delta_days(self):
         return (self.last_commit_stamp / 86400 - self.first_commit_stamp / 86400) + 1
 
-    def getStampCreated(self):
+    def get_stamp_created(self):
         return self.stamp_created
 
-    def getTags(self):
+    def get_tags(self):
         return list(self.tags.keys()).sort()
 
-    def getTotalAuthors(self):
+    def get_total_authors(self):
         return self.total_authors
 
-    def getTotalCommits(self):
+    def get_total_commits(self):
         return self.total_commits
 
-    def getTotalFiles(self):
+    def get_total_files(self):
         return self.total_files
 
-    def getTotalLOC(self):
+    def get_total_loc(self):
         return self.total_lines
 
-    def getTotalSize(self):
+    def get_total_size(self):
         return self.total_size
 
-    def getAuthorsByCommits(self):
-        return self.getkeyssortedbyvaluekey(self.authors, 'commits')
+    def get_authors_by_commits(self):
+        return self.get_keys_sorted_by_value_key(self.authors, 'commits')
 
-    # dict['author'] = { 'commits': 512 } - ...key(dict, 'commits')
-    def getkeyssortedbyvaluekey(self, d, key):
+    @staticmethod
+    def get_keys_sorted_by_value_key(d, key):
         return [el[1] for el in sorted([(d[el][key], el) for el in list(d.keys())])]
 
-
-    def getkeyssortedbyvalues(self, dict):
-        return [el[1] for el in sorted([(el[1], el[0]) for el in list(dict.items())])]
-
+    @staticmethod
+    def get_keys_sorted_by_values(d):
+        return [el[1] for el in sorted([(el[1], el[0]) for el in list(d.items())])]

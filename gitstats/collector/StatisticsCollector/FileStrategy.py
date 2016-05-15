@@ -8,17 +8,19 @@ from gitstats.collector.StatisticsCollector.StatisticsCollectorStrategy import S
 class FileStrategy(StatisticsCollectorStrategy):
     def __init__(self, data, conf):
         super().__init__(data, conf)
-        
-    def getnumoflinesinblob(self, ext_blob):
+
+    @staticmethod
+    def get_num_of_lines_in_blob(ext_blob):
         """
         Get number of lines in blob
         """
         ext, blob_id = ext_blob
-        return (ext, blob_id, int(RunExternal.execute(['git cat-file blob %s' % blob_id, 'wc -l']).split()[0]))
+        return ext, blob_id, int(RunExternal.execute(['git cat-file blob %s' % blob_id, 'wc -l']).split()[0])
 
     def collect(self):
         # extensions and size of files
-        lines = RunExternal.execute(['git ls-tree -r -l -z %s' % self.getcommitrange('HEAD', end_only=True)]).split('\000')
+        lines = RunExternal.execute(['git ls-tree -r -l -z %s' % self.get_commit_range('HEAD', end_only=True)]).split(
+            '\000')
         blobs_to_read = []
         for line in lines:
             if len(line) == 0:
@@ -29,12 +31,12 @@ class FileStrategy(StatisticsCollectorStrategy):
                 continue
             blob_id = parts[2]
             size = int(parts[3])
-            fullpath = parts[4]
+            full_path = parts[4]
 
             self.data.total_size += size
             self.data.total_files += 1
 
-            filename = fullpath.split('/')[-1]  # strip directories
+            filename = full_path.split('/')[-1]  # strip directories
             if filename.find('.') == -1 or filename.rfind('.') == 0:
                 ext = ''
             else:
@@ -54,15 +56,15 @@ class FileStrategy(StatisticsCollectorStrategy):
             else:
                 blobs_to_read.append((ext, blob_id))
 
-        # Get info abount line count for new blob's that wasn't found in cache
+        # Get info about line count for new blob's that wasn't found in cache
         pool = Pool(processes=self.conf.processes)
-        ext_blob_linecount = pool.map(self.getnumoflinesinblob, blobs_to_read)
+        ext_blob_line_count = pool.map(self.get_num_of_lines_in_blob, blobs_to_read)
         pool.terminate()
         pool.join()
 
         # Update cache and write down info about number of number of lines
-        for (ext, blob_id, linecount) in ext_blob_linecount:
+        for (ext, blob_id, line_count) in ext_blob_line_count:
             if 'lines_in_blob' not in self.data.cache:
                 self.data.cache['lines_in_blob'] = {}
-            self.data.cache['lines_in_blob'][blob_id] = linecount
+            self.data.cache['lines_in_blob'][blob_id] = line_count
             self.data.extensions[ext]['lines'] += self.data.cache['lines_in_blob'][blob_id]

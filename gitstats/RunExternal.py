@@ -6,7 +6,7 @@ import time
 
 
 class RunExternal(object):
-    exectime_external = 0.0
+    exec_time_external = 0.0
 
     @staticmethod
     def is_linux():
@@ -31,5 +31,5 @@ class RunExternal(object):
             if RunExternal.is_linux() and os.isatty(1):
                 print('\r', end=' ')
             print('[%.5f] >> %s' % (end - start, ' | '.join(cmds)))
-        RunExternal.exectime_external += (end - start)
+        RunExternal.exec_time_external += (end - start)
         return output.rstrip('\n')

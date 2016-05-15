@@ -1,10 +1,11 @@
+from gitstats.collector.RefineCollector import GitRefineCollector
 from gitstats.collector.StatisticsCollector import *
 from gitstats.collector.StatisticsCollector.StatisticsCollectorStrategy import StatisticsCollectorStrategy
-from gitstats.collector.RefineCollector import GitRefineCollector
 
 
 class DataCollector(object):
     """Manages data collection from a revision control repository."""
+
     def __init__(self, data, conf):
         self.data = data
         self.conf = conf

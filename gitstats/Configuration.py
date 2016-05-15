@@ -10,7 +10,7 @@ class Configuration(object):
         self.authors_top = 5
         self.commit_begin = ''
         self.commit_end = 'HEAD'
-        self.linear_linestats = 1
+        self.linear_line_stats = 1
         self.project_name = ''
         self.processes = 8
         self.start_date = ''
