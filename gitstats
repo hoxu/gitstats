@@ -979,8 +979,18 @@ class HTMLReportCreator(ReportCreator):
 		if len(allauthors) > conf['max_authors']:
 			f.write('<p class="moreauthors">Only top %d authors shown</p>' % conf['max_authors'])
 
+		f.write(html_header(2, 'Cumulated Added Lines of Code per Author (log scale)'))
+		f.write('<img src="lines_of_code_by_author_logscale.png" alt="Lines of code per Author (log scale)">')
+		if len(allauthors) > conf['max_authors']:
+			f.write('<p class="moreauthors">Only top %d authors shown</p>' % conf['max_authors'])
+
 		f.write(html_header(2, 'Commits per Author'))
 		f.write('<img src="commits_by_author.png" alt="Commits per Author">')
+		if len(allauthors) > conf['max_authors']:
+			f.write('<p class="moreauthors">Only top %d authors shown</p>' % conf['max_authors'])
+
+		f.write(html_header(2, 'Commits per Author (log scale)'))
+		f.write('<img src="commits_by_author_logscale.png" alt="Commits per Author (log scale)">')
 		if len(allauthors) > conf['max_authors']:
 			f.write('<p class="moreauthors">Only top %d authors shown</p>' % conf['max_authors'])
 
@@ -1309,13 +1319,32 @@ plot 'lines_of_code.dat' using 1:2 w lines
 
 		# Lines of Code Added per author
 		f = open(path + '/lines_of_code_by_author.plot', 'w')
+		g = open(path + '/lines_of_code_by_author_logscale.plot', 'w')
 		f.write(GNUPLOT_COMMON)
+		g.write(GNUPLOT_COMMON)
 		f.write(
 """
 set terminal png transparent size 640,480
 set output 'lines_of_code_by_author.png'
 set key left top
 set yrange [0:]
+set xdata time
+set timefmt "%s"
+set format x "%Y-%m-%d"
+set grid y
+set ylabel "Lines"
+set xtics rotate
+set bmargin 6
+plot """
+)
+		g.write(
+"""
+set terminal png transparent size 640,480
+set output 'lines_of_code_by_author_logscale.png'
+set key left top
+set yrange [0.1:]
+set ytics add("0" 0.1)
+set logscale y
 set xdata time
 set timefmt "%s"
 set format x "%Y-%m-%d"
@@ -1332,19 +1361,40 @@ plot """
 			author = a.replace("\"", "\\\"").replace("`", "")
 			plots.append("""'lines_of_code_by_author.dat' using 1:%d title "%s" w lines""" % (i, author))
 		f.write(", ".join(plots))
+		g.write(", ".join(plots))
 		f.write('\n')
-
+		g.write('\n')
 		f.close()
+		g.close()
 
 		# Commits per author
 		f = open(path + '/commits_by_author.plot', 'w')
+		g = open(path + '/commits_by_author_logscale.plot', 'w')
 		f.write(GNUPLOT_COMMON)
+		g.write(GNUPLOT_COMMON)
 		f.write(
 """
 set terminal png transparent size 640,480
 set output 'commits_by_author.png'
 set key left top
 set yrange [0:]
+set xdata time
+set timefmt "%s"
+set format x "%Y-%m-%d"
+set grid y
+set ylabel "Commits"
+set xtics rotate
+set bmargin 6
+plot """
+)
+		g.write(
+"""
+set terminal png transparent size 640,480
+set output 'commits_by_author_logscale.png'
+set key left top
+set yrange [0.1:]
+set ytics add("0" 0.1)
+set logscale y
 set xdata time
 set timefmt "%s"
 set format x "%Y-%m-%d"
@@ -1361,9 +1411,11 @@ plot """
 			author = a.replace("\"", "\\\"").replace("`", "")
 			plots.append("""'commits_by_author.dat' using 1:%d title "%s" w lines""" % (i, author))
 		f.write(", ".join(plots))
+		g.write(", ".join(plots))
 		f.write('\n')
-
+		g.write('\n')
 		f.close()
+		g.close()
 
 		os.chdir(path)
 		files = glob.glob(path + '/*.plot')
