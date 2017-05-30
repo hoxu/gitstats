@@ -12,4 +12,4 @@
   * MacOS: `brew install gnuplot`
   * Ubuntu: `sudo apt-get install gnuplot`
 * Git
-* Python 2.7
+* Python >= 2.6
