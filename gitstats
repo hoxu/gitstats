@@ -118,7 +118,7 @@ def getgitversion():
 
 def getgnuplotversion():
     # Manually hack the version
-    return 
+    return "1.0.1"
     # return getpipeoutput(['%s --version' % gnuplot_cmd]).split('\n')[0]
 
 def getnumoffilesfromrev(time_rev):
