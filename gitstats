@@ -118,7 +118,7 @@ def getgitversion():
 
 def getgnuplotversion():
     # Manually hack the version
-    return "1.1.0"
+    return 
     # return getpipeoutput(['%s --version' % gnuplot_cmd]).split('\n')[0]
 
 def getnumoffilesfromrev(time_rev):
@@ -1369,10 +1369,10 @@ plot """
 
         os.chdir(path)
         files = glob.glob(path + '/*.plot')
-        for f in files:
-            out = getpipeoutput([gnuplot_cmd + ' "%s"' % f])
-            if len(out) > 0:
-                print out
+        #for f in files:
+        #    out = getpipeoutput([gnuplot_cmd + ' "%s"' % f])
+        #    if len(out) > 0:
+        #        print out
 
     def printHeader(self, f, title = ''):
         f.write(
