@@ -267,6 +267,7 @@ class DataCollector:
     
     def getTotalLOC(self):
         return -1
+        
     
     ##
     # Save cacheable data
@@ -986,8 +987,33 @@ class HTMLReportCreator(ReportCreator):
         if len(allauthors) > conf['max_authors']:
             f.write('<p class="moreauthors">Only top %d authors shown</p>' % conf['max_authors'])
 
+
+
+       def writeHeaders(fileName,headers):
+            """
+            Writes the headers to the first line of the .tsv file
+
+            Args:
+                fileName (String): Name of the destination file, ex: "data.tsv"
+                headers (List(String)): Headers to be written, ex: ["header1","header2"....]
+
+            """
+            assert fileName[-4:] ==".tsv", "fileName must be '.tsv' file not '%s'" %(fileName)
+
+            f = open (fileName,"w")
+            for headerIndex in range(len(headers)):
+                if headerIndex!=len(headers)-1:
+                    # write header along with\t 
+                    f.write(headers[headerIndex]+"\t")
+                else:
+                    # write last word along with\n
+                    f.write(headers[len(headers)-1]+"\n")
+            f.close()
+
+        writeHeaders("lines_of_code")
         fgl = open(path + '/lines_of_code_by_author.dat', 'w')
         fgc = open(path + '/commits_by_author.dat', 'w')
+        
 
         lines_by_authors = {} # cumulated added lines by
         # author. to save memory,
