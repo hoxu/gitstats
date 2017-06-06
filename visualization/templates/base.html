@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html>
+  <head>
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+     <link rel="stylesheet" href="../static/css/style.css">
+     
+     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+  </head>
+  <body class="bg-faded">
+
+
+	<!-- top fixed bar -->
+	<nav class="navbar black sticky-top">
+	  <a class="navbar-brand nav_text" href="#" style="color: white">
+	    <img src="../static/img/zebra_white.png" alt="Zebra Logo" class="zebra_img" class="d-inline-block align-top">
+	    EMC Engineering Tools &amp; Process News Letter
+	  </a>
+	</nav>
+
+	<!-- sidebar menu -->
+	<aside class="sidebar">
+	  <div id="leftside-navigation" class="nano">
+	    <ul class="nano-content">
+	      <li class="sub-menu">
+	        <a href="#"><i class="fa fa-home"></i><span>Home</span><i class="arrow fa"></i></a>
+	      </li>
+
+	      <li class="sub-menu">
+	        <a href="javascript:void(0);"><i class="fa fa-cogs"></i><span>Projects</span><i class="arrow fa fa-angle-right pull-right"></i></a>
+	        <ul>
+	          <li><a href="#">Shim's cool project</a>
+	          </li>
+	          <li><a href="#">Tony's cool project</a>  
+	          </li>
+	          <li><a href="#">Greg's intern project</a>
+	          </li>
+	        </ul>
+	      </li>
+
+	      <li class="sub-menu">
+	        <a href="#"><i class="fa fa-terminal"></i><span>Lines</span><i class="arrow fa"></i></a>
+	      </li>
+
+	      <li class="sub-menu">
+	        <a href="#"><i class="fa fa-user"></i><span>Authors</span><i class="arrow fa "></i></a>
+	      </li>
+
+	    </ul>
+
+	  </div>
+	</aside>
+
+
+  	{% block content %}{% endblock %}
+
+
+    <!-- bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+
+    <!-- for nav bar accordion -->
+    <script src='//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+    <script src='//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js'></script>
+
+    <!-- for visualizations -->
+    <script src="http://d3js.org/d3.v4.js"></script>
+    <script src="../static/js/script.js" type="text/javascript"></script>
+
+  </body>
+</html>
