@@ -889,7 +889,7 @@ class HTMLReportCreator(ReportCreator):
             if d in day_of_week:
                 commits = day_of_week[d]
             fp.write('%d %s %d\n' % (d + 1, WEEKDAYS[d], commits))
-            day_of_week_tsv.write("%d\t%s\t%d\n" %(d, WEEKS[d],commits))
+            day_of_week_tsv.write("%d\t%s\t%d\n" %(d, WEEKDAYS[d],commits))
             f.write('<tr>')
             f.write('<th>%s</th>' % (WEEKDAYS[d]))
             if d in day_of_week:
