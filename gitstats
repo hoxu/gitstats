@@ -896,7 +896,7 @@ class HTMLReportCreator(ReportCreator):
             f.close()
 
         writeHeaderstoNewTSV("FlaskTest/static/data/commits_by_author_TEST.tsv", ['day','hour','value'])
-        commits_by_author_tsv=open("FlaskTest/static/data/commits_by_author_TEST.tsv", "w")
+        commits_by_author_tsv=open("FlaskTest/static/data/commits_by_author_TEST.tsv", "a+")
 
         # Hour of Week
         f.write(html_header(2, 'Hour of Week'))
