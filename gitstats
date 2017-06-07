@@ -915,13 +915,13 @@ class HTMLReportCreator(ReportCreator):
                     commits = 0
                 if commits != 0:
                     f.write('<td')
-                    value = 127 + int((float(commits) / data.activity_by_hour_of_week_busiest) * 128)
-                    f.write(' style="background-color: rgb(%d, 0, 0)"' % value)
+                    r = 127 + int((float(commits) / data.activity_by_hour_of_week_busiest) * 128)
+                    f.write(' style="background-color: rgb(%d, 0, 0)"' % r)
                     f.write('>%d</td>' % commits)
-                    commits_by_author_tsv.write("%d\t%d\%d\n" %(weekday,hour,value))
+                    commits_by_author_tsv.write("%d\t%d\t%d\n" %(weekday,hour,commits))
                 else:
                     f.write('<td></td>')
-                    commits_by_author_tsv.write("%d\t%d\%d\n" %(weekday,hour,0))
+                    commits_by_author_tsv.write("%d\t%d\t%d\n" %(weekday,hour,0))
             f.write('</tr>')
 
         f.write('</table>')

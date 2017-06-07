@@ -32,5 +32,5 @@ print (a.readlines())
 
 
 
-# ./gitstats /home/gschultz/gitstats/Tools_Portal_TESTING /home/gschultz/gitstats/output_test
+# ./gitstats /home/gschultz/gitstats/test_repository /home/gschultz/gitstats/output_test
 # ./gitstats /home/gschultz/gitstats/Tools_Portal_TESTING ~/var/www/html/output_TEST
