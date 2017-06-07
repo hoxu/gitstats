@@ -1,0 +1,294 @@
+<link rel="import" href="elements/elements.html">
+
+<dom-module id="app-shell">
+    <style is="custom-style" include="iron-flex iron-flex-alignment iron-positioning"></style>
+    <style>
+        .yellow {
+            background-color: var(--zebra-yellow);
+        }
+
+        .title {
+            text-align: center;
+        }
+
+        .black {
+            background-color: var(--zebra-black);
+        }
+
+        .tabs-container {
+            /*width: 15%;*/
+        }
+
+        .page-tabs {
+            height: 32px;
+
+            color: var(--zebra-yellow);
+            background-color: var(--zebra-black);
+
+            --paper-tabs-selection-bar-color: var(--zebra-yellow);
+        }
+
+        .container {
+            background-color: white;
+        }
+
+        .pages {
+            margin: 8px 16px;
+        }
+
+        .name {
+            font-size: 14px;
+        }
+
+        .avatar {
+            vertical-align: middle;
+        }
+    </style>
+
+    <template>
+        <app-header-layout has-scrolling-region fullbleed>
+            <app-header class="yellow" fixed>
+                <!-- First Row -->
+                <app-toolbar>
+                    <img class="" src="images/zebra_logo_64.png">
+
+                    <div class="title" main-title>{{title}}</div>
+
+                    <div hidden="{{loggedIn}}">
+                        <paper-icon-button icon="account-box" on-tap="_openLoginDialog"></paper-icon-button>
+                    </div>
+
+                    <div hidden="{{!loggedIn}}">
+                        <!--<span class="name">{{displayName}}</span>-->
+                        <iron-image id="avatar" class="avatar" src="{{avatarLink}}"
+                                    on-tap="_openNameDialog"></iron-image>
+                        <paper-icon-button id="logout" icon="close" on-tap="_logout"></paper-icon-button>
+                    </div>
+                </app-toolbar>
+
+                <!-- Second Row -->
+                <div class="black">
+                    <div class="tabs-container">
+                        <paper-tabs class="page-tabs" selected="{{selected}}" sticky>
+                            <paper-tab>Home</paper-tab>
+                            <paper-tab>News</paper-tab>
+                            <paper-tab>Forms</paper-tab>
+                            <paper-tab>Tools</paper-tab>
+                        </paper-tabs>
+                    </div>
+                </div>
+            </app-header>
+
+            <div class="main-content">
+                <iron-pages class="pages" selected="{{selected}}">
+                    <!-- Home -->
+                    <portal-home></portal-home>
+
+                    <!-- News -->
+                    <portal-news-list></portal-news-list>
+
+                    <!-- Forms -->
+                    <portal-forms logged-in="{{loggedIn}}"></portal-forms>
+
+                    <!-- Tools -->
+                    <portal-tools></portal-tools>
+                </iron-pages>
+            </div>
+        </app-header-layout>
+
+        <jira-login-dialog id="loginDialog"></jira-login-dialog>
+
+        <paper-dialog id="nameDialog" no-overlap horizontal-align="right" vertical-align="auto">
+            <h4>Currently signed in as:</h4>
+            <p>{{user.displayName}} ({{user.username}}@zebra.com)</p>
+        </paper-dialog>
+    </template>
+    <script>
+        Polymer({
+            is: 'app-shell',
+
+            properties: {
+                /**
+                 * The URL to the avatar of the user.
+                 */
+                avatarLink: {
+                    type: String
+                },
+
+                /**
+                 * The display name (i.e. full name) of the user.
+                 */
+                displayName: {
+                    type: String
+                },
+
+                /**
+                 * Logged in state of the user.
+                 * Has an observer to watch for changes.
+                 * Will not show user details if the user is not logged in.
+                 */
+                loggedIn: {
+                    type: Boolean,
+                    value: false,
+                    observer: '_loggedIn'
+                },
+
+                /**
+                 * The currently selected 'page'.
+                 * Defaults to the 'Home' page (0).
+                 */
+                selected: {
+                    type: Number,
+                    value: 0
+                },
+
+                /**
+                 * The title that appears in the toolbar at the top of the page.
+                 */
+                title: {
+                    type: String,
+                    value: "EMC Engineering Tools Portal"
+                },
+
+                user: {
+                    type: Object,
+                    value: {}
+                }
+            },
+
+            attached: function () {
+                var me = this;
+
+                //Check if the user is logged in by checking the cookie.
+                me.loggedIn = me._checkCookie();
+
+                //If the cookie is invalid, delete it
+                if (me.loggedIn == false)
+                    me._deleteCookie();
+
+                //Setup a listener for login events
+                //<jira-login-dialog> will fire a 'loggedIn' event when the user logs in
+                me.$.loginDialog.addEventListener('loggedIn', function (event) {
+                    me.loggedIn = event.detail.loggedIn;
+                });
+            },
+
+            /**
+             * Function for retrieving the details of the currently signed in user, such as avatar and display name.
+             *
+             * @param username The username of the user to retrieve details for.
+             */
+            getUserDetails: function (username) {
+                var me = this;
+
+                var ajax = document.createElement('iron-ajax');
+                ajax.auto = true;
+                ajax.method = "GET";
+                ajax.url = "/api/jira/user/";
+                ajax.params = {cookie: Cookies.get("JSESSIONID"), username: username};
+
+                ajax.addEventListener("response", function (e) {
+                    var response = e.detail.response;
+                    me.avatarLink = response.avatar;
+                    me.displayName = response.displayName;
+                    me.set('user.displayName', response.displayName);
+                    me.set('user.username', username);
+                });
+            },
+
+            /**
+             * Function for retrieving the username of the user.
+             * Uses the current session cookie to get the current user's username.
+             * Then, calls helper method to get user details.
+             *
+             * @see {@link getUserDetails} for the actual details retrieval.
+             */
+            getUser: function () {
+                var me = this;
+
+                var ajax = document.createElement('iron-ajax');
+                ajax.auto = true;
+                ajax.method = "GET";
+                ajax.url = "/api/jira/login/";
+                ajax.params = {cookie: Cookies.get("JSESSIONID")};
+
+                ajax.addEventListener("response", function (e) {
+                    //Call helper method now that we know the username
+                    me.getUserDetails(e.detail.response.name);
+                });
+            },
+
+            /**
+             * Helper method for checking the validity of the cookie.
+             * @returns {boolean} The validity of the cookie.
+             * @private
+             */
+            _checkCookie: function () {
+                if (typeof Cookies.get("JSESSIONID") === typeof undefined)
+                    return false;
+                else
+                    return true;
+            },
+
+            /**
+             * Helper method for deleting the JIRA session cookie.
+             * Uses js-cookie.
+             * @private
+             */
+            _deleteCookie: function () {
+                Cookies.remove('JSESSIONID');
+            },
+
+            /**
+             * Helper method for opening the JIRA login dialog.
+             * @private
+             */
+            _openLoginDialog: function () {
+                this.$.loginDialog.open();
+            },
+
+            /**
+             * Helper method for opening the name dialog.
+             * @private
+             */
+            _openNameDialog: function () {
+                this.$.nameDialog.positionTarget = this.$.avatar;
+                this.$.nameDialog.open();
+            },
+
+            /**
+             * Observer function tied to loggedIn prop.
+             * When the user logs in, the prop is updated to 'true' and the user detail retrieval process begins.
+             * @private
+             */
+            _loggedIn: function () {
+                var me = this;
+
+                if (me.loggedIn == true)
+                    me.getUser();
+            },
+
+            /**
+             * Helper method for logging out the user.
+             * Simply sends a request to the server to relay a logout to JIRA.
+             * Once complete, deletes the session cookie and sets the loggedIn state to false.
+             * @private
+             */
+            _logout: function () {
+                var me = this;
+
+                var ajax = document.createElement('iron-ajax');
+                ajax.auto = true;
+                ajax.method = "DELETE";
+                ajax.url = "/api/jira/login";
+                ajax.params = {cookie: Cookies.get('JSESSIONID')};
+
+                //If there were no HTTP errors encountered, the logout was successful
+                ajax.addEventListener("response", function (e) {
+                    me.loggedIn = false;
+                    me._deleteCookie();
+                });
+            }
+        });
+    </script>
+</dom-module>

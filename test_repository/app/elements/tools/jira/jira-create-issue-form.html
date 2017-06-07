@@ -1,0 +1,233 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/iron-autogrow-textarea/iron-autogrow-textarea.html">
+<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../../bower_components/iron-form/iron-form.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../../bower_components/paper-spinner/paper-spinner.html">
+<link rel="import" href="../../../bower_components/vaadin-combo-box/vaadin-combo-box.html">
+
+<!--
+    An element for creating an issue on JIRA
+-->
+<dom-module id="jira-create-issue-form">
+    <template>
+        <style is="custom-style" include="iron-flex iron-positioning iron-flex-alignment"></style>
+        <style>
+            .container {
+                margin: 16px;
+                background-color: white;
+            }
+
+            form {
+                margin: 8px;
+            }
+
+            .separator {
+                margin: 8px 0;
+            }
+
+            iron-autogrow-textarea {
+                width: 100%;
+            }
+
+            .button {
+                color: white;
+            }
+
+            .submit {
+                background-color: var(--zebra-blue);
+            }
+        </style>
+
+        <paper-material class="layout vertical container">
+            <div class="layout horizontal end-justified">
+                <paper-icon-button id="help" icon="help" on-tap="_openHelp"></paper-icon-button>
+            </div>
+
+            <form id="issueForm" is="iron-form" method="post" action="/api/jira/issue">
+                <vaadin-combo-box id="issueType" class="flex" items="[[issueTypes]]"
+                                  label="Issue Type" required></vaadin-combo-box>
+
+                <vaadin-combo-box id="tool" class="flex" items="[[tools]]" label="Tool" required></vaadin-combo-box>
+
+                <paper-input id="summary" class="flex" label="Summary" required></paper-input>
+
+                <div class="separator"></div>
+
+                <span>Description</span>
+                <div class="layout horizontal">
+                    <iron-autogrow-textarea id="description" class="flex" rows="5" required></iron-autogrow-textarea>
+                </div>
+
+                <div class="separator"></div>
+
+                <div class="layout horizontal">
+                    <paper-button id="submit" class="button submit" on-tap="submit" raised>Submit</paper-button>
+                </div>
+            </form>
+        </paper-material>
+
+        <paper-dialog id="dialog" modal>
+            <paper-spinner id="spinner"></paper-spinner>
+        </paper-dialog>
+
+        <paper-dialog id="helpDialog" no-overlap horizontal-align="right" vertical-align="top">
+            <h2>Request vs Change</h2>
+        </paper-dialog>
+    </template>
+    <script>
+        Polymer({
+            is: 'jira-create-issue-form',
+
+            properties: {
+                /**
+                 * The state of the request (i.e. is it in flight or not).
+                 * Has an observer to disable the form if it is in flight.
+                 */
+                inFlight: {
+                    type: Boolean,
+                    value: false,
+                    observer: '_inFlight'
+                },
+
+                /**
+                 * The issue types that can be accepted by JIRA.
+                 * NOTE: The structure of the Objects in the array is intended (to comply with <vaadin-combo-box>
+                 */
+                issueTypes: {
+                    type: Array,
+                    value: [
+                        {value: 11200, label: "Request"},
+                        {value: 11201, label: "Change"}
+                    ]
+                },
+
+                /**
+                 * The array of tools (tool names/ids)
+                 */
+                tools: {
+                    type: Array
+                }
+            },
+
+            /**
+             * When this element is attached to the DOM, do some setup tasks.
+             */
+            attached: function () {
+                var me = this;
+
+                //Get the tools info (tool ids and names)
+                me._getToolsInfo();
+
+                //Grab a handle on all of our elements (form elements, etc)
+                var dialog = me.$.dialog;
+                var form = me.$.issueForm;
+                var issueType = me.$.issueType;
+                var tool = me.$.tool;
+                var summary = me.$.summary;
+                var description = me.$.description;
+
+                //Before the form is submitted, get the value of all the inputs and pack them into the request body
+                //Also pack the cookie into the request body
+                form.addEventListener('iron-form-presubmit', function (event) {
+                    this.request.contentType = 'application/json';
+                    this.request.body = {
+                        cookie: Cookies.get("JSESSIONID"),
+                        issueType: issueType.value,
+                        toolId: tool.value,
+                        summary: summary.value,
+                        description: description.value
+                    };
+                });
+
+                //Once the form is submitted, notify that the request is in flight and open the dialog containing the spinner
+                form.addEventListener('iron-form-submit', function (event) {
+                    me.inFlight = true;
+                    dialog.open();
+                });
+
+                //Once a response is received, notify that the response is not in flight and close the dialog
+                form.addEventListener('iron-form-response', function (event) {
+                    me.inFlight = false;
+                    dialog.close();
+
+                    //Fire an event containing a link to the issue
+                    var response = event.detail.response;
+                    me.fire('jira-issue-created', {issueUrl: response.issue.link});
+                });
+
+                //Once an error is encountered, notify that the response is not in flight and close the dialog
+                form.addEventListener('iron-form-error', function (event) {
+                    me.inFlight = false;
+                    dialog.close();
+
+                    //Fire an event containing the error message received
+                    var response = event.detail.request.response;
+                    me.fire('jira-issue-failure', {errorMsg: response.error});
+                });
+            },
+
+            //Helper function to submit the form
+            submit: function () {
+                this.$.issueForm.submit();
+            },
+
+            /**
+             * Helper function to retrieve the info about the tools from the DB.
+             * @private
+             */
+            _getToolsInfo: function () {
+                var me = this;
+
+                var ajax = document.createElement('iron-ajax');
+                ajax.auto = true;
+                ajax.method = "GET";
+                ajax.url = "/api/tools/info";
+
+                //Once we receive a response from the server, we need to update the 'tools' prop.
+                ajax.addEventListener("response", function (e) {
+                    var temp = e.detail.response;
+
+                    //Map to conform with <vaadin-combo-box>
+                    //label = name | value = id
+                    me.tools = temp.map(function (obj) {
+                        var rObj = {};
+                        rObj.label = obj.name;
+                        rObj.value = obj.id;
+                        return rObj;
+                    })
+                });
+            },
+
+            /**
+             * Helper method for opening the help dialog and positioning it next to the calling element.
+             * @private
+             */
+            _openHelp: function () {
+                this.$.helpDialog.positionTarget = this.$.help;
+                this.$.helpDialog.open();
+            },
+
+            /**
+             * Helper method that disables the form elements if the request is mid flight.
+             * Also enables/disables the spinner.
+             * @private
+             */
+            _inFlight: function () {
+                var me = this;
+                var inFlight = me.inFlight;
+
+                me.$.spinner.active = inFlight;
+                me.$.issueType.disabled = inFlight;
+                me.$.tool.disabled = inFlight;
+                me.$.summary.disabled = inFlight;
+                me.$.description.disabled = inFlight;
+            }
+        });
+    </script>
+</dom-module>

@@ -1,0 +1,167 @@
+<dom-module id="admin-shell">
+    <style is="custom-style" include="iron-flex iron-positioning"></style>
+    <style>
+        app-header {
+            background-color: var(--zebra-dark-gray);
+        }
+
+        app-toolbar {
+            color: white;
+        }
+
+        .header {
+            height: 64px;
+            background-color: var(--zebra-dark-gray);
+        }
+
+        .separator {
+            font-size: 14px;
+            font-weight: 500;
+            color: #aaa;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .admin-header {
+            height: 64px;
+            background-color: #ebebeb;
+        }
+
+        iron-pages {
+            height: 100%;
+        }
+
+        .default-content {
+            margin: 8px;
+            padding: 8px;
+
+            background-color: white;
+        }
+
+        .login-container {
+            margin: 0;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+
+    <template>
+        <template is="dom-if" if="{{adminExists()}}" restamp="true">
+            <app-drawer-layout fullbleed>
+                <app-drawer>
+                    <div class="header"></div>
+
+                    <div class="admin-header"></div>
+
+                    <paper-menu selected="{{selected}}" attr-for-selected="item">
+                        <paper-item class="first-item" item="home">Home</paper-item>
+
+                        <paper-item class="separator" disabled="true">Markdown</paper-item>
+                        <paper-item item="markdown-editor-add">Add Item</paper-item>
+                        <paper-item item="markdown-editor-update">Update Item</paper-item>
+                        <paper-item item="markdown-editor-delete">Delete Item</paper-item>
+
+                        <paper-item class="separator" disabled="true">Tool Operations</paper-item>
+                        <paper-item item="add-tool">Add Tool</paper-item>
+                        <paper-item item="update-tool">Update Tool</paper-item>
+                        <paper-item item="remove-tool">Remove Tool</paper-item>
+                    </paper-menu>
+                </app-drawer>
+                <app-header-layout fullbleed>
+                    <app-header>
+                        <app-toolbar>
+                            <paper-icon-button icon="menu" drawer-toggle></paper-icon-button>
+                            <div main-title>Admin Console</div>
+                        </app-toolbar>
+                    </app-header>
+
+                    <iron-pages selected="{{selected}}" attr-for-selected="item">
+                        <paper-material class="default-content" item="home">
+                            TEST
+                        </paper-material>
+
+                        <!-- Markdown Subsection -->
+                        <admin-markdown-add item="markdown-editor-add"></admin-markdown-add>
+
+                        <paper-material class="default-content" item="markdown-editor-update">
+                            Update Item
+                        </paper-material>
+
+                        <admin-markdown-delete item="markdown-editor-delete"></admin-markdown-delete>
+
+                        <!-- Tool Subsection -->
+                        <admin-add-tool-form item="add-tool"></admin-add-tool-form>
+
+                        <paper-material class="default-content" item="update-tool">
+                            Update Tool
+                        </paper-material>
+
+                        <admin-remove-tool-form item="remove-tool"></admin-remove-tool-form>
+                    </iron-pages>
+
+                </app-header-layout>
+            </app-drawer-layout>
+        </template>
+
+        <div class="login-container">
+            <template is="dom-if" if="{{!adminExists()}}">
+                <admin-login id="login" on-admin-login-success="_handleLogin" opened></admin-login>
+            </template>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'admin-shell',
+
+            properties: {
+                /**
+                 * The logged in state of the user
+                 */
+                loggedIn: {
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The currently selected item
+                 */
+                selected: {
+                    type: Number,
+                    value: 0
+                },
+            },
+
+            attached: function () {
+
+            },
+
+            /**
+             * Helper function for checking if an admin exists (i.e. is a token in sessionStorage)
+             * @returns {boolean} Whether or not an admin is logged in
+             */
+            adminExists: function () {
+                var adminExists = false;
+
+                //Check token
+                if (sessionStorage.token) {
+                    adminExists = true;
+                }
+
+                return adminExists;
+            },
+
+            /**
+             * Helper function for handling the login from admin-login
+             * @param e The event that admin-login fires
+             * @param detail The details from the event
+             * @private
+             */
+            _handleLogin: function (e, detail) {
+                token = detail.token;
+
+                sessionStorage.setItem('token', token);
+
+                location.reload(true);
+            }
+        });
+    </script>
+</dom-module>

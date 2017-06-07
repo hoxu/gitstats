@@ -1,0 +1,68 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+
+<!--
+    'Wrapper' for the 'Home' section of the Portal.
+    A left navbar switches between each section.
+-->
+<dom-module id="portal-home">
+    <style is="custom-style" include="iron-flex iron-positioning"></style>
+    <style>
+        paper-item {
+            font-size: 14px;
+        }
+
+        iron-pages {
+            margin: 8px 16px;
+        }
+
+        .default-container {
+            height: 100px;
+            width: 100%;
+
+            background-color: white;
+        }
+    </style>
+    <template>
+        <paper-drawer-panel>
+            <paper-header-panel drawer>
+                <paper-menu selected="{{selected}}">
+                    <paper-item>Initiatives</paper-item>
+                    <paper-item>Our Team</paper-item>
+                </paper-menu>
+            </paper-header-panel>
+            <paper-header-panel main>
+                <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+                <iron-pages class="page-container" selected="{{selected}}">
+                    <paper-material class="default-container"></paper-material>
+                    <paper-material class="default-container"></paper-material>
+                </iron-pages>
+            </paper-header-panel>
+        </paper-drawer-panel>
+    </template>
+    <script>
+        Polymer({
+            is: 'portal-home',
+
+            properties: {
+                /**
+                 * The currently selected page.
+                 * Defaults to 0.
+                 */
+                selected: {
+                    type: Number,
+                    value: 0
+                }
+            },
+
+            attached: function () {
+            },
+        });
+    </script>
+</dom-module>

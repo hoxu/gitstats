@@ -1,0 +1,165 @@
+<dom-module id="admin-login">
+    <style is="custom-style" include="iron-flex iron-positioning"></style>
+    <style>
+        paper-card {
+            display: block;
+
+            margin-top: 32px;
+            margin-left: auto;
+            margin-right: auto;
+
+            max-width: 500px;
+        }
+
+        .msg {
+            padding: 10px 20px 9px;
+            margin-bottom: 4px;
+        }
+
+        .msg-error {
+            background: var(--paper-red-100);
+            border-left: 3px solid var(--paper-red-500);
+            color: var(--paper-red-900);
+        }
+
+        .btn {
+            color: white;
+        }
+
+        .btn-primary {
+            background-color: var(--paper-blue-300);
+        }
+    </style>
+
+    <template>
+        <paper-card heading="Admin Login">
+            <div class="card-content">
+                <div class="layout horizontal center-justified">
+                    <paper-spinner id="spinner"></paper-spinner>
+                </div>
+
+                <paper-material class="msg msg-error" hidden="{{!loginError}}">{{errorMessage}}</paper-material>
+
+                <form id="form" class="layout vertical" is="iron-form" method="post" action="/api/admin/login">
+                    <paper-input id="username" label="Username (Portal Creds)" type="text" required></paper-input>
+                    <paper-input id="password" label="Password" type="password" required></paper-input>
+
+                    <paper-button id="submitButton" class="btn btn-primary" raised on-tap="_submit">Login</paper-button>
+                </form>
+            </div>
+        </paper-card>
+    </template>
+    <script>
+        Polymer({
+            is: 'admin-login',
+
+            properties: {
+                /**
+                 * Error message to display on the failure toast
+                 */
+                errorMessage: {
+                    type: String
+                },
+
+                /**
+                 * Whether or not the request is in flight
+                 */
+                inFlight: {
+                    type: Boolean,
+                    value: false,
+                    observer: '_inFlight'
+                },
+
+                /**
+                 * Whether or not there was a login error
+                 */
+                loginError: {
+                    type: Boolean,
+                    value: false
+                }
+            },
+
+            attached: function () {
+                var me = this;
+
+                var form = me.$.form;
+                var usernameInput = me.$.username;
+                var passwordInput = me.$.password;
+
+                //Grab the inputs from the form just before the form is submitted
+                form.addEventListener('iron-form-presubmit', function (event) {
+                    this.request.contentType = 'application/json';
+                    this.request.body = {username: usernameInput.value, password: passwordInput.value};
+                });
+
+                //When the form is submitted, mark it as in flight
+                form.addEventListener('iron-form-submit', function (event) {
+                    me.inFlight = true;
+                });
+
+                //On HTTP error, mark an error and set the error message
+                form.addEventListener('iron-form-error', function (event) {
+                    me.inFlight = false;
+                    me.errorMessage = event.detail.request.response.errors;
+                    me.loginError = true;
+                });
+
+                //When a valid response is recv
+                form.addEventListener('iron-form-response', function (event) {
+                    me.inFlight = false;
+
+                    var response = event.detail.response;
+
+                    //Fire an event so listeners know that a response was recv and was successful
+                    me.fire('admin-login-success', {token: response.token});
+                });
+            },
+
+            /**
+             * Helper method for disabling the form
+             * @private
+             */
+            _disableForm: function () {
+                this.$.username.disabled = true;
+                this.$.password.disabled = true;
+                this.$.submitButton.disabled = true;
+            },
+
+            /**
+             * Helper method for enabling the form
+             * @private
+             */
+            _enableForm: function () {
+                this.$.username.disabled = false;
+                this.$.password.disabled = false;
+                this.$.submitButton.disabled = false;
+            },
+
+            /**
+             * Observer method for when the request is in flight or not.
+             * If it is, form is disabled and spinner is active.
+             * Otherwise, form is enabled and spinner is disabled.
+             * @private
+             */
+            _inFlight: function () {
+                if (this.inFlight == true) {
+                    this.$.spinner.active = true;
+                    this._disableForm();
+                }
+
+                else {
+                    this.$.spinner.active = false;
+                    this._enableForm();
+                }
+            },
+
+            /**
+             * Helper method for submitting the form through the native submit()
+             * @private
+             */
+            _submit: function () {
+                this.$.form.submit();
+            }
+        });
+    </script>
+</dom-module>
