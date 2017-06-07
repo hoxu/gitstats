@@ -24,7 +24,7 @@ const margin = { top: 50, right: 0, bottom: 100, left: 30 },
 
   days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
   times = ["1a", "2a", "3a", "4a", "5a", "6a", "7a", "8a", "9a", "10a", "11a", "12a", "1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p", "10p", "11p", "12p"];
-  datasets = ["../static/data/data.tsv", "../static/data/data2.tsv"];
+  datasets = ["../static/data/data_dummy.tsv", "../static/data/data2_dummy.tsv"];
 
 const svg = d3.select("#chart").append("svg")
   .attr("width", width + margin.left + margin.right)
@@ -170,7 +170,6 @@ function generateBarChart (pathToTSV,divID){
       var width=520
       var height=380
       var chartWidth, chartHeight
-      var margin
       var svg = d3.select(divID).append("svg")
       var axisLayer = svg.append("g").classed("axisLayer", true)
       var chartLayer = svg.append("g").classed("chartLayer", true)
@@ -183,14 +182,14 @@ function generateBarChart (pathToTSV,divID){
       .style("opacity", 0);
       
       function main(data) {
-          setSize(data)
-          drawAxis()
-          drawChart(data)    
+          setSize();
+          drawAxisBarChart();
+          drawChartBarChart();    
       }
       
-      function setSize(data) {
+      function setSize() {
 
-          margin = {top:50, right:0, bottom:100,  left:30}
+          var margin = {top:50, right:0, bottom:100,  left:30}
           chartWidth = width - margin.left - margin.right,
           chartHeight = height - margin.top - margin.bottom,        
           
@@ -215,24 +214,19 @@ function generateBarChart (pathToTSV,divID){
               
       }
       
-      function drawChart(data) {
+      function drawChartBarChart() {
          // monitor the transition
           var t = d3.transition()
-              .duration(1000)
+              .duration(1100)
               .ease(d3.easeLinear)
-              .on("start", function(d){ console.log("Transiton start") })
-              .on("end", function(d){ console.log("Transiton end") })
+              .on("start", function(d){ console.log("Bar Chart Transiton start") })
+              .on("end", function(d){ console.log("Bar Chart Transiton end") })
           
           var bar = chartLayer
             .selectAll(".bar")
             .data(data)
           
           bar.exit().remove() 
-
-
-          var labels = chartLayer
-            .selectAll("labels")
-            .data(data)
 
           bar
             .enter()
@@ -245,18 +239,22 @@ function generateBarChart (pathToTSV,divID){
             //setup for cool transition
             .attr("height", 0)
             .attr("transform", function(d){ return "translate("+[xScale(d.day_name), chartHeight]+")"})
-              
 
+          var labels = chartLayer
+            .selectAll("labels")
+            .data(data)
+              
+          //setup for percentage display
           var totalCommits=0
           data.forEach(function(d){
             totalCommits+=d.commits
           })   
+
           labels
             .enter()
             .append("text")
             .text(function(d){
               var percentage= (d.commits/totalCommits *100).toFixed(2)
-
               return ""+percentage+"%";
             })
             .attr("transform", function(d){
@@ -269,7 +267,7 @@ function generateBarChart (pathToTSV,divID){
               .attr("transform", function(d){ return "translate("+[xScale(d.day_name), yScale(d.commits)]+")"})
       }
       
-      function drawAxis(){
+      function drawAxisBarChart(){
           var yAxis = d3.axisLeft(yScale)
               .tickSizeInner(-chartWidth)
           
@@ -284,17 +282,17 @@ function generateBarChart (pathToTSV,divID){
               .attr("class", "axis x")
               .attr("transform", "translate("+[margin.left, (height-margin.bottom)]+")")
               .call(xAxis);
-          
       }  
       
       //kicks of execution of the bar chart
-      main(data);
-  }); 
+      main();
+
+  }); //end of tsv read in
 
 } //end of generateBarChart
 
-generateLineChart("../static/data/commits_by_author.tsv", "#lineChart");
-generateLineChart("../static/data/lines_of_code_by_author.tsv", "#lineChart2");
+generateLineChart("../static/data/commits_by_author_copy.tsv", "#lineChart");
+generateLineChart("../static/data/lines_of_code_by_author_copy.tsv", "#lineChart2");
 
 function generateLineChart(pathToTSV, divID){
 
@@ -337,12 +335,7 @@ function generateLineChart(pathToTSV, divID){
     var xScale = d3.scaleTime().range([0, width]),
         yScale = d3.scaleLinear().range([height, 0]),
         // 10 nice colors
-        z = d3.scaleOrdinal(d3.schemeCategory10);
-
-    var line = d3.line()
-      .curve(d3.curveBasis)
-      .x(function(d) { return xScale(d.date); })
-      .y(function(d) { return yScale(d.commits);});
+        colors = d3.scaleOrdinal(d3.schemeCategory10);
 
     xScale.domain(d3.extent(data, function(d) { return d.date; }));
 
@@ -351,7 +344,14 @@ function generateLineChart(pathToTSV, divID){
       d3.max(authors, function(c) { return d3.max(c.values, function(d) { return d.commits; }); })
     ]);
 
-    z.domain(authors.map(function(c) { return c.id; }));
+    var line = d3.line()
+    // different types of interpolations here
+    // https://bl.ocks.org/d3noob/ced1b9b18bd8192d2c898884033b5529
+      .curve(d3.curveBasis)
+      .x(function(d) { return xScale(d.date); })
+      .y(function(d) { return yScale(d.commits);});
+
+    colors.domain(authors.map(function(c) { return c.id; }));
 
     function main(){
       drawAxisLineChart();
@@ -372,6 +372,7 @@ function generateLineChart(pathToTSV, divID){
     }
 
     function drawAxisLineChart(){
+
       g.append("g")
         .attr("class", "axis axis--x")
         .attr("transform", "translate(0," + height + ")")
@@ -380,11 +381,11 @@ function generateLineChart(pathToTSV, divID){
       g.append("g")
           .attr("class", "axis axis--y")
           .call(d3.axisLeft(yScale))
-        .append("text")
-          .attr("transform", "rotate(-90)")
-          .attr("y", 6)
-          .attr("dy", "0.71em")
-          .attr("fill", "#000")
+        // .append("text")
+        //   .attr("transform", "rotate(-90)")
+        //   .attr("y", 6)
+        //   .attr("dy", "0.71em")
+        //   .attr("fill", "#000")
 
       // add the X gridlines
       g.append("g")     
@@ -414,7 +415,7 @@ function generateLineChart(pathToTSV, divID){
       author.append("path")
           .attr("class", "line")
           .attr("d", function(d) { return line(d.values); })
-          .style("stroke", function(d) { return z(d.id); });
+          .style("stroke", function(d) { return colors(d.id); });
 
       // Enable to show author at the end of the line
       // author.append("text")
@@ -441,7 +442,7 @@ function generateLineChart(pathToTSV, divID){
             .attr('width', 10)
             .attr('height', 10)
             .style('fill', function(d) {
-              return z(d.id);
+              return colors(d.id);
             });
         legend.append('text')
             .attr('x', chartWidth - 8)
