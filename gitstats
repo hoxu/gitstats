@@ -1023,7 +1023,7 @@ class HTMLReportCreator(ReportCreator):
             f.write('<p class="moreauthors">Only top %d authors shown</p>' % conf['max_authors'])
 
         authorsHEADERS=[str(author) for author in allauthors]
-        authorsHEADERS.prepend("date")
+        authorsHEADERS.insert(0,"date")
 
         # writes headers for both files, should have the same file
         writeHeaderstoNewTSV("FlaskTest/static/data/lines_of_code_by_author_TEST.tsv",authorsHEADERS)
