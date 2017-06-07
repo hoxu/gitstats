@@ -5,7 +5,7 @@ $("#leftside-navigation .sub-menu > a").click(function(e) {
 });
 
 
-// Commits SVG
+// heatmap SVG
 const margin = { top: 50, right: 0, bottom: 100, left: 30 },
   width =520 - margin.left - margin.right,
   height = 320 - margin.top - margin.bottom,
@@ -153,145 +153,145 @@ datasetpicker.enter()
 
 
 
+generateBarChart("../static/data/day_of_week_copy.tsv", "#day_of_week");
 
+function generateBarChart (pathToTSV,divID){
+  // Bar chart, see function 'main' for main execution wheel
 
-// day_of_week_copy.tsv graph
+   function toNum(d){
+    //cleaner function
+        d.commits= +d.commits
+        return d
+  };
 
- function toNum(d){
-  //cleaner function
-      d.commits= +d.commits
-      return d
-};
+  d3.tsv(pathToTSV, toNum, function (error,data){
+      "use strict"
+      // declare outside for reference later
+      var width=520
+      var height=380
+      var chartWidth, chartHeight
+      var margin
+      var svg = d3.select(divID).append("svg")
+      var axisLayer = svg.append("g").classed("axisLayer", true)
+      var chartLayer = svg.append("g").classed("chartLayer", true)
+      
+      var xScale = d3.scaleBand()
+      var yScale = d3.scaleLinear()
 
-d3.tsv("../static/data/day_of_week_copy.tsv", toNum, function (error,data){
-    "use strict"
-    // declare outside for reference later
-    var width=520
-    var height=380
-    var chartWidth, chartHeight
-    var margin
-    var svg = d3.select("#day_of_week").append("svg")
-    var axisLayer = svg.append("g").classed("axisLayer", true)
-    var chartLayer = svg.append("g").classed("chartLayer", true)
-    
-    var xScale = d3.scaleBand()
-    var yScale = d3.scaleLinear()
+      var div = d3.select("body").append("div")
+      .attr("class", "rect_tooltip")
+      .style("opacity", 0);
+      
+      function main(data) {
+          setSize(data)
+          drawAxis()
+          drawChart(data)    
+      }
+      
+      function setSize(data) {
 
-    var div = d3.select("body").append("div")
-    .attr("class", "rect_tooltip")
-    .style("opacity", 0);
-    
-    function main(data) {
-        setSize(data)
-        drawAxis()
-        drawChart(data)    
-    }
-    
-    function setSize(data) {
-
-        margin = {top:50, right:0, bottom:100,  left:30}
-        chartWidth = width - margin.left - margin.right,
-        chartHeight = height - margin.top - margin.bottom,        
-        
-        svg
-          .attr("width", 520)
-          .attr("height", 320)
-        
-        axisLayer
-          .attr("width", chartWidth)
-          .attr("height", chartHeight)
-        
-        chartLayer
+          margin = {top:50, right:0, bottom:100,  left:30}
+          chartWidth = width - margin.left - margin.right,
+          chartHeight = height - margin.top - margin.bottom,        
+          
+          svg
+            .attr("width", 520)
+            .attr("height", 320)
+          
+          axisLayer
             .attr("width", chartWidth)
             .attr("height", chartHeight)
-            .attr("transform", "translate("+[margin.left, margin.top]+")")
-            
-       
+          
+          chartLayer
+              .attr("width", chartWidth)
+              .attr("height", chartHeight)
+              .attr("transform", "translate("+[margin.left, margin.top]+")")
+              
+          xScale.domain(data.map(function(d){ return d.day_name })).range([0, chartWidth])
+              .paddingInner(0.1) 
+              .paddingOuter(0.5)
 
-        xScale.domain(data.map(function(d){ return d.day_name })).range([0, chartWidth])
-            .paddingInner(0.1) 
-            .paddingOuter(0.5)
-
-        yScale.domain([0, d3.max(data, function(d){ return d.commits})]).range([chartHeight, 0])
-            
-    }
-    
-    function drawChart(data) {
-       // monitor the transition
-        var t = d3.transition()
-            .duration(1000)
-            .ease(d3.easeLinear)
-            .on("start", function(d){ console.log("Transiton start") })
-            .on("end", function(d){ console.log("Transiton end") })
-        
-        var bar = chartLayer
-          .selectAll(".bar")
-          .data(data)
-        
-        bar.exit().remove() 
-
-
-        var labels = chartLayer
-          .selectAll("labels")
-          .data(data)
-
-        bar
-          .enter()
-          .append("rect")
-          .classed("bar", true)
-          .merge(bar) 
-          .attr("fill", "rgb(236, 230, 34)")
-          .attr("width", xScale.bandwidth())
-          .attr("stroke", "#323232")
-          //setup for cool transition
-          .attr("height", 0)
-          .attr("transform", function(d){ return "translate("+[xScale(d.day_name), chartHeight]+")"})
-            
+          yScale.domain([0, d3.max(data, function(d){ return d.commits})]).range([chartHeight, 0])
+              
+      }
+      
+      function drawChart(data) {
+         // monitor the transition
+          var t = d3.transition()
+              .duration(1000)
+              .ease(d3.easeLinear)
+              .on("start", function(d){ console.log("Transiton start") })
+              .on("end", function(d){ console.log("Transiton end") })
+          
+          var bar = chartLayer
+            .selectAll(".bar")
+            .data(data)
+          
+          bar.exit().remove() 
 
 
-        var totalCommits=0
-        data.forEach(function(d){
-          totalCommits+=d.commits
-        })   
-        labels
-          .enter()
-          .append("text")
-          .text(function(d){
-            var percentage= (d.commits/totalCommits *100).toFixed(2)
+          var labels = chartLayer
+            .selectAll("labels")
+            .data(data)
 
-            return ""+percentage+"%";
-          })
-          .attr("transform", function(d){
-             return "translate("+[xScale(d.day_name)+5, chartHeight-5]+")"
-          })
+          bar
+            .enter()
+            .append("rect")
+            .classed("bar", true)
+            .merge(bar) 
+            .attr("fill", "rgb(236, 230, 34)")
+            .attr("width", xScale.bandwidth())
+            .attr("stroke", "#323232")
+            //setup for cool transition
+            .attr("height", 0)
+            .attr("transform", function(d){ return "translate("+[xScale(d.day_name), chartHeight]+")"})
+              
 
-        chartLayer.selectAll(".bar").transition(t)
-            // grows to appropriate amount
-            .attr("height", function(d){ return chartHeight - yScale(d.commits) })
-            .attr("transform", function(d){ return "translate("+[xScale(d.day_name), yScale(d.commits)]+")"})
-    }
-    
-    function drawAxis(){
-        var yAxis = d3.axisLeft(yScale)
-            .tickSizeInner(-chartWidth)
-        
-        axisLayer.append("g")
-            .attr("transform", "translate("+[margin.left, margin.top]+")")
-            .attr("class", "axis y")
-            .call(yAxis);
-            
-        var xAxis = d3.axisBottom(xScale)
-    
-        axisLayer.append("g")
-            .attr("class", "axis x")
-            .attr("transform", "translate("+[margin.left, (height-margin.bottom)]+")")
-            .call(xAxis);
-        
-    }  
+          var totalCommits=0
+          data.forEach(function(d){
+            totalCommits+=d.commits
+          })   
+          labels
+            .enter()
+            .append("text")
+            .text(function(d){
+              var percentage= (d.commits/totalCommits *100).toFixed(2)
 
-    main(data)  
-    
-}); 
+              return ""+percentage+"%";
+            })
+            .attr("transform", function(d){
+               return "translate("+[xScale(d.day_name)+5, chartHeight-5]+")"
+            })
+
+          chartLayer.selectAll(".bar").transition(t)
+              // grows to appropriate amount
+              .attr("height", function(d){ return chartHeight - yScale(d.commits) })
+              .attr("transform", function(d){ return "translate("+[xScale(d.day_name), yScale(d.commits)]+")"})
+      }
+      
+      function drawAxis(){
+          var yAxis = d3.axisLeft(yScale)
+              .tickSizeInner(-chartWidth)
+          
+          axisLayer.append("g")
+              .attr("transform", "translate("+[margin.left, margin.top]+")")
+              .attr("class", "axis y")
+              .call(yAxis);
+              
+          var xAxis = d3.axisBottom(xScale)
+      
+          axisLayer.append("g")
+              .attr("class", "axis x")
+              .attr("transform", "translate("+[margin.left, (height-margin.bottom)]+")")
+              .call(xAxis);
+          
+      }  
+      
+      //kicks of execution of the bar chart
+      main(data);
+  }); 
+
+} //end of generateBarChart
 
 generateLineChart("../static/data/commits_by_author.tsv", "#lineChart");
 generateLineChart("../static/data/lines_of_code_by_author.tsv", "#lineChart2");
@@ -353,9 +353,11 @@ function generateLineChart(pathToTSV, divID){
 
     z.domain(authors.map(function(c) { return c.id; }));
 
-    drawAxisLineChart();
-    drawChartLineChart();
-    drawLegend();
+    function main(){
+      drawAxisLineChart();
+      drawChartLineChart();
+      drawLegend();
+    }
 
     // gridlines in x axis 
     function make_x_gridlines() {   
@@ -450,6 +452,8 @@ function generateLineChart(pathToTSV, divID){
               return d.id;
             });
       }
+
+      main(); //kicks off main execution wheel
 
   }); //end tsv read in
 
