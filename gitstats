@@ -851,6 +851,10 @@ class HTMLReportCreator(ReportCreator):
         fg.close()
 
         # Day of Week
+
+        writeHeaderstoNewTSV("FlaskTest/static/data/day_of_week_TEST.tsv", ['day_number','day_name','commits'])
+        day_of_week_tsv=open("FlaskTest/static/data/day_of_week_TEST.tsv", "a+")
+
         f.write(html_header(2, 'Day of Week'))
         day_of_week = data.getActivityByDayOfWeek()
         f.write('<div class="vtable"><table>')
@@ -861,6 +865,7 @@ class HTMLReportCreator(ReportCreator):
             if d in day_of_week:
                 commits = day_of_week[d]
             fp.write('%d %s %d\n' % (d + 1, WEEKDAYS[d], commits))
+            day_of_week_tsv.write("%d\t%s\t%d\n" %(d, WEEKS[d],commits))
             f.write('<tr>')
             f.write('<th>%s</th>' % (WEEKDAYS[d]))
             if d in day_of_week:
