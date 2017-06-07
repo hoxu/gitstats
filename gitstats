@@ -883,7 +883,7 @@ class HTMLReportCreator(ReportCreator):
         f.write(html_header(2, 'Day of Week'))
         day_of_week = data.getActivityByDayOfWeek()
         f.write('<div class="vtable"><table>')
-        f.write('<tr><th>Day</th><th>Total (%)</th></tr>')cat 
+        f.write('<tr><th>Day</th><th>Total (%)</th></tr>')
         fp = open(path + '/day_of_week.dat', 'w')
         for d in range(0, 7):
             commits = 0
