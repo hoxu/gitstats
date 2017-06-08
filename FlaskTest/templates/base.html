@@ -5,6 +5,16 @@
      <link rel="stylesheet" href="../static/css/style.css">
      
      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+
+
+
+
+
+
+
+
+
+
   </head>
   <body class="bg-faded">
 
@@ -13,7 +23,7 @@
 	<nav class="navbar black sticky-top">
 	  <a class="navbar-brand nav_text" href="#" style="color: white">
 	    <img src="../static/img/zebra_white.png" alt="Zebra Logo" class="zebra_img" class="d-inline-block align-top">
-	    EMC Engineering Tools &amp; Process News Letter
+	    EMC Engineering Code Statistics
 	  </a>
 	</nav>
 
@@ -26,13 +36,13 @@
 	      </li>
 
 	      <li class="sub-menu">
-	        <a href="javascript:void(0);"><i class="fa fa-cogs"></i><span>Projects</span><i class="arrow fa fa-angle-right pull-right"></i></a>
+	        <a href="javascript:void(0);"><i class="fa fa-cogs"></i><span>Sub-Repos</span><i class="arrow fa fa-angle-right pull-right"></i></a>
 	        <ul>
-	          <li><a href="#">Shim's cool project</a>
+	          <li><a href="#">Mini Repo 1</a>
 	          </li>
-	          <li><a href="#">Tony's cool project</a>  
+	          <li><a href="#">Mini Repo 2</a>  
 	          </li>
-	          <li><a href="#">Greg's intern project</a>
+	          <li><a href="#">Mini Repo 3</a>
 	          </li>
 	        </ul>
 	      </li>
@@ -53,7 +63,6 @@
 
   	{% block content %}{% endblock %}
 
-
     <!-- bootstrap -->
     <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
@@ -66,6 +75,32 @@
     <!-- for visualizations -->
     <script src="http://d3js.org/d3.v4.js"></script>
     <script src="../static/js/script.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+
+ //    generateHeatMap(["../static/data/data_dummy.tsv", "../static/data/data2_dummy.tsv"], "#chart");
+ //    generateBarChart("../static/data/day_of_week_copy.tsv", "#day_of_week");
+
+ //    generateLineChart("../static/data/commits_by_author_copy.tsv", "#lineChart");
+	// generateLineChart("../static/data/lines_of_code_by_author_copy.tsv", "#lineChart2");
+
+	generateHeatMap(['{{data.heatmap.data_path1}}', '{{data.heatmap.data_path2}}'], "#{{data.heatmap.divID}}");
+	
+    generateBarChart('{{data.barchart.data_path}}', "#{{data.barchart.divID}}");
+
+    generateLineChart('{{data.linegraph1.data_path}}', "#{{data.linegraph1.divID}}");
+	generateLineChart('{{data.linegraph2.data_path}}', "#{{data.linegraph2.divID}}");
+
+
+
+
+
+     </script>
+
+
+
+
+    
 
   </body>
 </html>

@@ -4,156 +4,161 @@ $("#leftside-navigation .sub-menu > a").click(function(e) {
   e.stopPropagation()
 });
 
+// generateHeatMap(["../static/data/data_dummy.tsv", "../static/data/data2_dummy.tsv"], "#chart");
 
-// heatmap SVG
-const margin = { top: 50, right: 0, bottom: 100, left: 30 },
-  width =520 - margin.left - margin.right,
-  height = 320 - margin.top - margin.bottom,
-  gridSize = Math.floor(width / 24),
-  legendElementWidth = gridSize*2,
-  buckets = 9,
+function generateHeatMap(datasets, divID){
+  // heatmap SVG
+  const margin = { top: 50, right: 0, bottom: 100, left: 30 },
+    width =520 - margin.left - margin.right,
+    height = 320 - margin.top - margin.bottom,
+    gridSize = Math.floor(width / 24),
+    legendElementWidth = gridSize*2,
+    buckets = 9,
 
-  // blue colors
-  // colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"], // alternatively colorbrewer.YlGnBu[9]
-  
-  // orange colors
-  // colors = ['#fff5eb','#fee6ce','#fdd0a2','#fdae6b','#fd8d3c','#f16913','#d94801','#a63603','#7f2704'],
+    // blue colors
+    // colors = ["#ffffd9","#edf8b1","#c7e9b4","#7fcdbb","#41b6c4","#1d91c0","#225ea8","#253494","#081d58"], // alternatively colorbrewer.YlGnBu[9]
+    
+    // orange colors
+    // colors = ['#fff5eb','#fee6ce','#fdd0a2','#fdae6b','#fd8d3c','#f16913','#d94801','#a63603','#7f2704'],
 
-  // yellow colors
-  colors =["#ECE622","#D5CF22","#BEB922","#A7A222","#908C22","#797522","#625F22","#625F22","#4B4822","#343222"],
+    // yellow colors
+    colors =["#ECE622","#D5CF22","#BEB922","#A7A222","#908C22","#797522","#625F22","#625F22","#4B4822","#343222"],
 
-  days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
-  times = ["1a", "2a", "3a", "4a", "5a", "6a", "7a", "8a", "9a", "10a", "11a", "12a", "1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p", "10p", "11p", "12p"];
-  datasets = ["../static/data/data_dummy.tsv", "../static/data/data2_dummy.tsv"];
+    days = ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
+    times = ["1a", "2a", "3a", "4a", "5a", "6a", "7a", "8a", "9a", "10a", "11a", "12a", "1p", "2p", "3p", "4p", "5p", "6p", "7p", "8p", "9p", "10p", "11p", "12p"];
+    
+    // datasets = ["../static/data/data_dummy.tsv", "../static/data/data2_dummy.tsv"];
 
-const svg = d3.select("#chart").append("svg")
-  .attr("width", width + margin.left + margin.right)
-  .attr("height", height + margin.top + margin.bottom)
-  .append("g")
-  .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+  const svg = d3.select(divID).append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+    .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
 
-const dayLabels = svg.selectAll(".dayLabel")
-  .data(days)
-  .enter().append("text")
-    .text(function (d) { return d; })
-    .attr("x", 0)
-    .attr("y", (d, i) => i * gridSize)
-    .style("text-anchor", "end")
-    .attr("transform", "translate(-6," + gridSize / 1.5 + ")")
-    .attr("class", (d, i) => ((i >= 0 && i <= 4) ? "dayLabel mono axis axis-workweek" : "dayLabel mono axis"));
+  const dayLabels = svg.selectAll(".dayLabel")
+    .data(days)
+    .enter().append("text")
+      .text(function (d) { return d; })
+      .attr("x", 0)
+      .attr("y", (d, i) => i * gridSize)
+      .style("text-anchor", "end")
+      .attr("transform", "translate(-6," + gridSize / 1.5 + ")")
+      .attr("class", (d, i) => ((i >= 0 && i <= 4) ? "dayLabel mono axis axis-workweek" : "dayLabel mono axis"));
 
-const timeLabels = svg.selectAll(".timeLabel")
-  .data(times)
-  .enter().append("text") 
-    .text((d) => d)
-    .attr("x", (d, i) => i * gridSize)
-    .attr("y", 0)
-    .style("text-anchor", "middle")
-    .attr("transform", "translate(" + gridSize / 2 + ", -6)")
-    .attr("class", (d, i) => ((i >= 7 && i <= 16) ? "timeLabel mono axis axis-worktime" : "timeLabel mono axis"));
+  const timeLabels = svg.selectAll(".timeLabel")
+    .data(times)
+    .enter().append("text") 
+      .text((d) => d)
+      .attr("x", (d, i) => i * gridSize)
+      .attr("y", 0)
+      .style("text-anchor", "middle")
+      .attr("transform", "translate(" + gridSize / 2 + ", -6)")
+      .attr("class", (d, i) => ((i >= 7 && i <= 16) ? "timeLabel mono axis axis-worktime" : "timeLabel mono axis"));
 
-const type = (d) => {
-  return {
-    day: +d.day,
-    hour: +d.hour,
-    value: +d.value
+  const type = (d) => {
+    return {
+      day: +d.day,
+      hour: +d.hour,
+      value: +d.value
+    };
   };
-};
 
-const heatmapChart = function(tsvFile) {
-d3.tsv(tsvFile, type, (error, data) => {
+  const heatmapChart = function(tsvFile) {
+  d3.tsv(tsvFile, type, (error, data) => {
 
-  var div = d3.select("body").append("div")
-    .attr("class", "tooltip")
-    .style("opacity", 0);
-
-  const colorScale = d3.scaleQuantile()
-    .domain([0, buckets - 1, d3.max(data, (d) => d.value)])
-    .range(colors);
-
-  const cards = svg.selectAll(".hour")
-    .data(data, (d) => d.day+':'+d.hour);
-
-  cards.append("title");
-
-  cards.enter().append("rect")
-  .attr("x", (d) => (d.hour - 1) * gridSize)
-  .attr("y", (d) => (d.day - 1) * gridSize)
-  .attr("rx", 4)
-  .attr("ry", 4)  
-  .attr("class", "hour bordered")
-  .attr("width", gridSize)
-  .attr("height", gridSize)
-  .style("fill", colors[0])
-  .on("mouseover", function(d) {
-    div.transition()
-      .duration(200)
-      .style("opacity", .9);
-    div.html("Day: " +days[d.day-1]+ "<br>Hour: " +times[d.hour-1]+ "<br>Commits: " +d.value+ "")
-      .style("left", (d3.event.pageX + 20) + "px")
-      .style("top", (d3.event.pageY - 20) + "px");
-    })
-  .on("mouseout", function(d) {
-    div.transition()
-      .duration(500)
+    var div = d3.select("body").append("div")
+      .attr("class", "tooltip")
       .style("opacity", 0);
-    })
-  .merge(cards)
-    .transition()
-    .duration(1000)
-    .style("fill", (d) => colorScale(d.value));
 
-  // cards.select("title").text((d) => d.value);  
+    const colorScale = d3.scaleQuantile()
+      .domain([0, buckets - 1, d3.max(data, (d) => d.value)])
+      .range(colors);
 
-  cards.exit().remove();
+    const cards = svg.selectAll(".hour")
+      .data(data, (d) => d.day+':'+d.hour);
 
-  const legend = svg.selectAll(".legend")
-    .data([0].concat(colorScale.quantiles()), (d) => d);
+    cards.append("title");
 
-  const legend_g = legend.enter().append("g")
-    .attr("class", "legend");
+    cards.enter().append("rect")
+    .attr("x", (d) => (d.hour - 1) * gridSize)
+    .attr("y", (d) => (d.day - 1) * gridSize)
+    .attr("rx", 4)
+    .attr("ry", 4)  
+    .attr("class", "hour bordered")
+    .attr("width", gridSize)
+    .attr("height", gridSize)
+    .style("fill", colors[0])
+    .on("mouseover", function(d) {
+      div.transition()
+        .duration(200)
+        .style("opacity", .9);
+      div.html("Day: " +days[d.day-1]+ "<br>Hour: " +times[d.hour-1]+ "<br>Commits: " +d.value+ "")
+        .style("left", (d3.event.pageX + 20) + "px")
+        .style("top", (d3.event.pageY - 20) + "px");
+      })
+    .on("mouseout", function(d) {
+      div.transition()
+        .duration(500)
+        .style("opacity", 0);
+      })
+    .merge(cards)
+      .transition()
+      .duration(1000)
+      .style("fill", (d) => colorScale(d.value));
 
-  legend_g.append("rect")
-    .attr("x", (d, i) => legendElementWidth * i)
-    .attr("y", height)
-    .attr("width", legendElementWidth)
-    .attr("height", gridSize / 2)
-    .style("fill", (d, i) => colors[i]);
+    // cards.select("title").text((d) => d.value);  
 
-  legend_g.append("text")
-    .attr("class", "mono")
-    .text((d) => "≥ " + Math.round(d))
-    .attr("x", (d, i) => legendElementWidth * i)
-    .attr("y", height + gridSize);
+    cards.exit().remove();
 
-  legend.exit().remove();
-});
-};
+    const legend = svg.selectAll(".legend")
+      .data([0].concat(colorScale.quantiles()), (d) => d);
 
-// use first dataset by default
-heatmapChart(datasets[0]);
+    const legend_g = legend.enter().append("g")
+      .attr("class", "legend");
 
-// dataset buttons
-const datasetpicker = d3.select("#dataset-picker")
-  .selectAll(".btn btn-primary")
-  .data(datasets);
+    legend_g.append("rect")
+      .attr("x", (d, i) => legendElementWidth * i)
+      .attr("y", height)
+      .attr("width", legendElementWidth)
+      .attr("height", gridSize / 2)
+      .style("fill", (d, i) => colors[i]);
 
-// dataset picking button
-datasetpicker.enter()
-  .append("input")
-  .attr("value", (d) => "Dataset " + d)
-  .attr("type", "button")
-  .attr("class", "btn-sm btn-primary")
-  .on("click", (d) => heatmapChart(d));
+    legend_g.append("text")
+      .attr("class", "mono")
+      .text((d) => "≥ " + Math.round(d))
+      .attr("x", (d, i) => legendElementWidth * i)
+      .attr("y", height + gridSize);
+
+    legend.exit().remove();
+  });
+  };
+
+  // use first dataset by default
+  heatmapChart(datasets[0]);
+
+  // dataset buttons
+  const datasetpicker = d3.select("#dataset-picker")
+    .selectAll(".btn btn-primary")
+    .data(datasets);
+
+  // dataset picking button
+  datasetpicker.enter()
+    .append("input")
+    .attr("value", (d) => "Dataset " + d)
+    .attr("type", "button")
+    .attr("class", "btn-sm btn-primary")
+    .on("click", (d) => heatmapChart(d));
+
+
+}
 
 
 
 
 
 
-
-generateBarChart("../static/data/day_of_week_copy.tsv", "#day_of_week");
+// generateBarChart("../static/data/day_of_week_copy.tsv", "#day_of_week");
 
 function generateBarChart (pathToTSV,divID){
   // Bar chart, see function 'main' for main execution wheel
@@ -173,6 +178,7 @@ function generateBarChart (pathToTSV,divID){
       var svg = d3.select(divID).append("svg")
       var axisLayer = svg.append("g").classed("axisLayer", true)
       var chartLayer = svg.append("g").classed("chartLayer", true)
+      var margin = {top:50, right:0, bottom:100,  left:30}
       
       var xScale = d3.scaleBand()
       var yScale = d3.scaleLinear()
@@ -189,7 +195,6 @@ function generateBarChart (pathToTSV,divID){
       
       function setSize() {
 
-          var margin = {top:50, right:0, bottom:100,  left:30}
           chartWidth = width - margin.left - margin.right,
           chartHeight = height - margin.top - margin.bottom,        
           
@@ -291,8 +296,12 @@ function generateBarChart (pathToTSV,divID){
 
 } //end of generateBarChart
 
-generateLineChart("../static/data/commits_by_author_copy.tsv", "#lineChart");
-generateLineChart("../static/data/lines_of_code_by_author_copy.tsv", "#lineChart2");
+// generateLineChart("../static/data/commits_by_author_copy.tsv", "#lineChart");
+// generateLineChart("../static/data/lines_of_code_by_author_copy.tsv", "#lineChart2");
+
+
+
+
 
 function generateLineChart(pathToTSV, divID){
 

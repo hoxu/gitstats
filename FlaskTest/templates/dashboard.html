@@ -2,35 +2,30 @@
 
 {% block content %}
 
+
 <!-- Main Dashboard -->
 <!-- Summary -->
 <div class="main_dash">
   <div class="container-fluid">
     <div class="card drop-shadow">
       <div class="card-block">
-        <h1> Cool Project Name Here </h1>
+        <h1> {{data.main_repo_name}} </h1>
         <br>
-        <h6> Summary: This project is about making Zebra really fast and efficient </h6>
+        <h6> {{data.main_repo_summary}} </h6>
         <br>
-       Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
-       tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
-       quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
-       consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
-       cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-       proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-        </p>
+        <p> {{data.main_repo_description}}</p>
       </div>
     </div>
 
     <div class="row top_spacer">
 
-      <!-- Metric 1, half screen-->
+      <!-- Metric 1, half screen, heatmap-->
       <div class="col-md-6">
         <div class="card drop-shadow">
           <div class="card-block">
             <h4 class="card-title">Commits by Hour of Week-dummy data </h4>
             <div class="metric">
-              <div id="chart"></div>
+              <div id="{{data.heatmap.divID}}"></div>
               <div id="dataset-picker"></div>
             </div>
             <div class="details_spacer">
@@ -44,14 +39,14 @@
         </div>
       </div>
 
-      <!-- Metric 2, half screen-->
+      <!-- Metric 2, half screen, bar chart-->
       <div class="col-md-6">
         <div class="card drop-shadow">
           <div class="card-block">
             <h4 class="card-title"># Commits by day - real data </h4>
             <div class="metric">
 
-              <div id="day_of_week"></div>
+              <div id="{{data.barchart.divID}}"></div>
 
             </div>
             <div class="details_spacer">
@@ -72,7 +67,7 @@
 
     </div> 
 
-    <!-- Metric 3, full width -->
+    <!-- Metric 3, full width, line chart -->
     <div class="row top_spacer">
 
       <div class="col-md-12">
@@ -81,7 +76,7 @@
             <h4 class="card-title">Commits per Author - real data</h4>
             <div class="metric">
 
-              <div id ="lineChart"></div>
+              <div id ="{{data.linegraph1.divID}}"></div>
               
             </div>
             <div class="details_spacer">
@@ -97,7 +92,7 @@
 
     </div>
 
-    <!-- Another test metric -->
+    <!-- Another test metric, line chart -->
     <div class="row top_spacer">
 
       <div class="col-md-12">
@@ -106,7 +101,7 @@
             <h4 class="card-title">Cumulative Added Lines by Author - real data</h4>
             <div class="metric">
 
-              <div id ="lineChart2"></div>
+              <div id ="{{data.linegraph2.divID}}"></div>
 
             </div>
             <div class="details_spacer">
