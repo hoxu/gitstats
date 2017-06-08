@@ -11,6 +11,7 @@ def dashboard():
 		"heatmap" : {
 			"divID" : "heatmap",
 			"title" : "Commits by Hour of Week - dummy data",
+			# NOTE these paths are relative to where the script.js file is
 			"data_path1" : "../static/data/data_dummy.tsv",
 			"data_path2" : "../static/data/data2_dummy.tsv",
 			"summary" : "This data shows cool stuff",

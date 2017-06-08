@@ -6,15 +6,6 @@
      
      <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
 
-
-
-
-
-
-
-
-
-
   </head>
   <body class="bg-faded">
 
@@ -84,18 +75,14 @@
  //    generateLineChart("../static/data/commits_by_author_copy.tsv", "#lineChart");
 	// generateLineChart("../static/data/lines_of_code_by_author_copy.tsv", "#lineChart2");
 
-	generateHeatMap(['{{data.heatmap.data_path1}}', '{{data.heatmap.data_path2}}'], "#{{data.heatmap.divID}}");
-	
-    generateBarChart('{{data.barchart.data_path}}', "#{{data.barchart.divID}}");
+		generateHeatMap(['{{data.heatmap.data_path1}}', '{{data.heatmap.data_path2}}'], "#{{data.heatmap.divID}}");
 
-    generateLineChart('{{data.linegraph1.data_path}}', "#{{data.linegraph1.divID}}");
-	generateLineChart('{{data.linegraph2.data_path}}', "#{{data.linegraph2.divID}}");
+	    generateBarChart('{{data.barchart.data_path}}', "#{{data.barchart.divID}}");
 
+	    generateLineChart('{{data.linegraph1.data_path}}', "#{{data.linegraph1.divID}}");
+		generateLineChart('{{data.linegraph2.data_path}}', "#{{data.linegraph2.divID}}");
 
-
-
-
-     </script>
+    </script>
 
 
 
