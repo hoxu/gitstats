@@ -140,18 +140,15 @@
 
     <script type="text/javascript">
 
- //    generateHeatMap(["../static/data/data_dummy.tsv", "../static/data/data2_dummy.tsv"], "#chart");
- //    generateBarChart("../static/data/day_of_week_copy.tsv", "#day_of_week");
+    generateHeatMap([
+       '{{url_for("static", filename=sub.visualizations[0].heatmap.data_path1)}}',
+       '{{url_for("static", filename=sub.visualizations[0].heatmap.data_path2)}}' ],
+       "#{{sub.visualizations[0].heatmap.divID}}");
 
- //    generateLineChart("../static/data/commits_by_author_copy.tsv", "#lineChart");
-  // generateLineChart("../static/data/lines_of_code_by_author_copy.tsv", "#lineChart2");
+      generateBarChart('{{url_for("static", filename=sub.visualizations[0].barchart.data_path)}}', "#{{sub.visualizations[0].barchart.divID}}");
 
-    generateHeatMap(['{{sub.visualizations[0].heatmap.data_path1}}', '{{sub.visualizations[0].heatmap.data_path2}}'], "#{{sub.visualizations[0].heatmap.divID}}");
-
-      generateBarChart('{{sub.visualizations[0].barchart.data_path}}', "#{{sub.visualizations[0].barchart.divID}}");
-
-      generateLineChart('{{sub.visualizations[0].linegraph1.data_path}}', "#{{sub.visualizations[0].linegraph1.divID}}");
-    generateLineChart('{{sub.visualizations[0].linegraph2.data_path}}', "#{{sub.visualizations[0].linegraph2.divID}}");
+      generateLineChart('{{url_for("static", filename=sub.visualizations[0].linegraph1.data_path)}}', "#{{sub.visualizations[0].linegraph1.divID}}");
+    generateLineChart('{{url_for("static", filename=sub.visualizations[0].linegraph2.data_path)}}', "#{{sub.visualizations[0].linegraph2.divID}}");
 
     </script>
 
