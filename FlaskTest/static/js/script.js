@@ -4,6 +4,9 @@ $("#leftside-navigation .sub-menu > a").click(function(e) {
   e.stopPropagation()
 });
 
+// cool load in the beginning
+$("#leftside-navigation .sub-menu > a").trigger("click");
+
 // generateHeatMap(["../static/data/data_dummy.tsv", "../static/data/data2_dummy.tsv"], "#chart");
 
 function generateHeatMap(datasets, divID){
