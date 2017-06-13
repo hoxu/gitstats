@@ -879,7 +879,7 @@ class HTMLReportCreator(ReportCreator):
         # Day of Week
 
         writeHeaderstoNewTSV(path + "day_of_week_TEST.tsv", ['day_number','day_name','commits'])
-        day_of_week_tsv=open(path + ls"day_of_week_TEST.tsv", "a+")
+        day_of_week_tsv=open(path + "day_of_week_TEST.tsv", "a+")
 
         f.write(html_header(2, 'Day of Week'))
         day_of_week = data.getActivityByDayOfWeek()
