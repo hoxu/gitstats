@@ -1,0 +1,147 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-form/iron-form.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+
+<dom-module id="admin-add-tool-form">
+    <template>
+        <style is="custom-style">
+            .container {
+                margin: 16px;
+                padding: 16px;
+
+                background-color: white;
+            }
+
+            .button {
+                margin-top: 16px;
+            }
+
+            .login {
+                color: white;
+                background-color: var(--paper-blue-300);
+            }
+
+            .login[disabled] {
+                background-color: var(--paper-blue-100);
+            }
+
+            .cancel {
+                color: white;
+                background-color: var(--paper-red-300);
+            }
+
+            .toast {
+
+            }
+
+            .success {
+                background: var(--paper-green-300);
+                border: 1px solid var(--paper-green-500);
+            }
+
+            .failure {
+                background: var(--paper-red-300);
+                border: 1px solid var(--paper-red-500);
+            }
+        </style>
+
+        <paper-material id="container" class="container">
+            <form id="addToolForm" is="iron-form" method="post" action="/api/tool/guarded">
+                <paper-input id="toolId" label="Tool Id" type="number" required auto-validate></paper-input>
+                <paper-input id="toolName" label="Tool Name" type="text" required auto-validate></paper-input>
+
+                <paper-button id="submitButton" class="button login" raised disabled>Add Tool</paper-button>
+                <paper-button id="cancelButton" class="button cancel" raised>Cancel</paper-button>
+            </form>
+        </paper-material>
+
+        <paper-toast id="successToast" class="toast success" text="{{successText}}"></paper-toast>
+        <paper-toast id="failureToast" class="toast failure" text="{{failureText}}"></paper-toast>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'admin-add-tool-form',
+
+            properties: {
+                /**
+                 * Message to display on the failure toast
+                 */
+                failureText: {
+                    type: String,
+                    value: "Failed to add tool!"
+                },
+
+                /**
+                 * Messsage to display on the success toast
+                 */
+                successText: {
+                    type: String,
+                    value: "Added Tool!"
+                }
+            },
+
+            //Polymer lifecycle method when element is attached to the DOM
+            attached: function () {
+                var me = this;
+
+                var addToolForm = me.$.addToolForm;
+                var toolId = me.$.toolId;
+                var toolName = me.$.toolName;
+                var submitButton = me.$.submitButton;
+                var cancelButton = me.$.cancelButton;
+
+                var successToast = me.$.successToast;
+                successToast.fitInto = me.parentElement;
+
+                var failureToast = me.$.failureToast;
+                failureToast.fitInto = me.parentElement;
+
+                submitButton.addEventListener('tap', function () {
+                    addToolForm.submit();
+                });
+
+                addToolForm.addEventListener('change', function (event) {
+                    // Validate the entire form to see if we should enable the `Submit` button.
+                    submitButton.disabled = !addToolForm.validate();
+                });
+
+                //Event that fires before the form is submitted. Adds the inputs to the body of the AJAX request.
+                addToolForm.addEventListener('iron-form-presubmit', function (event) {
+                    this.request.method = "POST";
+                    this.request.contentType = 'application/json';
+                    this.request.body = {
+                        token: sessionStorage.getItem('token'),
+                        toolId: toolId.value,
+                        toolName: toolName.value
+                    };
+                });
+
+                //Event that fires if an error is encountered
+                addToolForm.addEventListener('iron-form-error', function (event) {
+                    failureToast.open();
+                });
+
+                //Event the fires when a response is received
+                addToolForm.addEventListener('iron-form-response', function (event) {
+                    var response = event.detail.response;
+
+                    //Check that the document was actually added.
+                    //This *shouldn't* be required, but just check anyways
+                    if (response.created == true) {
+                        successToast.open();
+                    }
+
+                    else {
+                        console.log("HTTP 201 received but document wasn't added... ");
+                        console.log(response);
+                    }
+                });
+            },
+        });
+    </script>
+</dom-module>

@@ -1,0 +1,215 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../../bower_components/vaadin-combo-box/vaadin-combo-box.html">
+<link rel="import" href="../../markdown-editor.html">
+
+<dom-module id="admin-markdown-add">
+    <template>
+        <style is="custom-style" include="iron-flex iron-positioning"></style>
+        <style>
+            paper-material {
+                padding: 8px;
+                margin: 8px;
+
+                background-color: white;
+            }
+
+            markdown-editor {
+                background-color: white;
+            }
+
+            .separator {
+                margin: 0 4px;
+            }
+
+            .button {
+                color: white;
+                background-color: var(--paper-blue-300);
+            }
+
+            .markdown-container {
+                margin: 8px;
+            }
+
+            .toast {
+
+            }
+
+            .success {
+                background: var(--paper-green-300);
+                border: 1px solid var(--paper-green-500);
+            }
+
+            .failure {
+                background: var(--paper-red-300);
+                border: 1px solid var(--paper-red-500);
+            }
+        </style>
+
+        <paper-material class="header">
+            This form adds a new item to the markdown list
+        </paper-material>
+
+        <paper-material class="options horizontal layout">
+            <vaadin-combo-box id="toolList" label="Tool" class="flex" items="[[tools]]">
+            </vaadin-combo-box>
+
+            <div class="separator"></div>
+
+            <vaadin-combo-box id="sectionList" label="Sections" class="flex"
+                              items="{{sectionNames}}" value="About">
+            </vaadin-combo-box>
+
+            <paper-button id="save" class="button primary flex" on-tap="_addMarkdown" raised>ADD</paper-button>
+        </paper-material>
+
+        <paper-material class="horizontal layout">
+            <paper-input id="heading" class="flex" label="Heading" type="text"></paper-input>
+        </paper-material>
+
+        <div class="markdown-container vertical layout">
+            <markdown-editor id="editor"></markdown-editor>
+        </div>
+
+        <paper-toast id="successToast" class="toast success" text="{{message.success}}"></paper-toast>
+        <paper-toast id="failureToast" class="toast failure" text="{{message.failure}}"></paper-toast>
+    </template>
+    <script>
+        Polymer({
+            is: 'admin-markdown-add',
+
+            properties: {
+                /**
+                 * Object for success/failure messages
+                 */
+                message: {
+                    type: Object,
+                    value: {
+                        failure: "Failed to add tool!",
+                        success: "Markdown added successfully!"
+                    }
+                },
+
+                /**
+                 * Names of the possible sections to add to
+                 */
+                sectionNames: {
+                    type: Array,
+                    value: ['About', 'Training', 'Links']
+                },
+
+                /**
+                 * Array of tool names
+                 */
+                tools: {
+                    type: Array,
+                }
+            },
+
+            ready: function () {
+                var me = this;
+
+                //Tell the paper-toast's to fit into the parent element
+                me.$.successToast.fitInto = me.parentElement;
+                me.$.failureToast.fitInto = me.parentElement;
+
+                //Load in the tools to populate the <vaadin-combo-box>
+                me.tools = me._getTools();
+            },
+
+            /**
+             * Helper function for getting the tools to populate the tool list
+             * @private
+             */
+            _getTools: function () {
+                var me = this;
+
+                var tools_ajax = document.createElement('iron-ajax');
+                tools_ajax.auto = true;
+                tools_ajax.method = "GET";
+                tools_ajax.url = "/api/tools/info";
+
+                tools_ajax.addEventListener("response", function (e) {
+                    //Grab the tools from the response
+                    var tools = e.detail.response;
+
+                    //We need to transform the array to fit to <vaadin-combo-box> requirements
+                    me.tools = tools.map(function (obj) {
+                        return rObj = {
+                            value: obj.id,
+                            label: obj.name
+                        };
+                    });
+                });
+            },
+
+            /**
+             * Helper method for adding the markdown to the section
+             * @private
+             */
+            _addMarkdown: function () {
+                var me = this;
+
+                var toolListVal = me.$.toolList.value;
+                var sectionListVal = me.$.sectionList.value;
+
+                var successToast = me.$.successToast;
+                var failureToast = me.$.failureToast;
+
+                //Check that the values were supplied
+                if (toolListVal && sectionListVal) {
+                    var heading = me.$.heading.value;
+                    var contents = me.$.editor.markdown;
+
+                    //Check that the values were supplied
+                    if (heading && contents) {
+                        //Get the token for authentication
+                        var token = sessionStorage.getItem('token');
+
+                        var ajax = document.createElement('iron-ajax');
+                        ajax.auto = true;
+                        ajax.body = {token: token, heading: heading, contents: contents};
+                        ajax.contentType = 'application/json';
+                        ajax.method = "POST";
+                        ajax.url = "/api/tool/guarded/" + toolListVal + "/" + sectionListVal.toLowerCase();
+
+                        //When there is an error (HTTP 4XX)
+                        ajax.addEventListener('error', function (event) {
+                            me.set('message.failure', "Failed to add markdown...");
+                            failureToast.open();
+                        });
+
+                        ajax.addEventListener('response', function (event) {
+                            successToast.open();
+                        });
+                    }
+
+                    //Missing heading or contents
+                    else {
+                        if (!heading)
+                            me.set('message.failure', "Missing heading. Make sure you enter a heading.");
+                        else
+                            me.set('message.failure', "Missing contents. Make sure you entered some markdown.");
+
+                        failureToast.open();
+                    }
+                }
+
+                //Missing Tool or Section
+                else {
+                    if (!toolListVal)
+                        me.set('message.failure', "Missing tool. Make sure you selected a tool.");
+                    else
+                        me.set('message.failure', "Missing section. Make sure you selected a section.");
+
+                    failureToast.open();
+                }
+            },
+        });
+    </script>
+</dom-module>

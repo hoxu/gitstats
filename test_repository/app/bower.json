@@ -1,0 +1,46 @@
+{
+  "name": "zebra_emc_tools_portal",
+  "authors": [
+    "Kyle Crowley <nfg84@zebra.com>"
+  ],
+  "description": "Zebra EMC Engineering Tools Portal",
+  "main": "index.html",
+  "license": "UNLICENSED",
+  "homepage": "",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "app-layout": "PolymerElements/app-layout#^0.10.1",
+    "paper-icon-button": "PolymerElements/paper-icon-button#^1.1.2",
+    "paper-item": "PolymerElements/paper-item#^1.2.1",
+    "paper-material": "PolymerElements/paper-material#^1.0.6",
+    "paper-menu": "PolymerElements/paper-menu#^1.2.2",
+    "paper-styles": "PolymerElements/paper-styles#^1.1.4",
+    "paper-tabs": "PolymerElements/paper-tabs#^1.6.2",
+    "paper-toast": "PolymerElements/paper-toast#^1.3.0",
+    "iron-ajax": "PolymerElements/iron-ajax#^1.4.3",
+    "iron-flex-layout": "PolymerElements/iron-flex-layout#^1.3.1",
+    "iron-icons": "PolymerElements/iron-icons#^1.1.3",
+    "iron-pages": "PolymerElements/iron-pages#^1.0.8",
+    "paper-dialog": "PolymerElements/paper-dialog#^1.1.0",
+    "marked-element": "PolymerElements/marked-element#^1.1.3",
+    "paper-toolbar": "PolymerElements/paper-toolbar#^1.1.6",
+    "paper-header-panel": "PolymerElements/paper-header-panel#^1.1.6",
+    "paper-button": "PolymerElements/paper-button#^1.0.12",
+    "paper-input": "PolymerElements/paper-input#^1.1.15",
+    "iron-form": "PolymerElements/iron-form#^1.1.1",
+    "paper-checkbox": "PolymerElements/paper-checkbox#^1.3.0",
+    "paper-spinner": "PolymerElements/paper-spinner#^1.2.0",
+    "app-route": "PolymerElements/app-route#^0.9.2",
+    "vaadin-combo-box": "^1.1.2",
+    "paper-scroll-header-panel": "PolymerElements/paper-scroll-header-panel#^1.0.16",
+    "paper-card": "PolymerElements/paper-card#^1.1.2",
+    "paper-drawer-panel": "PolymerElements/paper-drawer-panel#^1.0.10"
+  }
+}

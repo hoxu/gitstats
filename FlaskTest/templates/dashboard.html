@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<!-- Main Dashboard -->
+<!-- Summary -->
+<div class="main_dash">
+  <div class="container-fluid">
+    <div class="card drop-shadow">
+      <div class="card-block">
+        <h1> {{sub.name}} </h1>
+        <br>
+        <h6> {{sub.summary}} </h6>
+        <br>
+        <p> {{sub.description}}</p>
+      </div>
+    </div>
+
+    <div class="row top_spacer">
+
+      <!-- Metric 1, half screen, heatmap-->
+      <div class="col-md-6">
+        <div class="card drop-shadow">
+          <div class="card-block">
+            <h4 class="card-title">Commits by Hour of Week-dummy data </h4>
+            <div class="metric">
+              <div id="{{sub.visualizations[0].heatmap.divID}}"></div>
+              <div id="dataset-picker"></div>
+            </div>
+            <div class="details_spacer">
+              <div class="text_content">
+                <h5 class="card-text"> This data shows cool stuff </h5>
+                <p class="card-text"> As you can see, this data focuses on business hours </p>
+                <p class="card-text"> <small class="text-muted"> System last updated at 11:34am </small></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metric 2, half screen, bar chart-->
+      <div class="col-md-6">
+        <div class="card drop-shadow">
+          <div class="card-block">
+            <h4 class="card-title"># Commits by day - real data </h4>
+            <div class="metric">
+
+              <div id="{{sub.visualizations[0].barchart.divID}}"></div>
+
+            </div>
+            <div class="details_spacer">
+              <div class="text_content">
+                <h5 class="card-text"> Bar Chart</h5>
+                <p class="card-text"> What week is this from?  <br>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod
+                tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam,
+                quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo
+                consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse
+                cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+                proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                <p class="card-text"> <small class="text-muted"> System last updated at 11:34am </small></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div> 
+
+    <!-- Metric 3, full width, line chart -->
+    <div class="row top_spacer">
+
+      <div class="col-md-12">
+        <div class="card drop-shadow">
+          <div class="card-block">
+            <h4 class="card-title">Commits per Author - real data</h4>
+            <div class="metric">
+
+              <div id ="{{sub.visualizations[0].linegraph1.divID}}"></div>
+
+            </div>
+            <div class="details_spacer">
+              <div class="text_content">
+                <h5 class="card-text"> Multi Series Line Chart</h5>
+                <p class="card-text"> Theres a few authors on this project but 1 stands out </p>
+                <p class="card-text"> <small class="text-muted"> System last updated at 11:34am </small></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Another test metric, line chart -->
+    <div class="row top_spacer">
+
+      <div class="col-md-12">
+        <div class="card drop-shadow">
+          <div class="card-block">
+            <h4 class="card-title">Cumulative Added Lines by Author - real data</h4>
+            <div class="metric">
+
+              <div id ="{{sub.visualizations[0].linegraph2.divID}}"></div>
+
+            </div>
+            <div class="details_spacer">
+              <div class="text_content">
+                <h5 class="card-text"> Multi Series Line Chart</h5>
+                <p class="card-text"> Theres a few authors on this project but 1 stands out </p>
+                <p class="card-text"> <small class="text-muted"> System last updated at 11:34am </small></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- bottom for aesthetic spacing -->
+    <div class="top_spacer"></div>
+
+  </div>
+</div>
+
+
+
+    <!-- bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+
+    <!-- for nav bar accordion -->
+    <script src='//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+    <script src='//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js'></script>
+
+    <!-- for visualizations -->
+    <script src="http://d3js.org/d3.v4.js"></script>
+    <script src="../static/js/script.js" type="text/javascript"></script>
+
+    <script type="text/javascript">
+
+    generateHeatMap([
+       '{{url_for("static", filename=sub.visualizations[0].heatmap.data_path1)}}',
+       '{{url_for("static", filename=sub.visualizations[0].heatmap.data_path2)}}' ],
+       "#{{sub.visualizations[0].heatmap.divID}}");
+
+      generateBarChart('{{url_for("static", filename=sub.visualizations[0].barchart.data_path)}}', "#{{sub.visualizations[0].barchart.divID}}");
+
+      generateLineChart('{{url_for("static", filename=sub.visualizations[0].linegraph1.data_path)}}', "#{{sub.visualizations[0].linegraph1.divID}}");
+    generateLineChart('{{url_for("static", filename=sub.visualizations[0].linegraph2.data_path)}}', "#{{sub.visualizations[0].linegraph2.divID}}");
+
+    </script>
+
+{% endblock %}
+

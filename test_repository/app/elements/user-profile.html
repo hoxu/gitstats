@@ -1,0 +1,32 @@
+<dom-module id="user-profile">
+    <style>
+        paper-card {
+        }
+    </style>
+
+    <template>
+        <paper-card heading="{{name}}" image="{{image}}">
+            <div class="card-content">{{description}}</div>
+        </paper-card>
+    </template>
+    <script>
+        Polymer({
+            is: 'user-profile',
+
+            properties: {
+                description: {
+                    type: String,
+                },
+
+                name: {
+                    type: String,
+                },
+
+                image: {
+                    type: String,
+                    value: "../images/avatars/placeholder.png"
+                }
+            }
+        });
+    </script>
+</dom-module>

@@ -1,0 +1,190 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../../bower_components/vaadin-combo-box/vaadin-combo-box.html">
+<link rel="import" href="../../markdown-editor.html">
+
+<dom-module id="admin-markdown-editor">
+    <template>
+        <style is="custom-style" include="iron-flex iron-positioning"></style>
+        <style>
+            .container {
+                height: 100%;
+            }
+
+            .row {
+                margin-top: 16px;
+                margin-bottom: 16px;
+            }
+
+            vaadin-combo-box {
+                margin-left: 16px;
+                margin-right: 16px;
+            }
+
+            .button {
+                background-color: var(--zebra-blue);
+                color: white;
+            }
+
+            .editor {
+                height: 100%;
+            }
+        </style>
+        <div id="container" class="container vertical layout">
+            <div class="row horizontal layout">
+                <vaadin-combo-box id="toolList" label="Tools" class="flex" items="{{tools}}"
+                                  value="JIRA"></vaadin-combo-box>
+                <vaadin-combo-box id="sectionList" label="Sections" class="flex"
+                                  items="{{sectionNames}}" value="About"></vaadin-combo-box>
+                <paper-input id="itemList" class="flex" label="Item #" type="number" required></paper-input>
+            </div>
+
+            <div class="row horizontal layout">
+                <paper-button id="load" raised class="button flex">LOAD</paper-button>
+                <paper-button id="save" raised class="button flex">SAVE</paper-button>
+            </div>
+
+            <div class="row horizontal layout">
+                <paper-input id="heading" class="flex" label="Heading" type="text" value="{{heading}}"></paper-input>
+            </div>
+
+            <div class="container vertical layout">
+                <markdown-editor id="editor" class="editor" markdown="{{markdown}}"></markdown-editor>
+            </div>
+        </div>
+
+        <paper-toast id="successToast" text="Saved!"></paper-toast>
+    </template>
+    <script>
+        Polymer({
+            is: 'admin-markdown-editor',
+
+            properties: {
+                heading: {
+                    type: String,
+                    value: "Test Heading"
+                },
+
+                /**
+                 * The markdown string in the editor
+                 */
+                markdown: {
+                    type: String
+                },
+
+                /**
+                 * Array of tool id/name combos
+                 */
+                tools: {
+                    type: Array
+                },
+
+                /**
+                 * Array of sections names for the tools
+                 */
+                sectionNames: {
+                    type: Array,
+                    value: ["About", "Training", "Links"]
+                }
+            },
+
+            //Polymer lifecycle method when element is attached to the DOM
+            attached: function () {
+                var me = this;
+                var toolList = me.$.toolList;
+                var sectionList = me.$.sectionList;
+                var itemList = me.$.itemList;
+
+                var loadButton = me.$.load;
+                var saveButton = me.$.save;
+
+                var heading = me.$.heading;
+
+                var successToast = me.$.successToast;
+                successToast.fitInto = me.$.container;
+
+                //Load in the tools
+                var tools_ajax = document.createElement('iron-ajax');
+                tools_ajax.auto = true;
+                tools_ajax.method = "GET";
+                tools_ajax.url = "/api/tools/info";
+
+                //When we get a response from our AJAX call
+                tools_ajax.addEventListener("response", function (e) {
+                    //Grab the tools from the response
+                    var tools = e.detail.response;
+
+                    //We need to transform the array to fit to <vaadin-combo-box> requirements
+                    me.tools = tools.map(function (obj) {
+                        return rObj = {
+                            value: obj.id,
+                            label: obj.name
+                        };
+                    });
+                });
+
+                loadButton.addEventListener('tap', function () {
+                    me.markdown = me._getMarkdown(toolList.value, sectionList.value.toLowerCase(), itemList.value);
+                });
+
+                saveButton.addEventListener('tap', function () {
+                    me._setMarkdown(heading.value, toolList.value, sectionList.value.toLowerCase());
+                });
+            },
+
+            /**
+             * Method for retrieving the markdown for the given tool&section combo
+             *
+             * Sends the tool name and section name to the DB and receives a response containing the markdown string
+             *
+             * @param toolId The id of the tool to retrieve
+             * @param sectionName The name of the section to retrieve
+             * @private
+             */
+            _getMarkdown: function (toolId, sectionName, itemNum) {
+                var me = this;
+
+                var markdown_ajax = document.createElement('iron-ajax');
+                markdown_ajax.auto = true;
+                markdown_ajax.method = "GET";
+                markdown_ajax.url = "/api/tool/" + toolId + "/" + sectionName + "/" + itemNum;
+
+                //When we get a response from our AJAX call
+                markdown_ajax.addEventListener("response", function (e) {
+                    //Set the current markdown to the received markdown
+                    me.heading = e.detail.response.heading;
+                    me.markdown = e.detail.response.contents;
+                });
+            },
+
+            /**
+             * Method for setting the markdown string of the given tool and section
+             *
+             * A `paper-toast` will pop up if the markdown was set successfully
+             *
+             * @param markdown The markdown string to be set
+             * @param toolName The name of the tool to set the markdown for
+             * @param sectionName The name of the section to set the markdown for
+             * @private
+             */
+            _setMarkdown: function (heading, markdown, toolId, sectionName) {
+                var me = this;
+
+                var markdown_ajax = document.createElement('iron-ajax');
+                markdown_ajax.auto = true;
+                markdown_ajax.body = {heading: heading, contents: markdown};
+                markdown_ajax.contentType = 'application/json';
+                markdown_ajax.method = "POST";
+                markdown_ajax.url = "/api/tool/" + toolId + "/" + sectionName;
+
+                //When we get a response from our AJAX call
+                markdown_ajax.addEventListener("response", function (e) {
+                    console.log(e.detail.response);
+                });
+            }
+        });
+    </script>
+</dom-module>

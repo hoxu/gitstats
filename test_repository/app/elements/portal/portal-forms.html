@@ -1,0 +1,148 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-pages/iron-pages.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../tools/jira/jira-create-issue-form.html">
+
+<!--
+    'Wrapper' for the 'Forms' section of the Portal.
+
+    A left navbar switches between each form.
+    Forms can be enabled/disabled in the admin console (WIP) TODO
+-->
+<dom-module id="portal-forms">
+    <style>
+        .default-container {
+            margin: 8px 16px;
+            padding: 8px;
+            background-color: var(--paper-yellow-100);
+        }
+
+        .toast {
+            color: black;
+        }
+
+        .success {
+            background: var(--paper-green-100);
+            border: 1px solid var(--paper-green-300);
+        }
+
+        .failure {
+            background: var(--paper-red-100);
+            border: 1px solid var(--paper-red-300);
+        }
+
+        .issue-link {
+            color: black;
+        }
+
+        .close {
+            background-color: black;
+            color: white;
+        }
+    </style>
+
+    <template>
+        <paper-drawer-panel>
+            <paper-header-panel drawer>
+                <paper-menu selected="{{selected}}">
+                    <paper-item>Create Request/Change</paper-item>
+                </paper-menu>
+            </paper-header-panel>
+            <paper-header-panel main id="mainContent">
+                <paper-material class="default-container" hidden="{{loggedIn}}">
+                    <h3>Please login to access the forms.</h3>
+                    <p>Click the
+                        <paper-icon-button icon="account-box" disabled></paper-icon-button>
+                        icon in the top right to log in.
+                    </p>
+                </paper-material>
+
+                <iron-pages selected="{{selected}}" hidden="{{!loggedIn}}">
+                    <jira-create-issue-form id="jiraIssueForm"></jira-create-issue-form>
+                </iron-pages>
+
+                <paper-toast id="jiraSuccessToast" class="toast success" duration="0">
+                    <a id="issueUrl" class="issue-link" href="{{issueLink}}" target="_blank">Link to your created
+                        issue</a>
+                    <paper-button class="button close" onclick="jiraSuccessToast.toggle()">Close</paper-button>
+                </paper-toast>
+
+                <paper-toast id="jiraFailureToast" class="toast failure" duration="5000"
+                             text="{{errorMessage}}"></paper-toast>
+            </paper-header-panel>
+        </paper-drawer-panel>
+    </template>
+    <script>
+        Polymer({
+            is: 'portal-forms',
+
+            properties: {
+                /**
+                 * An error message to be displayed in the failure Toast.
+                 */
+                errorMessage: {
+                    type: String
+                },
+
+                /**
+                 * Link to the issue on JIRA.
+                 * Is returned by the <jira-create-issue-form> if successful.
+                 */
+                issueLink: {
+                    type: String
+                },
+
+                /**
+                 * The logged in state of the user.
+                 * Used to hide the forms if the user is NOT logged in.
+                 * Is two-way bound to allow parent elements to propagate down.
+                 */
+                loggedIn: {
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * The currently selected page (i.e. form)
+                 */
+                selected: {
+                    type: Number,
+                    value: 0
+                }
+            },
+
+            attached: function () {
+                var me = this;
+
+                var jiraIssueForm = me.$.jiraIssueForm;
+
+                //Grab references to the <paper-toast>'s and tell them to fit into the main container
+                //Otherwise, they will overlap with the drawer (when it is shown)
+                var jiraSuccessToast = me.$.jiraSuccessToast;
+                jiraSuccessToast.fitInto = me.$.mainContent;
+                var jiraFailureToast = me.$.jiraFailureToast;
+                jiraFailureToast.fitInto = me.$.mainContent;
+
+                //Add an event listener to listen for issue creation events that the <jira-create-issue-form> fires
+                jiraIssueForm.addEventListener('jira-issue-created', function (event) {
+                    //Get the issue link that is returned
+                    me.issueLink = event.detail.issueUrl;
+                    jiraSuccessToast.open();
+                });
+
+                //Add an event listener to listen for issue creation failure events that the <jira-create-issue-form> fires
+                jiraIssueForm.addEventListener('jira-issue-failure', function (event) {
+                    //Set the error message that is returned
+                    me.errorMessage = event.detail.errorMsg;
+                    jiraFailureToast.open();
+                });
+            }
+        });
+    </script>
+</dom-module>
