@@ -878,8 +878,8 @@ class HTMLReportCreator(ReportCreator):
 
         # Day of Week
 
-        writeHeaderstoNewTSV(path + "day_of_week_TEST.tsv", ['day_number','day_name','commits'])
-        day_of_week_tsv=open(path + "day_of_week_TEST.tsv", "a+")
+        writeHeaderstoNewTSV(path + "/day_of_week_TEST.tsv", ['day_number','day_name','commits'])
+        day_of_week_tsv=open(path + "/day_of_week_TEST.tsv", "a+")
 
         f.write(html_header(2, 'Day of Week'))
         day_of_week = data.getActivityByDayOfWeek()
@@ -1000,7 +1000,7 @@ class HTMLReportCreator(ReportCreator):
 
         # Authors :: List of authors
         f.write(html_header(2, 'List of Authors'))
-        authors_file= open(path     + "/authors.tsv","w")
+        authors_file= open(path + "/authors.tsv","w")
 
         f.write('<table class="authors sortable" id="authors">')
         f.write('<tr><th>Author</th><th>Commits (%)</th><th>+ lines</th><th>- lines</th><th>First commit</th><th>Last commit</th><th class="unsortable">Age</th><th>Active days</th><th># by commits</th></tr>')
