@@ -878,8 +878,8 @@ class HTMLReportCreator(ReportCreator):
 
         # Day of Week
 
-        writeHeaderstoNewTSV("FlaskTest/static/data/day_of_week_TEST.tsv", ['day_number','day_name','commits'])
-        day_of_week_tsv=open("FlaskTest/static/data/day_of_week_TEST.tsv", "a+")
+        writeHeaderstoNewTSV(path + "day_of_week_TEST.tsv", ['day_number','day_name','commits'])
+        day_of_week_tsv=open(path + ls"day_of_week_TEST.tsv", "a+")
 
         f.write(html_header(2, 'Day of Week'))
         day_of_week = data.getActivityByDayOfWeek()
@@ -906,8 +906,8 @@ class HTMLReportCreator(ReportCreator):
 
        
         # Hour of Week
-        writeHeaderstoNewTSV("FlaskTest/static/data/hour_of_week_TEST.tsv", ['day','hour','value'])
-        hour_of_week_TEST=open("FlaskTest/static/data/hour_of_week_TEST.tsv", "a+")
+        writeHeaderstoNewTSV( path+"/hour_of_week_TEST.tsv", ['day','hour','value'])
+        hour_of_week_TEST=open( path+"/hour_of_week_TEST.tsv", "a+")
 
         f.write(html_header(2, 'Hour of Week'))
         f.write('<table>')
@@ -1029,7 +1029,7 @@ class HTMLReportCreator(ReportCreator):
 
         fgl = open(path + '/lines_of_code_by_author.dat', 'w')
         fgc = open(path + '/commits_by_author.dat', 'w')
-        
+
 
         lines_by_authors = {} # cumulated added lines by
         # author. to save memory,
@@ -1050,8 +1050,8 @@ class HTMLReportCreator(ReportCreator):
             fgl.write('%d' % stamp)
             fgc.write('%d' % stamp)
 
-            # hour_of_week_TEST.write("%d\t" %(stamp))
-            # commits_by_author_TEST.write("%d\t" %(stamp))
+            hour_of_week_TEST.write("%d\t" %(stamp))
+            commits_by_author_TEST.write("%d\t" %(stamp))
 
             for author in self.authors_to_plot:
                 if author in data.changes_by_date_by_author[stamp].keys():
@@ -1060,11 +1060,11 @@ class HTMLReportCreator(ReportCreator):
                 fgl.write(' %d' % lines_by_authors[author])
                 fgc.write(' %d' % commits_by_authors[author])
 
-            #     hour_of_week_TEST.write("%d\t" % lines_by_authors[author] )
-            #     commits_by_author_TEST.write("%d\t" % commits_by_authors[author] )
+                hour_of_week_TEST.write("%d\t" % lines_by_authors[author] )
+                commits_by_author_TEST.write("%d\t" % commits_by_authors[author] )
 
-            # hour_of_week_TEST.write("\n")
-            # commits_by_author_TEST.write("\n")
+            hour_of_week_TEST.write("\n")
+            commits_by_author_TEST.write("\n")
 
             fgl.write('\n')
             fgc.write('\n')
