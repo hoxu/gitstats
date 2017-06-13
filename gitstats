@@ -1009,7 +1009,7 @@ class HTMLReportCreator(ReportCreator):
             authors_file.write(author+"\t")
             f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td></tr>' % (author, info['commits'], info['commits_frac'], info['lines_added'], info['lines_removed'], info['date_first'], info['date_last'], info['timedelta'], len(info['active_days']), info['place_by_commits']))
         f.write('</table>')
-        authors_file.write("\n")
+        # authors_file.write("\n")
 
         allauthors = data.getAuthors()
         if len(allauthors) > conf['max_authors']:
@@ -1051,7 +1051,7 @@ class HTMLReportCreator(ReportCreator):
             fgl.write('%d' % stamp)
             fgc.write('%d' % stamp)
 
-            hour_of_week_TEST.write("%d\t" %(stamp))
+            # hour_of_week_TEST.write("%d\t" %(stamp))
             # commits_by_author_TEST.write("%d\t" %(stamp))
 
             for author in self.authors_to_plot:
@@ -1061,10 +1061,10 @@ class HTMLReportCreator(ReportCreator):
                 fgl.write(' %d' % lines_by_authors[author])
                 fgc.write(' %d' % commits_by_authors[author])
 
-                hour_of_week_TEST.write("%d\t" % lines_by_authors[author] )
+                # hour_of_week_TEST.write("%d\t" % lines_by_authors[author] )
                 # commits_by_author_TEST.write("%d\t" % commits_by_authors[author] )
 
-            hour_of_week_TEST.write("\n")
+            # hour_of_week_TEST.write("\n")
             # commits_by_author_TEST.write("\n")
 
             fgl.write('\n')
