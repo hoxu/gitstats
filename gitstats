@@ -928,10 +928,10 @@ class HTMLReportCreator(ReportCreator):
                     r = 127 + int((float(commits) / data.activity_by_hour_of_week_busiest) * 128)
                     f.write(' style="background-color: rgb(%d, 0, 0)"' % r)
                     f.write('>%d</td>' % commits)
-                    hour_of_week_TEST.write("%d\t%d\t%d\n" %(weekday+1,hour,commits))
+                    hour_of_week_TEST.write("%d\t%d\t%d\n" %(weekday+1,hour+1,commits))
                 else:
                     f.write('<td></td>')
-                    hour_of_week_TEST.write("%d\t%d\t%d\n" %(weekday+1,hour,0))
+                    hour_of_week_TEST.write("%d\t%d\t%d\n" %(weekday+1,hour+1,0))
             f.write('</tr>')
 
         f.write('</table>')
