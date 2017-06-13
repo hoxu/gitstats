@@ -964,13 +964,16 @@ class HTMLReportCreator(ReportCreator):
 
         # Authors :: List of authors
         f.write(html_header(2, 'List of Authors'))
+        authors_file= open("/authors.tsv","w")
 
         f.write('<table class="authors sortable" id="authors">')
         f.write('<tr><th>Author</th><th>Commits (%)</th><th>+ lines</th><th>- lines</th><th>First commit</th><th>Last commit</th><th class="unsortable">Age</th><th>Active days</th><th># by commits</th></tr>')
         for author in data.getAuthors(conf['max_authors']):
             info = data.getAuthorInfo(author)
+            authors_file.write(author+"\t")
             f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td></tr>' % (author, info['commits'], info['commits_frac'], info['lines_added'], info['lines_removed'], info['date_first'], info['date_last'], info['timedelta'], len(info['active_days']), info['place_by_commits']))
         f.write('</table>')
+        authors_file.write("\n")
 
         allauthors = data.getAuthors()
         if len(allauthors) > conf['max_authors']:
@@ -1010,7 +1013,7 @@ class HTMLReportCreator(ReportCreator):
                     f.write(headers[len(headers)-1]+"\n")
             f.close()
 
-        writeHeaders("lines_of_code")
+        writeHeaders("lines_of_code_by_author.tsv",[''])
         fgl = open(path + '/lines_of_code_by_author.dat', 'w')
         fgc = open(path + '/commits_by_author.dat', 'w')
         
@@ -1045,17 +1048,21 @@ class HTMLReportCreator(ReportCreator):
         fgc.close()
 
         # Authors :: Author of Month
+        
         f.write(html_header(2, 'Author of Month'))
         f.write('<table class="sortable" id="aom">')
         f.write('<tr><th>Month</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' % conf['authors_top'])
         for yymm in reversed(sorted(data.author_of_month.keys())):
+
             authordict = data.author_of_month[yymm]
             authors = getkeyssortedbyvalues(authordict)
             authors.reverse()
+
             commits = data.author_of_month[yymm][authors[0]]
             next = ', '.join(authors[1:conf['authors_top']+1])
             f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (yymm, authors[0], commits, (100.0 * commits) / data.commits_by_month[yymm], data.commits_by_month[yymm], next, len(authors)))
-
+        
+      
         f.write('</table>')
 
         f.write(html_header(2, 'Author of Year'))
