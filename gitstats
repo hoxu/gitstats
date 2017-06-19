@@ -758,26 +758,27 @@ class HTMLReportCreator(ReportCreator):
 
          # New function for TSV write ins, put this in a more organized place later
 
-        def writeHeaderstoNewTSV(fileName,headers):
+        def writeHeaderstoNewFile(fileName,headers, delimiter):
             """
-            Writes the headers to the first line of the .tsv file
+            Writes the headers to the first line of the file
 
             Args:
                 fileName (String): Name of the destination file, ex: "data.tsv"
                 headers (List(String)): Headers to be written, ex: ["header1","header2"....]
 
             """
-            assert fileName[-4:] ==".tsv", "fileName must be '.tsv' file not '%s'" %(fileName)
+            # assert fileName[-4:] ==".tsv", "fileName must be '.tsv' file not '%s'" %(fileName)
 
             f = open (fileName,"w")
             for headerIndex in range(len(headers)):
                 if headerIndex!=len(headers)-1:
                     # write header along with\t 
-                    f.write(headers[headerIndex]+"\t")
+                    f.write(headers[headerIndex]+delimiter)
                 else:
                     # write last word along with\n
                     f.write(headers[len(headers)-1]+"\n")
             f.close()
+        
 
         self.printNav(f)
 
@@ -812,10 +813,10 @@ class HTMLReportCreator(ReportCreator):
         f.write(html_header(2, 'Weekly activity'))
         f.write('<p>Last %d weeks</p>' % WEEKS)
 
-        writeHeaderstoNewTSV(path + "/day_of_week_TEST.tsv", ['day_number','day_name','commits'])
+        writeHeaderstoNewFile(path + "/day_of_week_TEST.tsv", ['day_number','day_name','commits'],"\t")
         day_of_week_tsv=open(path + "/day_of_week_TEST.tsv", "a+")
 
-        writeHeaderstoNewTSV(path + "/weekly_actvitity_TEST.tsv", ['days, commits'])
+        writeHeaderstoNewFile(path + "/weekly_actvitity_TEST.tsv", ['days, commits'], "\t")
 
         # generate weeks to show (previous N weeks from now)
         now = datetime.datetime.now()
@@ -885,8 +886,11 @@ class HTMLReportCreator(ReportCreator):
 
         # Day of Week
 
-        writeHeaderstoNewTSV(path + "/day_of_week_TEST.tsv", ['day_number','day_name','commits'])
+        writeHeaderstoNewFile(path + "/day_of_week_TEST.tsv", ['day_number','day_name','commits'],"\t")
         day_of_week_tsv=open(path + "/day_of_week_TEST.tsv", "a+")
+        FOR TABLE OUTPUT, NEED TO TEST THIS
+        writeHeaderstoNewFile(path +"/day_of_week_TABLE.csv". ['Day','Total', 'Percentage', ','])
+        day_of_week_TABLE=open(path + "/day_of_week_TABLE.csv", "a+")
 
         f.write(html_header(2, 'Day of Week'))
         day_of_week = data.getActivityByDayOfWeek()
@@ -900,6 +904,7 @@ class HTMLReportCreator(ReportCreator):
             fp.write('%d %s %d\n' % (d + 1, WEEKDAYS[d], commits))
             # WRITE TO TSV, add +1, may cause off by one err
             day_of_week_tsv.write("%d\t%s\t%d\n" %(d+1, WEEKDAYS[d],commits))
+            day_of_week_TABLE.write("%d,%s,%d\n" %(d+1, WEEKDAYS[d],commits))
             f.write('<tr>')
             f.write('<th>%s</th>' % (WEEKDAYS[d]))
             if d in day_of_week:
@@ -913,7 +918,7 @@ class HTMLReportCreator(ReportCreator):
 
        
         # Hour of Week
-        writeHeaderstoNewTSV( path+"/hour_of_week_TEST.tsv", ['day','hour','value'])
+        writeHeaderstoNewFile( path+"/hour_of_week_TEST.tsv", ['day','hour','value'], "\t")
         hour_of_week_TEST=open( path+"/hour_of_week_TEST.tsv", "a+")
 
         f.write(html_header(2, 'Hour of Week'))
@@ -959,10 +964,16 @@ class HTMLReportCreator(ReportCreator):
         f.write('<img src="month_of_year.png" alt="Month of Year">')
 
         # Commits by year/month
+        # TEST THIS
+        writeHeaderstoNewFile(path+"/commits_by_year_month_TABLE.csv", ['Month','Commits','Lines added','Lines removed'], ",")
+        commits_by_year_month_TABLE=open( path+"/commits_by_year_month_TABLE.csv", "a+")
+
+
         f.write(html_header(2, 'Commits by year/month'))
         f.write('<div class="vtable"><table><tr><th>Month</th><th>Commits</th><th>Lines added</th><th>Lines removed</th></tr>')
         for yymm in reversed(sorted(data.commits_by_month.keys())):
             f.write('<tr><td>%s</td><td>%d</td><td>%d</td><td>%d</td></tr>' % (yymm, data.commits_by_month.get(yymm,0), data.lines_added_by_month.get(yymm,0), data.lines_removed_by_month.get(yymm,0)))
+            commits_by_year_month_TABLE.write('%s,%d,%d,%d\n' % (yymm, data.commits_by_month.get(yymm,0), data.lines_added_by_month.get(yymm,0), data.lines_removed_by_month.get(yymm,0)))
         f.write('</table></div>')
         f.write('<img src="commits_by_year_month.png" alt="Commits by year/month">')
         fg = open(path + '/commits_by_year_month.dat', 'w')
