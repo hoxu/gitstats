@@ -812,6 +812,11 @@ class HTMLReportCreator(ReportCreator):
         f.write(html_header(2, 'Weekly activity'))
         f.write('<p>Last %d weeks</p>' % WEEKS)
 
+        writeHeaderstoNewTSV(path + "/day_of_week_TEST.tsv", ['day_number','day_name','commits'])
+        day_of_week_tsv=open(path + "/day_of_week_TEST.tsv", "a+")
+
+        writeHeaderstoNewTSV(path + "/weekly_actvitity_TEST.tsv", ['days, commits']))
+
         # generate weeks to show (previous N weeks from now)
         now = datetime.datetime.now()
         deltaweek = datetime.timedelta(7)
@@ -833,6 +838,8 @@ class HTMLReportCreator(ReportCreator):
                 percentage = float(data.activity_by_year_week[weeks[i]]) / data.activity_by_year_week_peak
             height = max(1, int(200 * percentage))
             f.write('<td style="text-align: center; vertical-align: bottom">%d<div style="display: block; background-color: red; width: 20px; height: %dpx"></div></td>' % (commits, height))
+
+
 
         # bottom row: year/week
         f.write('</tr><tr>')
