@@ -889,7 +889,7 @@ class HTMLReportCreator(ReportCreator):
         writeHeaderstoNewFile(path + "/day_of_week_TEST.tsv", ['day_number','day_name','commits'],"\t")
         day_of_week_tsv=open(path + "/day_of_week_TEST.tsv", "a+")
         # FOR TABLE OUTPUT, NEED TO TEST THIS
-        writeHeaderstoNewFile(path +"/day_of_week_TABLE.csv". ['Day','Total', 'Percentage', ','])
+        writeHeaderstoNewFile(path +"/day_of_week_TABLE.csv", ['Day','Total', 'Percentage', ','])
         day_of_week_TABLE=open(path + "/day_of_week_TABLE.csv", "a+")
 
         f.write(html_header(2, 'Day of Week'))
