@@ -1,7 +1,7 @@
 from __future__ import print_function
 from __future__ import absolute_import
 '''A gitstats wrapper which calls gitstats recursively on directory 
-contains multiple git repositories.
+that contains multiple git repositories.
 
     Usage:
       # python gitstats-wrapper.py source_dir dest_dir
@@ -19,7 +19,7 @@ g = GitStats()
 # Parse command line arguments, retrieve the source directory
 # and the output directory
 # Instantiate the parser
-parser = argparse.ArgumentParser(description='Optional app description')
+parser = argparse.ArgumentParser(description='gitstats wrapper')
 # Add required positional argument
 parser.add_argument('source_dir', help='The source project folder')
 parser.add_argument('dest_dir', help='The output folder')
