@@ -4,7 +4,7 @@ from __future__ import absolute_import
 contains multiple git repositories.
 
     Usage:
-      # python gitstats-wrapper.py
+      # python gitstats-wrapper.py source_dir dest_dir
 '''
 import argparse
 import os
@@ -42,4 +42,3 @@ for d in second_level_dir_list:
         print('Output will be in {0}'.format(sub_target_path))
         time.sleep(5)
         g.run([sub_source_path, sub_target_path])
-        exit(1)
