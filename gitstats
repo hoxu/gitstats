@@ -888,8 +888,8 @@ class HTMLReportCreator(ReportCreator):
 
         writeHeaderstoNewFile(path + "/day_of_week_TEST.tsv", ['day_number','day_name','commits'],"\t")
         day_of_week_tsv=open(path + "/day_of_week_TEST.tsv", "a+")
-        # FOR TABLE OUTPUT, NEED TO TEST THIS
-        writeHeaderstoNewFile(path +"/day_of_week_TABLE.csv", ['Day','Total', 'Percentage'], ',')
+        # FOR TABLE OUTPUT, NEED TO TEST THIS, THINK I CAN GET AROUND THIS USING TSVS
+        writeHeaderstoNewFile(path +"/day_of_week_TABLE.csv", ['Day_Num','Day_Name', 'Commits'], ',')
         day_of_week_TABLE=open(path + "/day_of_week_TABLE.csv", "a+")
 
         f.write(html_header(2, 'Day of Week'))
@@ -965,15 +965,15 @@ class HTMLReportCreator(ReportCreator):
 
         # Commits by year/month
         # TEST THIS
-        writeHeaderstoNewFile(path+"/commits_by_year_month_TABLE.csv", ['Month','Commits','Lines added','Lines removed'], ",")
-        commits_by_year_month_TABLE=open( path+"/commits_by_year_month_TABLE.csv", "a+")
+        writeHeaderstoNewFile(path+"/commits_by_year_month_TABLE.tsv", ['Month','Commits','Lines added','Lines removed'], ",")
+        commits_by_year_month_TABLE=open( path+"/commits_by_year_month_TABLE.tsv", "a+")
 
 
         f.write(html_header(2, 'Commits by year/month'))
         f.write('<div class="vtable"><table><tr><th>Month</th><th>Commits</th><th>Lines added</th><th>Lines removed</th></tr>')
         for yymm in reversed(sorted(data.commits_by_month.keys())):
             f.write('<tr><td>%s</td><td>%d</td><td>%d</td><td>%d</td></tr>' % (yymm, data.commits_by_month.get(yymm,0), data.lines_added_by_month.get(yymm,0), data.lines_removed_by_month.get(yymm,0)))
-            commits_by_year_month_TABLE.write('%s,%d,%d,%d\n' % (yymm, data.commits_by_month.get(yymm,0), data.lines_added_by_month.get(yymm,0), data.lines_removed_by_month.get(yymm,0)))
+            commits_by_year_month_TABLE.write('%s\t%d\t%d\t%d\n' % (yymm, data.commits_by_month.get(yymm,0), data.lines_added_by_month.get(yymm,0), data.lines_removed_by_month.get(yymm,0)))
         f.write('</table></div>')
         f.write('<img src="commits_by_year_month.png" alt="Commits by year/month">')
         fg = open(path + '/commits_by_year_month.dat', 'w')
