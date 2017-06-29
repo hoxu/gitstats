@@ -819,7 +819,7 @@ class HTMLReportCreator(ReportCreator):
 
         f.write('<dt>Authors</dt><dd>%s (average %.1f commits per author)</dd>' % (data.getTotalAuthors(), (1.0 * data.getTotalCommits()) / data.getTotalAuthors()))
 
-        general_tsv.write('Authors\t%s%s (average %.1f commits per author)\n' % (data.getTotalAuthors(), (1.0 * data.getTotalCommits()) / data.getTotalAuthors()))
+        general_tsv.write('Authors\t%s (average %.1f commits per author)\n' % (data.getTotalAuthors(), (1.0 * data.getTotalCommits()) / data.getTotalAuthors()))
 
         f.write('</dl>')
 
