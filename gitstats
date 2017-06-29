@@ -1217,7 +1217,7 @@ class HTMLReportCreator(ReportCreator):
 
         # Files :: Extensions
 
-        writeHeaderstoNewFile(path + "/extensions.tsv", ['extensions','files','lines','lines/file'],"\t")
+        writeHeaderstoNewFile(path + "/extensions.tsv", ['extension','files','lines','lines_file'],"\t")
         extensions_tsv=open(path + "/extensions.tsv", "a+")
 
 
