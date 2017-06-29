@@ -1264,6 +1264,10 @@ class HTMLReportCreator(ReportCreator):
 
         ###
         # tags.html
+
+        writeHeaderstoNewFile(path + "/tags.tsv", ['name','date','commits','authors'],"\t")
+        tags_tsv=open(path + "/tags.tsv", "a+")
+
         f = open(path + '/tags.html', 'w')
         self.printHeader(f)
         f.write('<h1>Tags</h1>')
@@ -1285,6 +1289,8 @@ class HTMLReportCreator(ReportCreator):
             for i in reversed(self.authors_by_commits):
                 authorinfo.append('%s (%d)' % (i, data.tags[tag]['authors'][i]))
             f.write('<tr><td>%s</td><td>%s</td><td>%d</td><td>%s</td></tr>' % (tag, data.tags[tag]['date'], data.tags[tag]['commits'], ', '.join(authorinfo)))
+            tags_tsv.write("%s\t%s\t%d\t%s\n" %(tag, data.tags[tag]['date'], data.tags[tag]['commits'], ', '.join(authorinfo)))
+
         f.write('</table>')
 
         f.write('</body></html>')
