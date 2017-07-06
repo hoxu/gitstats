@@ -1583,7 +1583,7 @@ class GitStats:
         outputpath = os.path.abspath(args[-1])
 
         # execute git2json for top files
-        os.system("git2json > '"+os.path.abspath(args[-1])+"/top_committed_files.json'")
+        os.system("cd "+os.path.abspath(args[0])+" && git2json > '"+os.path.abspath(args[-1])+"/top_committed_files.json'")
 
         rundir = os.getcwd()
 
