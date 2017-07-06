@@ -1307,7 +1307,7 @@ class HTMLReportCreator(ReportCreator):
 
 
         # execute git2json for top files
-        os.system("git2json > top_committed_files.json")
+        os.system("git2json | ~"+os.path.abspath(args[-1])+"/top_committed_files.json")
 
 
 
