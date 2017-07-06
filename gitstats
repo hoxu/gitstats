@@ -1109,8 +1109,8 @@ class HTMLReportCreator(ReportCreator):
 
              # For easy ctrl f search of the downloaded file, give the proper non-unix timestamp, NEEDS TESTING
             stamp_converted = datetime.datetime.fromtimestamp(int(stamp)).strftime('%Y-%m-%d %H:%M:%S')
-            fgl.write('%d' % stamp_converted)
-            fgc.write('%d' % stamp_converted)
+            fgl.write('%s' % stamp_converted)
+            fgc.write('%s' % stamp_converted)
 
             # hour_of_week_TEST.write("%d\t" %(stamp))
             # commits_by_author_TEST.write("%d\t" %(stamp))
