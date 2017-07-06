@@ -1305,6 +1305,13 @@ class HTMLReportCreator(ReportCreator):
         f.write('</body></html>')
         f.close()
 
+
+        # execute git2json for top files
+        os.system("git2json > top_committed_files.json")
+
+
+
+
         self.createGraphs(path)
     
     def createGraphs(self, path):
