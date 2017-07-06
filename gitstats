@@ -1107,10 +1107,11 @@ class HTMLReportCreator(ReportCreator):
             fgl.write('%d' % stamp)
             fgc.write('%d' % stamp)
 
-             # For easy ctrl f search of the downloaded file, give the proper non-unix timestamp, NEEDS TESTING
-            stamp_converted = datetime.datetime.fromtimestamp(int(stamp)).strftime('%Y-%m-%d %H:%M:%S')
-            fgl.write('%s' % stamp_converted)
-            fgc.write('%s' % stamp_converted)
+             # For easy ctrl f search of the downloaded file, give the proper non-unix timestamp, 
+             # NEEDS TESTING
+            # stamp_converted = datetime.datetime.fromtimestamp(int(stamp)).strftime('%Y-%m-%d %H:%M:%S')
+            # fgl.write(' %s' % stamp_converted)
+            # fgc.write(' %s' % stamp_converted)
 
             # hour_of_week_TEST.write("%d\t" %(stamp))
             # commits_by_author_TEST.write("%d\t" %(stamp))
@@ -1121,16 +1122,6 @@ class HTMLReportCreator(ReportCreator):
                     commits_by_authors[author] = data.changes_by_date_by_author[stamp][author]['commits']
                 fgl.write(' %d' % lines_by_authors[author])
                 fgc.write(' %d' % commits_by_authors[author])
-
-                # hour_of_week_TEST.write("%d\t" % lines_by_authors[author] )
-                # commits_by_author_TEST.write("%d\t" % commits_by_authors[author] )
-
-            # hour_of_week_TEST.write("\n")
-            # commits_by_author_TEST.write("\n")
-
-           
-
-
 
             fgl.write('\n')
             fgc.write('\n')
