@@ -1306,8 +1306,7 @@ class HTMLReportCreator(ReportCreator):
         f.close()
 
 
-        # execute git2json for top files
-        os.system("git2json | ~"+os.path.abspath(args[-1])+"/top_committed_files.json")
+        
 
 
 
@@ -1582,6 +1581,10 @@ class GitStats:
             sys.exit(0)
 
         outputpath = os.path.abspath(args[-1])
+
+        # execute git2json for top files
+        os.system("git2json | ~"+os.path.abspath(args[-1])+"/top_committed_files.json")
+        
         rundir = os.getcwd()
 
         try:
