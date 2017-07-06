@@ -22,7 +22,7 @@ def generateGitstatsOnFolders ():
 	# print (dirs_name)
 	for direct in dirs_name:
 		fullPath=(os.path.join(subdir_name, direct))
-		os.system("./gitstats "+fullPath+" "+output_folder+direct)
+		os.system("./gitstats "+fullPath+" "+output_folder+"/"+direct)
 
 
 if __name__ == "__main__":
