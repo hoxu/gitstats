@@ -2,6 +2,7 @@ import os
 import sys
 
 # python execution.py <source folder> <output folder>
+
 def generateGitstatsOnFolders (): 
 	# print (sys.argv)
 
