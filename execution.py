@@ -1,7 +1,9 @@
 import os
 import sys
 
+# NOTE: this files needs to be in same directory as gitstats executable
 # python execution.py <source folder> <output folder>
+
 def generateGitstatsOnFolders (): 
 	# print (sys.argv)
 
