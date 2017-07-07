@@ -1630,6 +1630,8 @@ class GitStats:
         # execute git2json for top files
         os.system("cd "+os.path.abspath(args[0])+" && git2json > '"+os.path.abspath(args[-1])+"/top_committed_files.json'")
 
+        print ("Executed git2json on source: %s to location: %s" %(os.path.abspath(args[0]), os.path.abspath(args[-1])))
+
 if __name__=='__main__':
     g = GitStats()
     g.run(sys.argv[1:])
