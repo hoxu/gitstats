@@ -1577,8 +1577,7 @@ class GitStats:
 
         rundir = os.getcwd()
 
-         # execute git2json for top files
-        os.system("cd "+os.path.abspath(args[0])+" && git2json > '"+os.path.abspath(args[-1])+"/top_committed_files.json'")
+         
 
         try:
             os.makedirs(outputpath)
@@ -1627,6 +1626,9 @@ class GitStats:
             print
             print '   sensible-browser \'%s\'' % os.path.join(outputpath, 'index.html').replace("'", "'\\''")
             print
+        
+        # execute git2json for top files
+        os.system("cd "+os.path.abspath(args[0])+" && git2json > '"+os.path.abspath(args[-1])+"/top_committed_files.json'")
 
 if __name__=='__main__':
     g = GitStats()
