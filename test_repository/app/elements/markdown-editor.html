@@ -1,0 +1,145 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+
+<link rel="import" href="../bower_components/iron-autogrow-textarea/iron-autogrow-textarea.html">
+<link rel="import" href="../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../bower_components/iron-icons/editor-icons.html">
+
+<link rel="import" href="../bower_components/paper-icon-button/paper-icon-button.html">
+
+<link rel="import" href="../bower_components/marked-element/marked-element.html">
+
+<dom-module id="markdown-editor">
+    <template>
+        <style is="custom-style" include="iron-flex iron-positioning"></style>
+        <style>
+            .container {
+                height: 100%;
+                @apply(--layout-vertical);
+            }
+
+            .actions {
+                background-color: var(--zebra-medium-gray);
+            }
+
+            .actions > paper-icon-button {
+                color: white;
+            }
+
+            .editor-preview {
+                @apply(--layout-flex);
+                @apply(--layout-horizontal);
+            }
+
+            .editor {
+                width: 98%;
+            }
+        </style>
+        <div class="container">
+            <!-- Editor Actions (bar) -->
+            <div class="actions">
+                <paper-icon-button id="bold" icon="editor:format-bold" on-tap="_insertMarkdown"></paper-icon-button>
+                <paper-icon-button id="italic" icon="editor:format-italic" on-tap="_insertMarkdown"></paper-icon-button>
+                <paper-icon-button id="link" icon="editor:insert-link" on-tap="_insertMarkdown"></paper-icon-button>
+                <paper-icon-button id="blockquote" icon="editor:format-indent-increase"
+                                   on-tap="_insertMarkdown"></paper-icon-button>
+                <paper-icon-button id="code" icon="code" on-tap="_insertMarkdown"></paper-icon-button>
+                <paper-icon-button id="photo" icon="editor:insert-photo" on-tap="_insertMarkdown"></paper-icon-button>
+                <paper-icon-button id="bulleted" icon="editor:format-list-bulleted"
+                                   on-tap="_insertMarkdown"></paper-icon-button>
+                <paper-icon-button id="numbered" icon="editor:format-list-numbered"
+                                   on-tap="_insertMarkdown"></paper-icon-button>
+                <paper-icon-button id="linebreak" class="action-icon" icon="remove"
+                                   on-tap="_insertMarkdown"></paper-icon-button>
+            </div>
+            <!-- Editor / Preview -->
+            <div class="editor-preview">
+                <div class="flex">
+                    <iron-autogrow-textarea id="markdownEditor" class="editor" value="{{markdown}}"
+                                            rows="5"></iron-autogrow-textarea>
+                </div>
+
+                <div class="flex">
+                    <marked-element id="markdownViewer" markdown="{{markdown}}"></marked-element>
+                </div>
+            </div>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'markdown-editor',
+
+            properties: {
+                editorMarkdown: {
+                    type: String,
+                },
+
+                markdown: {
+                    type: String,
+                    value: "# Test Markdown"
+                }
+            },
+
+            attached: function () {
+                var me = this;
+
+                var markdownEditor = me.$.markdownEditor;
+                var markdownViewer = me.$.markdownViewer;
+
+                //Set the initial markdown value
+                markdownEditor.value = me.markdown;
+
+                //When the input changes in the textarea, set `markdown` so that the viewer can render it
+                markdownEditor.addEventListener('input', function () {
+                    me.markdown = markdownEditor.value;
+                });
+            },
+
+            _insertMarkdown: function (event) {
+                var me = this;
+
+                var action = event.currentTarget.id;
+
+                switch (action) {
+                    case "bold":
+                        me._insertInTextarea(me.$.markdownEditor, "**strong text**");
+                        break;
+                    case "italic":
+                        me._insertInTextarea(me.$.markdownEditor, "*italic text*");
+                        break;
+                    case "link":
+                        me._insertInTextarea(me.$.markdownEditor, "[link](http://path.to.link)");
+                        break;
+                    case "blockquote":
+                        me._insertInTextarea(me.$.markdownEditor, "> blockquote text");
+                        break;
+                    case "code":
+                        me._insertInTextarea(me.$.markdownEditor, "\t Code Block (4 spaces / 1 tab)");
+                        break;
+                    case "photo":
+                        me._insertInTextarea(me.$.markdownEditor, "![Alt text](/path/to/image.jpg)");
+                        break;
+                    case "bulleted":
+                        me._insertInTextarea(me.$.markdownEditor, "Unordered List \n* List Item 1 \n* List Item 2 \n* List Item 3");
+                        break;
+                    case "numbered":
+                        me._insertInTextarea(me.$.markdownEditor, "Ordered List \n1. List Item 1 \n2. List Item 2 \n3. List Item 3");
+                        break;
+                    case "linebreak":
+                        me._insertInTextarea(me.$.markdownEditor, "\n---\n");
+                        break;
+                }
+            },
+
+            _insertInTextarea: function (textarea, textToInsert) {
+                var start = textarea.selectionStart;
+                var end = textarea.selectionEnd;
+                var text = textarea.value;
+                var before = text.substring(0, start);
+                var after = text.substring(end, text.length);
+                textarea.value = (before + textToInsert + after);
+                textarea.selectionStart = textarea.selectionEnd = start + textToInsert.length;
+                textarea.focus()
+            }
+        });
+    </script>
+</dom-module>

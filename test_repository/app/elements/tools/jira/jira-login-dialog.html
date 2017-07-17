@@ -1,0 +1,197 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../../bower_components/iron-form/iron-form.html">
+<link rel="import" href="../../../bower_components/iron-icon/iron-icon.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/paper-dialog/paper-dialog.html">
+<link rel="import" href="../../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../bower_components/paper-spinner/paper-spinner.html">
+
+<dom-module id="jira-login-dialog">
+    <style is="custom-style" include="iron-positioning iron-flex iron-flex-alignment"></style>
+    <style>
+        .button {
+            color: white;
+        }
+
+        .button[disabled] {
+            opacity: 0.25;
+        }
+
+        .login {
+            background-color: var(--zebra-blue);
+        }
+
+        .close {
+            background-color: var(--zebra-red);
+        }
+
+        .container {
+            margin: 8px 0;
+        }
+
+        .success {
+            color: var(--paper-green-500);
+        }
+
+        .failure {
+            color: var(--paper-red-500);
+        }
+    </style>
+
+    <template>
+        <paper-dialog id="dialog" modal>
+            <div class="layout vertical">
+                <div class="layout horizontal end-justified">
+                    <paper-icon-button id="close" class="" icon="close" on-tap="close"></paper-icon-button>
+                </div>
+
+                <div class="layout horizontal center-justified container">
+                    <paper-spinner id="spinner"></paper-spinner>
+                </div>
+
+                <div class="layout horizontal center-justified container">
+                    <iron-icon class="success" icon="check-circle" hidden="{{!response.success}}"></iron-icon>
+                    <iron-icon class="failure" icon="error" hidden="{{!response.failure}}"></iron-icon>
+                </div>
+                <!--
+
+                                <paper-icon-button id="close" class="horizontal end-justified layout" icon="close" on-tap="close"></paper-icon-button>
+                -->
+                <form id="form" class="layout vertical" is="iron-form" method="post" action="/api/jira/login">
+                    <paper-input id="username" label="Username (Zebra CoreID)" type="text" required></paper-input>
+                    <paper-input id="password" label="Password" type="password" required></paper-input>
+
+                    <paper-button id="submit" class="button login" on-tap="_submit" raised>Login</paper-button>
+                    <!--<paper-button id="close" class="button close" on-tap="close" raised>Close</paper-button>-->
+                </form>
+            </div>
+        </paper-dialog>
+    </template>
+    <script>
+        Polymer({
+            is: 'jira-login-dialog',
+
+            properties: {
+                /**
+                 * The state of the request (i.e. is it in flight or not).
+                 * Has an observer to disable the form if it is in flight.
+                 */
+                inFlight: {
+                    type: Boolean,
+                    value: false,
+                    observer: '_inFlight'
+                },
+
+                /**
+                 * The state of the response
+                 */
+                response: {
+                    type: Object,
+                    value: {
+                        "success": false,
+                        "failure": false,
+                    }
+                }
+            },
+
+            /**
+             * When this element is attached to the DOM, setup event listeners
+             */
+            attached: function () {
+                var me = this;
+
+                //Grab a handle on the form and elements
+                var form = me.$.form;
+                var usernameInput = me.$.username;
+                var passwordInput = me.$.password;
+
+                //Before the form is submitted, get the values from the inputs and add them to the body
+                form.addEventListener('iron-form-presubmit', function (event) {
+                    this.request.contentType = 'application/json';
+                    this.request.body = {username: usernameInput.value, password: passwordInput.value};
+                });
+
+                //When the form is submitted, notify that the request is in flight
+                form.addEventListener('iron-form-submit', function (event) {
+                    me.inFlight = true;
+                    me.set('response.failure', false);
+                    me.set('response.success', false);
+                });
+
+                //When an error is encountered, notify that the request is no longer in flight.
+                //Also mark that there was a failure.
+                form.addEventListener('iron-form-error', function (event) {
+                    me.inFlight = false;
+                    me.set('response.failure', true);
+                });
+
+                //When a response is received, notify that the request is no longer in flight.
+                //Also create a new cookie, etc.
+                form.addEventListener('iron-form-response', function (event) {
+                    me.inFlight = false;
+
+                    var response = event.detail.response;
+
+                    //Login Success. HTTP 200 (OK)
+                    if (event.detail.status == 200) {
+                        me.set('response.success', true);
+
+                        //Create a cookie.
+                        me._createCookie(response.session.name, response.session.value);
+
+                        //Fire an event to let our listeners know a login was successful
+                        me.fire('loggedIn', {loggedIn: true});
+
+                        //Close the form since the user logged in
+                        me.$.dialog.close();
+                    }
+                });
+            },
+
+            close: function () {
+                this.$.dialog.close();
+            },
+
+            open: function () {
+                this.$.dialog.open();
+            },
+
+            toggle: function () {
+                this.$.dialog.toggle();
+            },
+
+            _submit: function () {
+                this.$.form.submit();
+            },
+
+            /**
+             * Helper method that disables the form elements if the request is mid flight.
+             * Also enables/disables the spinner.
+             * @private
+             */
+            _inFlight: function () {
+                var me = this;
+                var inFlight = me.inFlight;
+
+                me.$.spinner.active = inFlight;
+                me.$.username.disabled = inFlight;
+                me.$.password.disabled = inFlight;
+                me.$.submit.disabled = inFlight;
+                me.$.close.disabled = inFlight;
+            },
+
+            /**
+             * Helper method to create a cookie using js-cookie.
+             * @param name The name of the cookie to create
+             * @param value The value of the cookie
+             * @private
+             */
+            _createCookie: function (name, value) {
+                //Set the cookie to expire in 12 hours (0.5 * 1 day)
+                Cookies.set(name, value, {expires: 0.5});
+            }
+        });
+    </script>
+</dom-module>

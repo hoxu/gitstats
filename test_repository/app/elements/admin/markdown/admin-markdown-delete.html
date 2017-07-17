@@ -1,0 +1,154 @@
+<link rel="import" href="../../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../../bower_components/paper-toast/paper-toast.html">
+<link rel="import" href="../../../bower_components/vaadin-combo-box/vaadin-combo-box.html">
+
+<dom-module id="admin-markdown-delete">
+    <template>
+        <style is="custom-style" include="iron-flex iron-positioning"></style>
+        <style>
+            paper-material {
+                padding: 8px;
+                margin: 8px;
+            }
+
+            .separator {
+                margin: 0 4px;
+            }
+
+            .button {
+                color: white;
+                background-color: var(--paper-blue-300);
+            }
+
+            .markdown-container {
+                margin: 8px;
+            }
+
+            .toast {
+
+            }
+
+            .success {
+                background: var(--paper-green-300);
+                border: 1px solid var(--paper-green-500);
+            }
+
+            .failure {
+                background: var(--paper-red-300);
+                border: 1px solid var(--paper-red-500);
+            }
+        </style>
+
+        <paper-material class="header">
+            This form removes an item from the markdown list
+        </paper-material>
+
+        <paper-material class="options horizontal layout">
+            <vaadin-combo-box id="toolList" label="Tool" class="flex" items="[[tools]]"></vaadin-combo-box>
+
+            <div class="separator"></div>
+
+            <vaadin-combo-box id="sectionList" label="Sections" class="flex"
+                              items="{{sectionNames}}" value="About">
+            </vaadin-combo-box>
+
+            <paper-input id="itemNum" label="Item #" type="number"></paper-input>
+
+            <paper-button id="save" class="button primary flex" on-tap="_deleteMarkdown" raised>ADD</paper-button>
+        </paper-material>
+
+        <paper-toast id="successToast" class="toast success" text="{{message.success}}"></paper-toast>
+        <paper-toast id="failureToast" class="toast failure" text="{{message.failure}}"></paper-toast>
+    </template>
+    <script>
+        Polymer({
+            is: 'admin-markdown-delete',
+
+            properties: {
+                /**
+                 * Object for storing success/failure messages
+                 */
+                message: {
+                    type: Object,
+                    value: {
+                        failure: "Failed to add tool!",
+                        success: "Markdown added successfully!"
+                    }
+                },
+
+                /**
+                 * Names of the sections that can be deleted
+                 */
+                sectionNames: {
+                    type: Array,
+                    value: ['About', 'Training', 'Links']
+                },
+
+                /**
+                 * Array for storing the names of the tools
+                 */
+                tools: {
+                    type: Array,
+                }
+            },
+
+            ready: function () {
+                var me = this;
+
+                //Load in the tools to populate the <vaadin-combo-box>
+                me.tools = me._getTools();
+            },
+
+            /**
+             * Helper method for getting the names of the tools
+             * @private
+             */
+            _getTools: function () {
+                var me = this;
+
+                var tools_ajax = document.createElement('iron-ajax');
+                tools_ajax.auto = true;
+                tools_ajax.method = "GET";
+                tools_ajax.url = "/api/tools/info";
+
+                tools_ajax.addEventListener("response", function (e) {
+                    //Grab the tools from the response
+                    var tools = e.detail.response;
+
+                    //We need to transform the array to fit to <vaadin-combo-box> requirements
+                    me.tools = tools.map(function (obj) {
+                        return rObj = {
+                            value: obj.id,
+                            label: obj.name
+                        };
+                    });
+                });
+            },
+
+            /**
+             * Helper method for deleting an item from the tool section
+             * @private
+             */
+            _deleteMarkdown: function () {
+                var me = this;
+
+                var toolListVal = me.$.toolList.value;
+                var sectionListVal = me.$.sectionList.value;
+                var itemNumVal = me.$.itemNum.value;
+
+                var successToast = me.$.successToast;
+                var failureToast = me.$.failureToast;
+
+                //Only procced if all of these were supplied
+                if (toolListVal && sectionListVal && itemNumVal) {
+
+                }
+            },
+        });
+    </script>
+</dom-module>

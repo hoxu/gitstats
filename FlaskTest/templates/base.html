@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+     <link rel="stylesheet" href="../static/css/style.css">
+     
+     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+     <title> {{sub.name}} - Dashboard </title>
+
+  </head>
+  <body class="bg-faded">
+
+
+	<!-- top fixed bar -->
+	<nav class="navbar black sticky-top">
+	  <a class="navbar-brand nav_text" href="#" style="color: white">
+	    <img src="../static/img/zebra_white.png" alt="Zebra Logo" class="zebra_img" class="d-inline-block align-top">
+	    EMC Engineering Code Statistics
+	  </a>
+	</nav>
+
+	<!-- sidebar menu -->
+	<aside class="sidebar">
+	  <div id="leftside-navigation" class="nano">
+	    <ul class="nano-content">
+	      <li class="sub-menu">
+	        <a href="{{url_for('dashboard')}}"><i class="fa fa-home"></i><span>{{nav.main_repo[0].name}}</span><i class="arrow fa"></i></a>
+	      </li>
+
+	      <li class="sub-menu">
+	        <a href="javascript:void(0);"><i class="fa fa-cogs"></i><span>Sub-Repos</span><i class="arrow fa fa-angle-right pull-right"></i></a>
+	        <ul>
+	        <!-- drop drown items are name of sub directories -->
+	        {% for sub_repo in nav.sub_repos %}
+		        <li> <a href ="{{url_for('dashboard')}}/{{sub_repo.name}}"> {{sub_repo.name}} </a></li>
+	        {% endfor %}
+
+	        </ul>
+	      </li>
+
+	    <!--   <li class="sub-menu">
+	        <a href="#"><i class="fa fa-terminal"></i><span>Lines</span><i class="arrow fa"></i></a>
+	      </li>
+
+	      <li class="sub-menu">
+	        <a href="#"><i class="fa fa-user"></i><span>Authors</span><i class="arrow fa "></i></a>
+	      </li> -->
+
+	    </ul>
+
+	  </div>
+	</aside>
+
+
+  	{% block content %}{% endblock %}
+
+
+    
+
+  </body>
+</html>

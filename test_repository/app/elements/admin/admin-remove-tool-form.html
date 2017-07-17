@@ -1,0 +1,101 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-form/iron-form.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+<link rel="import" href="../../bower_components/paper-input/paper-input.html">
+<link rel="import" href="../../bower_components/paper-material/paper-material.html">
+<link rel="import" href="../../bower_components/paper-toast/paper-toast.html">
+
+<dom-module id="admin-remove-tool-form">
+    <template>
+        <style is="custom-style">
+            .container {
+                margin: 16px;
+                padding: 16px;
+
+                background-color: white;
+            }
+
+            .button {
+                margin-top: 16px;
+            }
+
+            .delete {
+                color: white;
+                background-color: var(--paper-yellow-300);
+            }
+
+            .delete[disabled] {
+                background-color: var(--paper-yellow-100);
+            }
+
+            .cancel {
+                color: white;
+                background-color: var(--paper-red-300);
+            }
+        </style>
+
+        <paper-material id="container" class="container">
+            <form id="removeToolForm" is="iron-form">
+                <paper-input id="toolId" label="Tool Id" type="number" required auto-validate></paper-input>
+
+                <paper-button id="submitButton" class="button delete" raised disabled>Remove Tool</paper-button>
+                <paper-button id="cancelButton" class="button cancel" raised>Cancel</paper-button>
+            </form>
+        </paper-material>
+
+        <paper-toast id="successToast" text="Removed Tool!"></paper-toast>
+    </template>
+
+    <script>
+        Polymer({
+
+            is: 'admin-remove-tool-form',
+
+            properties: {},
+
+            //Polymer lifecycle method when element is attached to the DOM
+            attached: function () {
+                var me = this;
+
+                var removeToolForm = me.$.removeToolForm;
+                var toolId = me.$.toolId;
+                var toolName = me.$.toolName;
+                var submitButton = me.$.submitButton;
+                var cancelButton = me.$.cancelButton;
+
+                var successToast = me.$.successToast;
+                successToast.fitInto = me.parentNode;
+
+                submitButton.addEventListener('tap', function () {
+                    removeToolForm.submit();
+                });
+
+                removeToolForm.addEventListener('change', function (event) {
+                    // Validate the entire form to see if we should enable the `Submit` button.
+                    submitButton.disabled = !removeToolForm.validate();
+                });
+
+                //Event that fires before the form is submitted. Adds the inputs to the body of the AJAX request.
+                removeToolForm.addEventListener('iron-form-presubmit', function (event) {
+                    this.request.method = "DELETE";
+                    this.request.url = "/api/tool/guarded/" + toolId.value;
+                    this.request.params = {
+                        token: sessionStorage.getItem('token'),
+                    };
+                });
+
+                removeToolForm.addEventListener('iron-form-error', function (event) {
+
+                });
+
+                //Event the fires when a response is received
+                removeToolForm.addEventListener('iron-form-response', function (event) {
+                    var response = event.detail.response;
+
+                    if (response.deleted == true)
+                        successToast.open();
+                });
+            }
+        });
+    </script>
+</dom-module>

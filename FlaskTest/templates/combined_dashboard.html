@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html>
+  <head>
+     <meta name="viewport" content="width=device-width, initial-scale=1">
+     <!-- <script src='https://cdnjs.cloudflare.com/ajax/libs/prefixfree/1.0.7/prefixfree.min.js'></script> -->
+     <!--  <link rel='stylesheet prefetch' href='//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/smoothness/jquery-ui.css'> -->
+
+     <link rel="stylesheet" href="../static/css/style.css">
+     
+     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css" integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+  </head>
+
+  <body class="bg-faded">
+
+    <!-- top fixed bar -->
+    <nav class="navbar black sticky-top">
+      <a class="navbar-brand nav_text" href="#" style="color: white">
+        <img src="../static/img/zebra_white.png" alt="Zebra Logo" class="zebra_img" class="d-inline-block align-top">
+        EMC Engineering Tools &amp; Process News Letter
+      </a>
+    </nav>
+
+    <!-- sidebar menu -->
+    <aside class="sidebar">
+      <div id="leftside-navigation" class="nano">
+        <ul class="nano-content">
+          <li class="sub-menu">
+            <a href="home.html"><i class="fa fa-home"></i><span>Home</span><i class="arrow fa"></i></a>
+          </li>
+
+          <li class="sub-menu">
+            <a href="javascript:void(0);"><i class="fa fa-cogs"></i><span>Projects</span><i class="arrow fa fa-angle-right pull-right"></i></a>
+            <ul>
+              <li><a href="#">Shim's cool project</a>
+              </li>
+              <li><a href="#">Tony's cool project</a>  
+              </li>
+              <li><a href="#">Greg's intern project</a>
+              </li>
+            </ul>
+          </li>
+
+          <li class="sub-menu">
+            <a href="lines.html"><i class="fa fa-terminal"></i><span>Lines</span><i class="arrow fa"></i></a>
+          </li>
+
+          <li class="sub-menu">
+            <a href="authors.html"><i class="fa fa-user"></i><span>Authors</span><i class="arrow fa "></i></a>
+          </li>
+
+        </ul>
+
+      </div>
+    </aside>
+
+    <!-- Main Dashboard -->
+
+    <!-- Summary -->
+    <div class="main_dash">
+      <div class="container-fluid">
+        <div class="card">
+          <div class="card-block">
+            <h1> Cool Project Name Here </h1>
+            <br>
+            <h6> Summary: This project is about making Zebra really fast and efficient </h6>
+            <br>
+            Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum
+            </p>
+          </div>
+        </div>
+
+        <div class="row top_spacer">
+
+          <!-- Metric 1, half screen-->
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-block">
+                <h4 class="card-title"># Commits by day-dummy </h4>
+                <div class="metric">
+                  <div id="chart"></div>
+                  <div id="dataset-picker"></div>
+                </div>
+                <div class="details_spacer">
+                  <div class="text_content">
+                    <h5 class="card-text"> This data shows cool stuff </h5>
+                    <p class="card-text"> As you can see, this data focuses on business hours </p>
+                    <p class="card-text"> <small class="text-muted"> System last updated at 11:34am </small></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Metric 2, half screen-->
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-block">
+                <h4 class="card-title">Metric 2 </h4>
+                <div class="metric">
+                  <img class="img-fluid" style="width:100%; height: 350px;" src="https://mdbootstrap.com/img/Photos/Horizontal/Nature/4-col/img%20%282%29.jpg" alt="Card image cap">
+                </div>
+                <div class="details_spacer">
+                  <div class="text_content">
+                    <h5 class="card-text"> This is a cool image that will be a better metric</h5>
+                    <p class="card-text"> Summary: this is a mountain </p>
+                    <p class="card-text"> <small class="text-muted"> System last updated at 11:34am </small></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div> 
+
+        <!-- Metric 3, full width -->
+        <div class="row top_spacer">
+
+          <div class="col-md-12">
+            <div class="card">
+              <div class="card-block">
+                <h4 class="card-title">Metric 3 </h4>
+                <div class="metric">
+                  <img class="img-fluid" src="http://cdn.inquisitr.com/wp-content/uploads/2016/10/One-of-Queen-Elizabeths-last-Corgis-has-died.jpg" style="width:100%; height: 400px;" alt="Card image cap">
+                </div>
+                <div class="details_spacer">
+                  <div class="text_content">
+                    <h5 class="card-text"> Greg Likes Corgis</h5>
+                    <p class="card-text"> As you can see, corgis are little fluff balls </p>
+                    <p class="card-text"> <small class="text-muted"> System last updated at 11:34am </small></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- bottom for aesthetic spacing -->
+        <div class="top_spacer"></div>
+
+      </div>
+    </div>
+
+
+
+    <!-- bootstrap -->
+    <script src="https://code.jquery.com/jquery-3.1.1.slim.min.js" integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js" integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js" integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn" crossorigin="anonymous"></script>
+
+    <!-- for nav bar accordion -->
+    <script src='//cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
+    <script src='//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js'></script>
+
+    <!-- for visualizations -->
+    <script src="http://d3js.org/d3.v4.js"></script>
+    <script src="../static/js/script.js" type="text/javascript"></script>
+
+  </body>
+</html>

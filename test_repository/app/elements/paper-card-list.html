@@ -1,0 +1,35 @@
+<link rel="import" href="../bower_components/polymer/polymer.html">
+<link rel="import" href="../bower_components/paper-card/paper-card.html">
+<link rel="import" href="../bower_components/marked-element/marked-element.html">
+
+<dom-module id="paper-card-list">
+    <style is="custom-style" include="iron-flex iron-positioning"></style>
+    <style>
+        paper-card {
+            margin: 8px;
+        }
+    </style>
+
+    <template>
+        <div class="layout vertical">
+            <template is="dom-repeat" items="{{items}}">
+                <paper-card class="card flex" heading="{{item.heading}}">
+                    <div class="card-content">
+                        <marked-element markdown="{{item.contents}}"></marked-element>
+                    </div>
+                </paper-card>
+            </template>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'paper-card-list',
+
+            properties: {
+                items: {
+                    type: Array
+                }
+            }
+        });
+    </script>
+</dom-module>

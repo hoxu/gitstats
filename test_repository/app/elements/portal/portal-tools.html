@@ -1,0 +1,180 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/paper-drawer-panel/paper-drawer-panel.html">
+<link rel="import" href="../../bower_components/paper-header-panel/paper-header-panel.html">
+<link rel="import" href="../../bower_components/paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item.html">
+<link rel="import" href="../../bower_components/paper-item/paper-item-body.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-menu.html">
+<link rel="import" href="../../bower_components/paper-menu/paper-submenu.html">
+<link rel="import" href="../paper-card-list.html">
+
+<!--
+    Wrapper' for the 'Tools' section of the Portal
+    Loads in the information about the tools ('About', 'Training', 'Useful Links')
+-->
+<dom-module id="portal-tools">
+    <style is="custom-style" include="iron-flex iron-positioning"></style>
+    <style>
+        paper-item {
+            font-size: 14px;
+        }
+
+        .sublist paper-item {
+            padding-left: 32px;
+        }
+    </style>
+
+    <template>
+        <paper-drawer-panel>
+            <paper-header-panel drawer>
+                <paper-menu selected="{{toolSelected}}">
+                    <template is="dom-repeat" items="{{toolNames}}">
+                        <paper-submenu>
+                            <paper-item class="menu-trigger">
+                                <paper-item-body>
+                                    <div>{{item}}</div>
+                                </paper-item-body>
+                                <paper-icon-button icon="arrow-drop-down"></paper-icon-button>
+                            </paper-item>
+                            <paper-menu class="menu-content sublist" selected="{{sectionSelected}}">
+                                <paper-item>About</paper-item>
+                                <paper-item>Training</paper-item>
+                                <paper-item>Useful Links</paper-item>
+                            </paper-menu>
+                        </paper-submenu>
+                    </template>
+                </paper-menu>
+            </paper-header-panel>
+
+            <paper-header-panel main>
+                <paper-icon-button icon="menu" paper-drawer-toggle></paper-icon-button>
+                <paper-card-list items="{{sectionItems}}"></paper-card-list>
+            </paper-header-panel>
+        </paper-drawer-panel>
+    </template>
+    <script>
+        Polymer({
+            is: 'portal-tools',
+
+            properties: {
+                /**
+                 * The items for the particular tool section (i.e. the array of 'about' items).
+                 */
+                sectionItems: {
+                    type: Array
+                },
+
+                /**
+                 * The particular section that is selected.
+                 * Has an observer for detecting when the user clicks on a different section in the sidebar.
+                 */
+                sectionSelected: {
+                    type: Number,
+                    //value: 0,
+                    observer: '_sectionChanged'
+                },
+
+                /**
+                 * Tool selected in the sidebar
+                 */
+                toolSelected: {
+                    type: Number,
+                    //value: 0
+                },
+
+                /**
+                 * Array of tools to be loaded from DB
+                 */
+                tools: {
+                    type: Array
+                },
+
+                /**
+                 * Names of tools to be loaded from the DB
+                 */
+                toolNames: {
+                    type: Array
+                }
+            },
+
+            /**
+             * When this element is attached to the DOM, load in the tools and tool names by calling the appropriate helper methods
+             */
+            attached: function () {
+                this.getTools();
+                this.getToolNames();
+            },
+
+            /**
+             * Helper method for retrieving the tools from the DB
+             */
+            getTools: function () {
+                var me = this;
+
+                var ajax = document.createElement('iron-ajax');
+                ajax.auto = true;
+                ajax.method = "GET";
+                ajax.url = "/api/tools/";
+
+                ajax.addEventListener("response", function (e) {
+                    me.tools = e.detail.response;
+                });
+            },
+
+            /**
+             * Helper method for retrieving the tool names from the DB
+             */
+            getToolNames: function () {
+                var me = this;
+
+                //GET the tool names
+                var ajax = document.createElement('iron-ajax');
+                ajax.auto = true;
+                ajax.method = "GET";
+                ajax.url = "/api/tools/names";
+
+                //When we get a response from our AJAX call
+                ajax.addEventListener("response", function (e) {
+                    me.toolNames = e.detail.response;
+                });
+            },
+
+            /**
+             * Observer for detecting when the section changes in the sidebar.
+             * Loads in a new tool section item array.
+             * @private
+             */
+            _sectionChanged: function () {
+                var me = this;
+
+                //Get the tool and section that was selected (via the <paper-menu> or <paper-submenu>).
+                var toolSelected = me.toolSelected;
+                var sectionSelected = me.sectionSelected;
+
+                //Check that there was an actual selection
+                if (toolSelected != undefined && sectionSelected != undefined) {
+                    var temp;
+
+                    //Number <=> Section
+                    //Need a switch/case statement to decide which section to load
+                    switch (sectionSelected) {
+                        case 0:
+                            temp = me.tools[toolSelected].about;
+                            break;
+                        case 1:
+                            temp = me.tools[toolSelected].training;
+                            break;
+                        case 2:
+                            temp = me.tools[toolSelected].links;
+                            break;
+                    }
+
+                    //Set the items = current selection
+                    me.sectionItems = temp;
+                }
+            }
+        });
+    </script>
+</dom-module>

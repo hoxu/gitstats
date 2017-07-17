@@ -1,0 +1,83 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/iron-ajax/iron-ajax.html">
+<link rel="import" href="../../bower_components/iron-flex-layout/iron-flex-layout-classes.html">
+<link rel="import" href="../../bower_components/paper-card/paper-card.html">
+
+<!--
+    'Wrapper' for the 'News' section of the Portal
+    Loads the list of news items from the DB and displays them as a list of cards
+-->
+<dom-module id="portal-news-list">
+    <style is="custom-style" include="iron-flex iron-positioning"></style>
+    <style>
+
+    </style>
+
+    <template>
+        <div class="layout vertical">
+            <div class="separator"></div>
+            <template is="dom-repeat" items="{{newsItems}}">
+                <paper-card class="card full-width" heading="{{item.title}}">
+                    <div class="card-content">
+                        <div>{{item.contents}}</div>
+                        <div style="text-align: right">{{_formatDate(item.date)}}</div>
+                    </div>
+                </paper-card>
+            </template>
+        </div>
+    </template>
+    <script>
+        Polymer({
+            is: 'portal-news-list',
+
+            properties: {
+                /**
+                 * Array of news items.
+                 * Each news item is formatted like:
+                 *     {
+                 *          title: "...",
+                 *          contents: "...",
+                 *          data: ISODate()
+                 *     }
+                 */
+                newsItems: {
+                    type: Array
+                }
+            },
+
+            //Once the element is attached to the DOM, call the helper method to retrieve the news items
+            attached: function () {
+                this.getNews();
+            },
+
+            /**
+             * Retrieve news items JSON Array from the DB via the REST API
+             */
+            getNews: function () {
+                var me = this;
+
+                var ajax = document.createElement('iron-ajax');
+                ajax.auto = true;
+                ajax.method = "GET";
+                ajax.url = "/api/news/";
+
+                //When we get a response from our AJAX call
+                ajax.addEventListener("response", function (e) {
+                    //The response will be a JSON Array, so we can assign it directly
+                    me.newsItems = e.detail.response;
+                });
+            },
+
+            /**
+             * Helper method that uses Moment.js to format the ISO Date that is stored in the DB.
+             *
+             * @param {String} dateStr The date returned from the DB as a String
+             * @returns {String} Formatted date as a String
+             * @private
+             */
+            _formatDate: function (dateStr) {
+                return moment(dateStr).format("MM/DD/YYYY [@] h:mm:ss A");
+            }
+        });
+    </script>
+</dom-module>

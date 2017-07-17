@@ -1,0 +1,564 @@
+<manifest>
+  <remote fetch="ssh://ny21gitapp01.am.mot-solutions.com:29418" name="caf" review="ny21gitapp01.am.mot-solutions.com:8080"/>
+  <default remote="caf" revision="8956n-product"/>
+  <project name="AtlasM/manifest" path="manifest" />
+   <!-- Projects from Fusion -->
+  <project path="LINUX/android/frameworks/opt/net/wifi" name="Public_Fusion/nt/platform/frameworks/opt/net/wifi" revision="fusion-main-atlasn" />
+  <project path="LINUX/android/frameworks/base/wifi" name="Public_Fusion/nt/platform/frameworks/base/wifi" revision="fusion-main-atlasn" />
+  <project path="LINUX/android/packages/apps/Settings/src/com/android/settings/wifi" name="Public_Fusion/nt/platform/packages/apps/Settings/src/com/android/settings/wifi" revision="fusion-main-atlasn" />
+  <project path="LINUX/android/hardware/libhardware_legacy/wifi" name="Public_Fusion/nt/platform/hardware/libhardware_legacy/wifi" revision="fusion-main-atlasn" />
+  <project path="LINUX/android/device/symbol/common/wifi" name="Public_Fusion/nt/bin/ARM64/Linux_3.10/BRCM4354/wifi" revision="fusion-main-atlasn" />
+  <!-- Projects from Fusion End -->
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/device/common" path="LINUX/android/device/common"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/device/generic/arm64" path="LINUX/android/device/generic/arm64"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/device/generic/armv7-a-neon" path="LINUX/android/device/generic/armv7-a-neon"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/device/generic/common" path="LINUX/android/device/generic/common"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/device/generic/goldfish" path="LINUX/android/device/generic/goldfish"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/device/generic/goldfish-opengl" path="LINUX/android/device/generic/goldfish-opengl"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/device/generic/mini-emulator-arm64" path="LINUX/android/device/generic/mini-emulator-arm64"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/device/generic/mini-emulator-armv7-a-neon" path="LINUX/android/device/generic/mini-emulator-armv7-a-neon"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/device/generic/mini-emulator-x86" path="LINUX/android/device/generic/mini-emulator-x86"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/device/generic/mini-emulator-x86_64" path="LINUX/android/device/generic/mini-emulator-x86_64"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/device/generic/qemu" path="LINUX/android/device/generic/qemu"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/device/generic/x86" path="LINUX/android/device/generic/x86"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/device/generic/x86_64" path="LINUX/android/device/generic/x86_64"/>
+  <project groups="device,pdk" name="AtlasM/CodeAurora89x6/device/google/accessory/arduino" path="LINUX/android/device/google/accessory/arduino"/>
+  <project groups="device,pdk" name="AtlasM/CodeAurora89x6/device/google/accessory/demokit" path="LINUX/android/device/google/accessory/demokit"/>
+  <project groups="device,fugu,broadcom_pdk,generic_fs,pdk" name="AtlasM/CodeAurora89x6/device/google/atv" path="LINUX/android/device/google/atv"/>
+  <project groups="device,marlin" name="AtlasM/CodeAurora89x6/device/google/contexthub" path="LINUX/android/device/google/contexthub"/>
+  <project name="AtlasM/CodeAurora89x6/device/qcom/common" path="LINUX/android/device/qcom/common">
+    <copyfile dest="LINUX/android/build.sh" src="build.sh"/>
+    <copyfile dest="LINUX/android/vendor/qcom/build/tasks/generate_extra_images.mk" src="generate_extra_images.mk"/>
+  </project>
+  <project name="AtlasM/CodeAurora89x6/device/qcom/sepolicy" path="LINUX/android/device/qcom/sepolicy"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/device/sample" path="LINUX/android/device/sample"/>
+  <project name="AtlasM/CodeAurora89x6/kernel/lk" path="LINUX/android/bootable/bootloader/lk"/>
+  <project name="AtlasM/CodeAurora89x6/kernel/msm-3.10" path="LINUX/android/kernel"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/abi/cpp" path="LINUX/android/abi/cpp"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/art" path="LINUX/android/art"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/bionic" path="LINUX/android/bionic"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/bootable/recovery" path="LINUX/android/bootable/recovery"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/build" path="LINUX/android/build">
+    <copyfile dest="LINUX/android/Makefile" src="core/root.mk"/>
+  </project>
+  <project groups="pdk,tradefed" name="AtlasM/CodeAurora89x6/platform/build/blueprint" path="LINUX/android/build/blueprint"/>
+  <project groups="pdk,tradefed" name="AtlasM/CodeAurora89x6/platform/build/kati" path="LINUX/android/build/kati"/>
+  <project groups="pdk,tradefed" name="AtlasM/CodeAurora89x6/platform/build/soong" path="LINUX/android/build/soong">
+    <linkfile dest="LINUX/android/Android.bp" src="root.bp"/>
+    <linkfile dest="LINUX/android/bootstrap.bash" src="bootstrap.bash"/>
+  </project>
+  <project groups="cts,pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/cts" path="LINUX/android/cts"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/dalvik" path="LINUX/android/dalvik"/>
+  <project name="AtlasM/CodeAurora89x6/platform/developers/build" path="LINUX/android/developers/build"/>
+  <project name="AtlasM/CodeAurora89x6/platform/developers/demos" path="LINUX/android/developers/demos"/>
+  <project name="AtlasM/CodeAurora89x6/platform/developers/samples/android" path="LINUX/android/developers/samples/android"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/development" path="LINUX/android/development"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/docs/source.android.com" path="LINUX/android/docs/source.android.com"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/ImageMagick" path="LINUX/android/external/ImageMagick"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/aac" path="LINUX/android/external/aac"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/android-clat" path="LINUX/android/external/android-clat"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/androidplot" path="LINUX/android/external/androidplot"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/ant-glob" path="LINUX/android/external/ant-glob"/>
+  <project name="AtlasM/CodeAurora89x6/platform/external/ant-wireless/ant_native" path="LINUX/android/external/ant-wireless/ant_native"/>
+  <project name="AtlasM/CodeAurora89x6/platform/external/ant-wireless/ant_service" path="LINUX/android/external/ant-wireless/ant_service"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/antlr" path="LINUX/android/external/antlr"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/apache-commons-math" path="LINUX/android/external/apache-commons-math"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/apache-harmony" path="LINUX/android/external/apache-harmony"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/apache-http" path="LINUX/android/external/apache-http"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/apache-xml" path="LINUX/android/external/apache-xml"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/archive-patcher" path="LINUX/android/external/archive-patcher"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/external/autotest" path="LINUX/android/external/autotest"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/avahi" path="LINUX/android/external/avahi"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/bison" path="LINUX/android/external/bison"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/blktrace" path="LINUX/android/external/blktrace"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/boringssl" path="LINUX/android/external/boringssl"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/bouncycastle" path="LINUX/android/external/bouncycastle"/>
+  <project name="AtlasM/CodeAurora89x6/platform/external/brctl" path="LINUX/android/external/brctl"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/bsdiff" path="LINUX/android/external/bsdiff"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/bzip2" path="LINUX/android/external/bzip2"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/c-ares" path="LINUX/android/external/c-ares"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/caliper" path="LINUX/android/external/caliper"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/cblas" path="LINUX/android/external/cblas"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/ceres-solver" path="LINUX/android/external/ceres-solver"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/chromium-libpac" path="LINUX/android/external/chromium-libpac"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/chromium-trace" path="LINUX/android/external/chromium-trace"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/chromium-webview" path="LINUX/android/external/chromium-webview"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/clang" path="LINUX/android/external/clang"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/cmockery" path="LINUX/android/external/cmockery"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/compiler-rt" path="LINUX/android/external/compiler-rt"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/conscrypt" path="LINUX/android/external/conscrypt"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/crcalc" path="LINUX/android/external/crcalc"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/cros/system_api" path="LINUX/android/external/cros/system_api"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/curl" path="LINUX/android/external/curl"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/dagger2" path="LINUX/android/external/dagger2"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/dbus" path="LINUX/android/external/dbus"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/dbus-binding-generator" path="LINUX/android/external/dbus-binding-generator"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/external/deqp" path="LINUX/android/external/deqp"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/dexmaker" path="LINUX/android/external/dexmaker"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/dhcpcd-6.8.2" path="LINUX/android/external/dhcpcd-6.8.2"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/dlmalloc" path="LINUX/android/external/dlmalloc"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/dng_sdk" path="LINUX/android/external/dng_sdk"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/dnsmasq" path="LINUX/android/external/dnsmasq"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/doclava" path="LINUX/android/external/doclava"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/donuts" path="LINUX/android/external/donuts"/>
+  <project groups="drm_gralloc" name="AtlasM/CodeAurora89x6/platform/external/drm_gralloc" path="LINUX/android/external/drm_gralloc"/>
+  <project groups="drm_hwcomposer" name="AtlasM/CodeAurora89x6/platform/external/drm_hwcomposer" path="LINUX/android/external/drm_hwcomposer"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/droiddriver" path="LINUX/android/external/droiddriver"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/e2fsprogs" path="LINUX/android/external/e2fsprogs"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/e2fsprogs_custom" path="LINUX/android/external/e2fsprogs_blocks"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/easymock" path="LINUX/android/external/easymock"/>
+  <project name="AtlasM/CodeAurora89x6/platform/external/ebtables" path="LINUX/android/external/ebtables"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/external/eclipse-basebuilder" path="LINUX/android/external/eclipse-basebuilder"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/eclipse-windowbuilder" path="LINUX/android/external/eclipse-windowbuilder"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/eigen" path="LINUX/android/external/eigen"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/elfutils" path="LINUX/android/external/elfutils"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/emma" path="LINUX/android/external/emma"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/esd" path="LINUX/android/external/esd"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/expat" path="LINUX/android/external/expat"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/eyes-free" path="LINUX/android/external/eyes-free"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/f2fs-tools" path="LINUX/android/external/f2fs-tools"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/fdlibm" path="LINUX/android/external/fdlibm"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/fec" path="LINUX/android/external/fec"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/fio" path="LINUX/android/external/fio"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/flac" path="LINUX/android/external/flac"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/fonttools" path="LINUX/android/external/fonttools"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/freetype" path="LINUX/android/external/freetype"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/fsck_msdos" path="LINUX/android/external/fsck_msdos"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/gemmlowp" path="LINUX/android/external/gemmlowp"/>
+  <project groups="pdk,qcom_msm8x26" name="AtlasM/CodeAurora89x6/platform/external/giflib" path="LINUX/android/external/giflib"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/glide" path="LINUX/android/external/glide"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/gmock" path="LINUX/android/external/gmock"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/google-benchmark" path="LINUX/android/external/google-benchmark"/>
+  <project groups="dragon,pdk-fs" name="AtlasM/CodeAurora89x6/platform/external/google-breakpad" path="LINUX/android/external/google-breakpad"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/google-fonts/carrois-gothic-sc" path="LINUX/android/external/google-fonts/carrois-gothic-sc"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/google-fonts/coming-soon" path="LINUX/android/external/google-fonts/coming-soon"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/google-fonts/cutive-mono" path="LINUX/android/external/google-fonts/cutive-mono"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/google-fonts/dancing-script" path="LINUX/android/external/google-fonts/dancing-script"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/google-tv-pairing-protocol" path="LINUX/android/external/google-tv-pairing-protocol"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/gptfdisk" path="LINUX/android/external/gptfdisk"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/gtest" path="LINUX/android/external/gtest"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/guava" path="LINUX/android/external/guava"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/guice" path="LINUX/android/external/guice"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/hamcrest" path="LINUX/android/external/hamcrest"/>
+  <project groups="pdk,qcom_msm8x26" name="AtlasM/CodeAurora89x6/platform/external/harfbuzz_ng" path="LINUX/android/external/harfbuzz_ng"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/hyphenation-patterns" path="LINUX/android/external/hyphenation-patterns"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/icu" path="LINUX/android/external/icu"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/ims" path="LINUX/android/external/ims"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/iproute2" path="LINUX/android/external/iproute2"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/ipsec-tools" path="LINUX/android/external/ipsec-tools"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/iptables" path="LINUX/android/external/iptables"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/iputils" path="LINUX/android/external/iputils"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/iw" path="LINUX/android/external/iw"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/jacoco" path="LINUX/android/external/jacoco"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/jarjar" path="LINUX/android/external/jarjar"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/javasqlite" path="LINUX/android/external/javasqlite"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/javassist" path="LINUX/android/external/javassist"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/jcommander" path="LINUX/android/external/jcommander"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/jdiff" path="LINUX/android/external/jdiff"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/jemalloc" path="LINUX/android/external/jemalloc"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/jetty" path="LINUX/android/external/jetty"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/jhead" path="LINUX/android/external/jhead"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/jmdns" path="LINUX/android/external/jmdns"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/jsilver" path="LINUX/android/external/jsilver"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/jsmn" path="LINUX/android/external/jsmn"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/jsoncpp" path="LINUX/android/external/jsoncpp"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/jsr305" path="LINUX/android/external/jsr305"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/jsr330" path="LINUX/android/external/jsr330"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/junit" path="LINUX/android/external/junit"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/kernel-headers" path="LINUX/android/external/kernel-headers"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/ksoap2" path="LINUX/android/external/ksoap2"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libavc" path="LINUX/android/external/libavc"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libbrillo" path="LINUX/android/external/libbrillo"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libcap" path="LINUX/android/external/libcap"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libcap-ng" path="LINUX/android/external/libcap-ng"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libchrome" path="LINUX/android/external/libchrome"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libcxx" path="LINUX/android/external/libcxx"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libcxxabi" path="LINUX/android/external/libcxxabi"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libdaemon" path="LINUX/android/external/libdaemon"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libdivsufsort" path="LINUX/android/external/libdivsufsort"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libdrm" path="LINUX/android/external/libdrm"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libedit" path="LINUX/android/external/libedit"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libevent" path="LINUX/android/external/libevent"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libexif" path="LINUX/android/external/libexif"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libgdx" path="LINUX/android/external/libgdx"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libgsm" path="LINUX/android/external/libgsm"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libhevc" path="LINUX/android/external/libhevc"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libjpeg-turbo" path="LINUX/android/external/libjpeg-turbo"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/liblzf" path="LINUX/android/external/liblzf"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libmicrohttpd" path="LINUX/android/external/libmicrohttpd"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libmpeg2" path="LINUX/android/external/libmpeg2"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libmtp" path="LINUX/android/external/libmtp"/>
+  <project name="AtlasM/CodeAurora89x6/platform/external/libnetfilter_conntrack" path="LINUX/android/external/libnetfilter_conntrack"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libnfc-nci" path="LINUX/android/external/libnfc-nci"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libnfc-nxp" path="LINUX/android/external/libnfc-nxp"/>
+  <project name="AtlasM/CodeAurora89x6/platform/external/libnfnetlink" path="LINUX/android/external/libnfnetlink"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libnl" path="LINUX/android/external/libnl"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libogg" path="LINUX/android/external/libogg"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libopus" path="LINUX/android/external/libopus"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libpcap" path="LINUX/android/external/libpcap"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libphonenumber" path="LINUX/android/external/libphonenumber"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libpng" path="LINUX/android/external/libpng"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libselinux" path="LINUX/android/external/libselinux"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libunwind" path="LINUX/android/external/libunwind"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libunwind_llvm" path="LINUX/android/external/libunwind_llvm"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libusb" path="LINUX/android/external/libusb"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libusb-compat" path="LINUX/android/external/libusb-compat"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libutf" path="LINUX/android/external/libutf"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libvncserver" path="LINUX/android/external/libvncserver"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libvorbis" path="LINUX/android/external/libvorbis"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libvpx" path="LINUX/android/external/libvpx"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libvterm" path="LINUX/android/external/libvterm"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/libweave" path="LINUX/android/external/libweave"/>
+  <project groups="pdk,libxml2" name="AtlasM/CodeAurora89x6/platform/external/libxml2" path="LINUX/android/external/libxml2"/>
+  <project groups="pdk,libyuv" name="AtlasM/CodeAurora89x6/platform/external/libyuv" path="LINUX/android/external/libyuv"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/littlemock" path="LINUX/android/external/littlemock"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/lld" path="LINUX/android/external/lld"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/llvm" path="LINUX/android/external/llvm"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/ltrace" path="LINUX/android/external/ltrace"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/lz4" path="LINUX/android/external/lz4"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/lzma" path="LINUX/android/external/lzma"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/markdown" path="LINUX/android/external/markdown"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/mdnsresponder" path="LINUX/android/external/mdnsresponder"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/external/mesa3d" path="LINUX/android/external/mesa3d"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/messageformat" path="LINUX/android/external/messageformat"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/minijail" path="LINUX/android/external/minijail"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/mksh" path="LINUX/android/external/mksh"/>
+  <project name="AtlasM/CodeAurora89x6/platform/external/mm-dash" path="LINUX/android/external/mm-dash"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/mmc-utils" path="LINUX/android/external/mmc-utils"/>
+  <project groups="pdk-cw-fs" name="AtlasM/CodeAurora89x6/platform/external/mobicore" path="LINUX/android/external/mobicore"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/mockftpserver" path="LINUX/android/external/mockftpserver"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/mockito" path="LINUX/android/external/mockito"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/mockwebserver" path="LINUX/android/external/mockwebserver"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/modp_b64" path="LINUX/android/external/modp_b64"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/mp4parser" path="LINUX/android/external/mp4parser"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/mtpd" path="LINUX/android/external/mtpd"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/nanohttpd" path="LINUX/android/external/nanohttpd"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/nanopb-c" path="LINUX/android/external/nanopb-c"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/naver-fonts" path="LINUX/android/external/naver-fonts"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/netcat" path="LINUX/android/external/netcat"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/netperf" path="LINUX/android/external/netperf"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/neven" path="LINUX/android/external/neven"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/nfacct" path="LINUX/android/external/nfacct"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/nist-pkits" path="LINUX/android/external/nist-pkits"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/nist-sip" path="LINUX/android/external/nist-sip"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/noto-fonts" path="LINUX/android/external/noto-fonts"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/oauth" path="LINUX/android/external/oauth"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/objenesis" path="LINUX/android/external/objenesis"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/okhttp" path="LINUX/android/external/okhttp"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/external/opencv" path="LINUX/android/external/opencv"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/opencv3" path="LINUX/android/external/opencv3"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/owasp/sanitizer" path="LINUX/android/external/owasp/sanitizer"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/parameter-framework" path="LINUX/android/external/parameter-framework"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/pcre" path="LINUX/android/external/pcre"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/pdfium" path="LINUX/android/external/pdfium"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/piex" path="LINUX/android/external/piex"/>
+  <project name="AtlasM/CodeAurora89x6/platform/external/powertop" path="LINUX/android/external/powertop"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/ppp" path="LINUX/android/external/ppp"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/proguard" path="LINUX/android/external/proguard"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/protobuf" path="LINUX/android/external/protobuf"/>
+  <project name="AtlasM/CodeAurora89x6/platform/external/qrngd" path="LINUX/android/external/qrngd"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/regex-re2" path="LINUX/android/external/regex-re2"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/replicaisland" path="LINUX/android/external/replicaisland"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/rmi4utils" path="LINUX/android/external/rmi4utils"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/external/robolectric" path="LINUX/android/external/robolectric"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/roboto-fonts" path="LINUX/android/external/roboto-fonts"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/rootdev" path="LINUX/android/external/rootdev"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/safe-iop" path="LINUX/android/external/safe-iop"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/scrypt" path="LINUX/android/external/scrypt"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/selinux" path="LINUX/android/external/selinux"/>
+  <project groups="pdk,qcom_msm8x26" name="AtlasM/CodeAurora89x6/platform/external/sfntly" path="LINUX/android/external/sfntly"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/shflags" path="LINUX/android/external/shflags"/>
+  <project groups="pdk,qcom_msm8x26" name="AtlasM/CodeAurora89x6/platform/external/skia" path="LINUX/android/external/skia"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/sl4a" path="LINUX/android/external/sl4a"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/slf4j" path="LINUX/android/external/slf4j"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/smali" path="LINUX/android/external/smali"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/snakeyaml" path="LINUX/android/external/snakeyaml"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/sonic" path="LINUX/android/external/sonic"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/sonivox" path="LINUX/android/external/sonivox"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/speex" path="LINUX/android/external/speex"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/sqlite" path="LINUX/android/external/sqlite"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/squashfs-tools" path="LINUX/android/external/squashfs-tools"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/srtp" path="LINUX/android/external/srtp"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/strace" path="LINUX/android/external/strace"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/svox" path="LINUX/android/external/svox"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/tagsoup" path="LINUX/android/external/tagsoup"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/tcpdump" path="LINUX/android/external/tcpdump"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/testng" path="LINUX/android/external/testng"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/timezonepicker-support" path="LINUX/android/external/timezonepicker-support"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/tinyalsa" path="LINUX/android/external/tinyalsa"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/tinycompress" path="LINUX/android/external/tinycompress"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/tinyxml" path="LINUX/android/external/tinyxml"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/tinyxml2" path="LINUX/android/external/tinyxml2"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/tlsdate" path="LINUX/android/external/tlsdate"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/toybox" path="LINUX/android/external/toybox"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/tpm2" path="LINUX/android/external/tpm2"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/tremolo" path="LINUX/android/external/tremolo"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/unicode" path="LINUX/android/external/unicode"/>
+  <project name="AtlasM/CodeAurora89x6/platform/external/universal-tween-engine" path="LINUX/android/external/universal-tween-engine"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/v8" path="LINUX/android/external/v8"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/valgrind" path="LINUX/android/external/valgrind"/>
+  <project groups="vboot,pdk-fs" name="AtlasM/CodeAurora89x6/platform/external/vboot_reference" path="LINUX/android/external/vboot_reference"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/vixl" path="LINUX/android/external/vixl"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/vogar" path="LINUX/android/external/vogar"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/vulkan-validation-layers" path="LINUX/android/external/vulkan-validation-layers"/>
+  <project groups="pdk,qcom_msm8x26" name="AtlasM/CodeAurora89x6/platform/external/webp" path="LINUX/android/external/webp"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/webrtc" path="LINUX/android/external/webrtc"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/wpa_supplicant_8" path="LINUX/android/external/wpa_supplicant_8"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/xmlrpcpp" path="LINUX/android/external/xmlrpcpp"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/xmlwriter" path="LINUX/android/external/xmlwriter"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/xmp_toolkit" path="LINUX/android/external/xmp_toolkit"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/zlib" path="LINUX/android/external/zlib"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/zopfli" path="LINUX/android/external/zopfli"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/external/zxing" path="LINUX/android/external/zxing"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/frameworks/av" path="LINUX/android/frameworks/av"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/base" path="LINUX/android/frameworks/base"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/frameworks/compile/libbcc" path="LINUX/android/frameworks/compile/libbcc"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/frameworks/compile/mclinker" path="LINUX/android/frameworks/compile/mclinker"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/frameworks/compile/slang" path="LINUX/android/frameworks/compile/slang"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/data-binding" path="LINUX/android/frameworks/data-binding"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/ex" path="LINUX/android/frameworks/ex"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/minikin" path="LINUX/android/frameworks/minikin"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/ml" path="LINUX/android/frameworks/ml"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/multidex" path="LINUX/android/frameworks/multidex"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/frameworks/native" path="LINUX/android/frameworks/native"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/opt/bitmap" path="LINUX/android/frameworks/opt/bitmap"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/opt/bluetooth" path="LINUX/android/frameworks/opt/bluetooth"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/opt/calendar" path="LINUX/android/frameworks/opt/calendar"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/opt/chips" path="LINUX/android/frameworks/opt/chips"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/opt/colorpicker" path="LINUX/android/frameworks/opt/colorpicker"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/opt/datetimepicker" path="LINUX/android/frameworks/opt/datetimepicker"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/opt/emoji" path="LINUX/android/frameworks/opt/emoji"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/opt/inputconnectioncommon" path="LINUX/android/frameworks/opt/inputconnectioncommon"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/opt/inputmethodcommon" path="LINUX/android/frameworks/opt/inputmethodcommon"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/opt/net/ethernet" path="LINUX/android/frameworks/opt/net/ethernet"/>
+  <project groups="frameworks_ims,pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/opt/net/ims" path="LINUX/android/frameworks/opt/net/ims"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/opt/net/voip" path="LINUX/android/frameworks/opt/net/voip"/>
+  <!-- <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/frameworks/opt/net/wifi" path="LINUX/android/frameworks/opt/net/wifi"/> -->
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/opt/photoviewer" path="LINUX/android/frameworks/opt/photoviewer"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/opt/setupwizard" path="LINUX/android/frameworks/opt/setupwizard"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/frameworks/opt/telephony" path="LINUX/android/frameworks/opt/telephony"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/opt/timezonepicker" path="LINUX/android/frameworks/opt/timezonepicker"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/opt/vcard" path="LINUX/android/frameworks/opt/vcard"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/frameworks/rs" path="LINUX/android/frameworks/rs"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/support" path="LINUX/android/frameworks/support"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/volley" path="LINUX/android/frameworks/volley"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/webview" path="LINUX/android/frameworks/webview"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/frameworks/wilhelm" path="LINUX/android/frameworks/wilhelm"/>
+  <project name="AtlasM/CodeAurora89x6/platform/hardware/akm" path="LINUX/android/hardware/akm"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/hardware/broadcom/libbt" path="LINUX/android/hardware/broadcom/libbt"/>
+  <project groups="pdk,broadcom_wlan" name="AtlasM/CodeAurora89x6/platform/hardware/broadcom/wlan" path="LINUX/android/hardware/broadcom/wlan"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/hardware/google/apf" path="LINUX/android/hardware/google/apf"/>
+  <project groups="nvensense,pdk" name="AtlasM/CodeAurora89x6/platform/hardware/invensense" path="LINUX/android/hardware/invensense"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/hardware/libhardware" path="LINUX/android/hardware/libhardware"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/hardware/libhardware_legacy" path="LINUX/android/hardware/libhardware_legacy"/>
+  <project groups="qcom,qcom_audio" name="AtlasM/CodeAurora89x6/platform/hardware/qcom/audio" path="LINUX/android/hardware/qcom/audio"/>
+  <project groups="qcom" name="AtlasM/CodeAurora89x6/platform/hardware/qcom/bt" path="LINUX/android/hardware/qcom/bt"/>
+  <project groups="qcom,default" name="AtlasM/CodeAurora89x6/platform/hardware/qcom/camera" path="LINUX/android/hardware/qcom/camera"/>
+  <project groups="qcom,qcom_display" name="AtlasM/CodeAurora89x6/platform/hardware/qcom/display" path="LINUX/android/hardware/qcom/display"/>
+  <project groups="qcom,qcom_gps" name="AtlasM/CodeAurora89x6/platform/hardware/qcom/gps" path="LINUX/android/hardware/qcom/gps"/>
+  <project groups="qcom,default" name="AtlasM/CodeAurora89x6/platform/hardware/qcom/media" path="LINUX/android/hardware/qcom/media"/>
+  <project groups="qcom_wlan" name="AtlasM/CodeAurora89x6/platform/hardware/qcom/wlan" path="LINUX/android/hardware/qcom/wlan"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/hardware/ril" path="LINUX/android/hardware/ril"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/libcore" path="LINUX/android/libcore"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/libnativehelper" path="LINUX/android/libnativehelper"/>
+  <project groups="generic_fs" name="AtlasM/CodeAurora89x6/platform/ndk" path="LINUX/android/ndk"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/BasicSmsReceiver" path="LINUX/android/packages/apps/BasicSmsReceiver"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Bluetooth" path="LINUX/android/packages/apps/Bluetooth"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Browser2" path="LINUX/android/packages/apps/Browser2"/>
+  <project name="AtlasM/CodeAurora89x6/platform/packages/apps/CMFileManager" path="LINUX/android/packages/apps/CMFileManager"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Calculator" path="LINUX/android/packages/apps/Calculator"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Calendar" path="LINUX/android/packages/apps/Calendar"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Camera" path="LINUX/android/packages/apps/Camera"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Camera2" path="LINUX/android/packages/apps/Camera2"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/CarrierConfig" path="LINUX/android/packages/apps/CarrierConfig"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/CellBroadcastReceiver" path="LINUX/android/packages/apps/CellBroadcastReceiver"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/CertInstaller" path="LINUX/android/packages/apps/CertInstaller"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Contacts" path="LINUX/android/packages/apps/Contacts"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/ContactsCommon" path="LINUX/android/packages/apps/ContactsCommon"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/DeskClock" path="LINUX/android/packages/apps/DeskClock"/>
+  <project name="AtlasM/CodeAurora89x6/platform/packages/apps/DevCamera" path="LINUX/android/packages/apps/DevCamera"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Dialer" path="LINUX/android/packages/apps/Dialer"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Email" path="LINUX/android/packages/apps/Email"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/EmergencyInfo" path="LINUX/android/packages/apps/EmergencyInfo"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/ExactCalculator" path="LINUX/android/packages/apps/ExactCalculator"/>
+  <project name="AtlasM/CodeAurora89x6/platform/packages/apps/Exchange" path="LINUX/android/packages/apps/Exchange"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/FMRadio" path="LINUX/android/packages/apps/FMRadio"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Gallery" path="LINUX/android/packages/apps/Gallery"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Gallery2" path="LINUX/android/packages/apps/Gallery2"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/HTMLViewer" path="LINUX/android/packages/apps/HTMLViewer"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/KeyChain" path="LINUX/android/packages/apps/KeyChain"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Launcher2" path="LINUX/android/packages/apps/Launcher2"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Launcher3" path="LINUX/android/packages/apps/Launcher3"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/LegacyCamera" path="LINUX/android/packages/apps/LegacyCamera"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/ManagedProvisioning" path="LINUX/android/packages/apps/ManagedProvisioning"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Messaging" path="LINUX/android/packages/apps/Messaging"/>
+  <project name="AtlasM/CodeAurora89x6/platform/packages/apps/Mms" path="LINUX/android/packages/apps/Mms"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Music" path="LINUX/android/packages/apps/Music"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/MusicFX" path="LINUX/android/packages/apps/MusicFX"/>
+  <project groups="apps_nfc,pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Nfc" path="LINUX/android/packages/apps/Nfc"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/OneTimeInitializer" path="LINUX/android/packages/apps/OneTimeInitializer"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/PackageInstaller" path="LINUX/android/packages/apps/PackageInstaller"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Phone" path="LINUX/android/packages/apps/Phone"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/PhoneCommon" path="LINUX/android/packages/apps/PhoneCommon"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Protips" path="LINUX/android/packages/apps/Protips"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Provision" path="LINUX/android/packages/apps/Provision"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/QuickSearchBox" path="LINUX/android/packages/apps/QuickSearchBox"/>
+  <project name="AtlasM/CodeAurora89x6/platform/packages/apps/SafetyRegulatoryInfo" path="LINUX/android/packages/apps/SafetyRegulatoryInfo"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Settings" path="LINUX/android/packages/apps/Settings"/>
+  <project name="AtlasM/CodeAurora89x6/platform/packages/apps/SmartCardService" path="LINUX/android/packages/apps/SmartCardService"/>
+  <project name="AtlasM/CodeAurora89x6/platform/packages/apps/SnapdragonCamera" path="LINUX/android/packages/apps/SnapdragonCamera"/>
+  <project name="AtlasM/CodeAurora89x6/platform/packages/apps/SnapdragonGallery" path="LINUX/android/packages/apps/SnapdragonGallery"/>
+  <project name="AtlasM/CodeAurora89x6/platform/packages/apps/SnapdragonLauncher" path="LINUX/android/packages/apps/SnapdragonLauncher"/>
+  <project name="AtlasM/CodeAurora89x6/platform/packages/apps/SnapdragonMusic" path="LINUX/android/packages/apps/SnapdragonMusic"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/SoundRecorder" path="LINUX/android/packages/apps/SoundRecorder"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/SpareParts" path="LINUX/android/packages/apps/SpareParts"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/SpeechRecorder" path="LINUX/android/packages/apps/SpeechRecorder"/>
+  <project groups="apps_stk,pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Stk" path="LINUX/android/packages/apps/Stk"/>
+  <project name="AtlasM/CodeAurora89x6/platform/packages/apps/StorageManager" path="LINUX/android/packages/apps/StorageManager"/>
+  <project name="AtlasM/CodeAurora89x6/platform/packages/apps/TV" path="LINUX/android/packages/apps/TV"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Tag" path="LINUX/android/packages/apps/Tag"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/Terminal" path="LINUX/android/packages/apps/Terminal"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/packages/apps/Test/connectivity" path="LINUX/android/packages/apps/Test/connectivity"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/TvSettings" path="LINUX/android/packages/apps/TvSettings"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/apps/UnifiedEmail" path="LINUX/android/packages/apps/UnifiedEmail"/>
+  <project name="AtlasM/CodeAurora89x6/platform/packages/apps/WallpaperPicker" path="LINUX/android/packages/apps/WallpaperPicker"/>
+  <project name="AtlasM/CodeAurora89x6/platform/packages/experimental" path="LINUX/android/packages/experimental"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/inputmethods/LatinIME" path="LINUX/android/packages/inputmethods/LatinIME"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/inputmethods/OpenWnn" path="LINUX/android/packages/inputmethods/OpenWnn"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/providers/ApplicationsProvider" path="LINUX/android/packages/providers/ApplicationsProvider"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/providers/BlockedNumberProvider" path="LINUX/android/packages/providers/BlockedNumberProvider"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/providers/BookmarkProvider" path="LINUX/android/packages/providers/BookmarkProvider"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/providers/CalendarProvider" path="LINUX/android/packages/providers/CalendarProvider"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/providers/CallLogProvider" path="LINUX/android/packages/providers/CallLogProvider"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/providers/ContactsProvider" path="LINUX/android/packages/providers/ContactsProvider"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/providers/DownloadProvider" path="LINUX/android/packages/providers/DownloadProvider"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/providers/MediaProvider" path="LINUX/android/packages/providers/MediaProvider"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/providers/PartnerBookmarksProvider" path="LINUX/android/packages/providers/PartnerBookmarksProvider"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/providers/TelephonyProvider" path="LINUX/android/packages/providers/TelephonyProvider"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/providers/TvProvider" path="LINUX/android/packages/providers/TvProvider"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/providers/UserDictionaryProvider" path="LINUX/android/packages/providers/UserDictionaryProvider"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/screensavers/Basic" path="LINUX/android/packages/screensavers/Basic"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/screensavers/PhotoTable" path="LINUX/android/packages/screensavers/PhotoTable"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/screensavers/WebView" path="LINUX/android/packages/screensavers/WebView"/>
+  <project groups="adp8064,pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/services/Car" path="LINUX/android/packages/services/Car"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/services/Mms" path="LINUX/android/packages/services/Mms"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/services/Telecomm" path="LINUX/android/packages/services/Telecomm"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/services/Telephony" path="LINUX/android/packages/services/Telephony"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/packages/wallpapers/LivePicker" path="LINUX/android/packages/wallpapers/LivePicker"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/pdk" path="LINUX/android/pdk"/>
+  <project groups="pdk-fs,pdk-cw-fs,cts" name="AtlasM/CodeAurora89x6/platform/platform_testing" path="LINUX/android/platform_testing"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/prebuilts/android-emulator" path="LINUX/android/prebuilts/android-emulator"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/prebuilts/clang/host/linux-x86" path="LINUX/android/prebuilts/clang/host/linux-x86"/>
+  <project groups="pdk,linux" name="AtlasM/CodeAurora89x6/platform/prebuilts/clang/linux-x86/host/3.6" path="LINUX/android/prebuilts/clang/linux-x86/host/3.6"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/prebuilts/deqp" path="LINUX/android/prebuilts/deqp"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/prebuilts/devtools" path="LINUX/android/prebuilts/devtools"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/prebuilts/eclipse" path="LINUX/android/prebuilts/eclipse"/>
+  <project groups="pdk,darwin,arm" name="AtlasM/CodeAurora89x6/platform/prebuilts/gcc/darwin-x86/arm/arm-eabi-4.8" path="LINUX/android/prebuilts/gcc/darwin-x86/arm/arm-eabi-4.8"/>
+  <project groups="pdk,linux,arm" name="AtlasM/CodeAurora89x6/platform/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9" path="LINUX/android/prebuilts/gcc/linux-x86/aarch64/aarch64-linux-android-4.9"/>
+  <project groups="pdk,linux,arm" name="AtlasM/CodeAurora89x6/platform/prebuilts/gcc/linux-x86/arm/arm-eabi-4.8" path="LINUX/android/prebuilts/gcc/linux-x86/arm/arm-eabi-4.8"/>
+  <project groups="pdk,linux,arm" name="AtlasM/CodeAurora89x6/platform/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9" path="LINUX/android/prebuilts/gcc/linux-x86/arm/arm-linux-androideabi-4.9"/>
+  <project groups="pdk,linux" name="AtlasM/CodeAurora89x6/platform/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.11-4.8" path="LINUX/android/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.11-4.8"/>
+  <project groups="pdk,linux" name="AtlasM/CodeAurora89x6/platform/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.15-4.8" path="LINUX/android/prebuilts/gcc/linux-x86/host/x86_64-linux-glibc2.15-4.8"/>
+  <project groups="pdk-fs" name="AtlasM/CodeAurora89x6/platform/prebuilts/gcc/linux-x86/host/x86_64-w64-mingw32-4.8" path="LINUX/android/prebuilts/gcc/linux-x86/host/x86_64-w64-mingw32-4.8"/>
+  <project groups="pdk,linux,x86" name="AtlasM/CodeAurora89x6/platform/prebuilts/gcc/linux-x86/x86/x86_64-linux-android-4.9" path="LINUX/android/prebuilts/gcc/linux-x86/x86/x86_64-linux-android-4.9"/>
+  <project groups="linux" name="AtlasM/CodeAurora89x6/platform/prebuilts/gdb/linux-x86" path="LINUX/android/prebuilts/gdb/linux-x86"/>
+  <project groups="linux,tradefed" name="AtlasM/CodeAurora89x6/platform/prebuilts/go/linux-x86" path="LINUX/android/prebuilts/go/linux-x86"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/prebuilts/gradle-plugin" path="LINUX/android/prebuilts/gradle-plugin"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/prebuilts/libs/libedit" path="LINUX/android/prebuilts/libs/libedit"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/prebuilts/maven_repo/android" path="LINUX/android/prebuilts/maven_repo/android"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/prebuilts/misc" path="LINUX/android/prebuilts/misc"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/prebuilts/ndk" path="LINUX/android/prebuilts/ndk"/>
+  <project groups="linux,pdk,tradefed" name="AtlasM/CodeAurora89x6/platform/prebuilts/ninja/linux-x86" path="LINUX/android/prebuilts/ninja/linux-x86"/>
+  <project groups="linux,pdk,pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/prebuilts/python/linux-x86/2.7.5" path="LINUX/android/prebuilts/python/linux-x86/2.7.5"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/prebuilts/qemu-kernel" path="LINUX/android/prebuilts/qemu-kernel"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/prebuilts/sdk" path="LINUX/android/prebuilts/sdk"/>
+  <project groups="pdk,tools" name="AtlasM/CodeAurora89x6/platform/prebuilts/tools" path="LINUX/android/prebuilts/tools"/>
+  <project groups="pdk-cw-fs,pdk-fs" name="AtlasM/CodeAurora89x6/platform/sdk" path="LINUX/android/sdk"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/system/bt" path="LINUX/android/system/bt"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/system/ca-certificates" path="LINUX/android/system/ca-certificates"/>
+  <project name="AtlasM/CodeAurora89x6/platform/system/connectivity/apmanager" path="LINUX/android/system/connectivity/apmanager"/>
+  <project name="AtlasM/CodeAurora89x6/platform/system/connectivity/dhcp_client" path="LINUX/android/system/connectivity/dhcp_client"/>
+  <project name="AtlasM/CodeAurora89x6/platform/system/connectivity/shill" path="LINUX/android/system/connectivity/shill"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/system/core" path="LINUX/android/system/core"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/system/extras" path="LINUX/android/system/extras"/>
+  <project name="AtlasM/CodeAurora89x6/platform/system/firewalld" path="LINUX/android/system/firewalld"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/system/gatekeeper" path="LINUX/android/system/gatekeeper"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/system/keymaster" path="LINUX/android/system/keymaster"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/system/media" path="LINUX/android/system/media"/>
+  <project name="AtlasM/CodeAurora89x6/platform/system/nativepower" path="LINUX/android/system/nativepower"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/system/netd" path="LINUX/android/system/netd"/>
+  <project name="AtlasM/CodeAurora89x6/platform/system/nvram" path="LINUX/android/system/nvram"/>
+  <project name="AtlasM/CodeAurora89x6/platform/system/qcom" path="LINUX/android/vendor/qcom/opensource/softap"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/system/security" path="LINUX/android/system/security"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/system/sepolicy" path="LINUX/android/system/sepolicy"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/system/tools/aidl" path="LINUX/android/system/tools/aidl"/>
+  <project name="AtlasM/CodeAurora89x6/platform/system/tpm" path="LINUX/android/system/tpm"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/system/update_engine" path="LINUX/android/system/update_engine"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/system/vold" path="LINUX/android/system/vold"/>
+  <project name="AtlasM/CodeAurora89x6/platform/system/weaved" path="LINUX/android/system/weaved"/>
+  <project name="AtlasM/CodeAurora89x6/platform/system/webservd" path="LINUX/android/system/webservd"/>
+  <project groups="tools" name="AtlasM/CodeAurora89x6/platform/tools/external/fat32lib" path="LINUX/android/tools/external/fat32lib"/>
+  <project groups="tools" name="AtlasM/CodeAurora89x6/platform/tools/external/gradle" path="LINUX/android/tools/external/gradle"/>
+  <project groups="pdk" name="AtlasM/CodeAurora89x6/platform/tools/test/connectivity" path="LINUX/android/tools/test/connectivity"/>
+  <project name="AtlasM/CodeAurora89x6/platform/vendor/codeaurora/telephony" path="LINUX/android/vendor/codeaurora/telephony"/>
+  <project name="AtlasM/CodeAurora89x6/platform/vendor/partner_gms" path="LINUX/android/vendor/partner_gms"/>
+  <project name="AtlasM/CodeAurora89x6/platform/vendor/nxp/opensource/external/libnfc-nci" path="LINUX/android/vendor/nxp/opensource/external/libnfc-nci"/>
+  <project name="AtlasM/CodeAurora89x6/platform/vendor/nxp/opensource/frameworks" path="LINUX/android/vendor/nxp/opensource/frameworks"/>
+  <project name="AtlasM/CodeAurora89x6/platform/vendor/nxp/opensource/packages/apps/Nfc" path="LINUX/android/vendor/nxp/opensource/packages/apps/Nfc"/>
+  <project groups="qcom" name="AtlasM/CodeAurora89x6/platform/vendor/qcom-opensource/bluetooth" path="LINUX/android/vendor/qcom/opensource/bluetooth"/>
+  <project name="AtlasM/CodeAurora89x6/platform/vendor/qcom-opensource/data-ipa-cfg-mgr" path="LINUX/android/vendor/qcom/opensource/data-ipa-cfg-mgr"/>
+  <project name="AtlasM/CodeAurora89x6/platform/vendor/qcom-opensource/dataservices" path="LINUX/android/vendor/qcom/opensource/dataservices"/>
+  <project name="AtlasM/CodeAurora89x6/platform/vendor/qcom-opensource/display-frameworks" path="LINUX/android/vendor/qcom/opensource/display-frameworks"/>
+  <project name="AtlasM/CodeAurora89x6/platform/vendor/qcom-opensource/dpm" path="LINUX/android/vendor/qcom/opensource/dpm"/>
+  <project name="AtlasM/CodeAurora89x6/platform/vendor/qcom-opensource/fm" path="LINUX/android/vendor/qcom/opensource/fm"/>
+  <project name="AtlasM/CodeAurora89x6/platform/vendor/qcom-opensource/kernel/kernel-tests" path="LINUX/android/vendor/qcom/opensource/kernel-tests"/>
+  <project name="AtlasM/CodeAurora89x6/platform/vendor/qcom-opensource/location" path="LINUX/android/vendor/qcom/opensource/location"/>
+  <project name="AtlasM/CodeAurora89x6/platform/vendor/qcom-opensource/rcs-service" path="LINUX/android/vendor/qcom/opensource/rcs-service"/>
+  <project name="AtlasM/CodeAurora89x6/platform/vendor/qcom-opensource/time-services" path="LINUX/android/vendor/qcom/opensource/time-services"/>
+  <project name="AtlasM/CodeAurora89x6/platform/vendor/qcom-opensource/wlan/prima" path="LINUX/android/vendor/qcom/opensource/wlan/prima"/>
+  <project name="AtlasM/CodeAurora89x6/platform/vendor/qcom-opensource/wlan/utils/sigma-dut" path="LINUX/android/vendor/qcom/opensource/wlan/utils/sigma-dut"/>
+  <project name="AtlasM/CodeAurora89x6/platform/vendor/qcom/tellurium_32" path="LINUX/android/device/qcom/msm8952_32"/>
+  <project name="AtlasM/CodeAurora89x6/platform/vendor/qcom/tellurium_64" path="LINUX/android/device/qcom/msm8952_64"/>
+  <project name="AtlasM/CodeAurora89x6/toolchain/binutils" path="LINUX/android/toolchain/binutils"/>
+  <project name="AtlasM/msm8976-la-1-1_amss_standard_oem" path="."/>
+  <project name="AtlasM/Qualcomm/msm8976_adsp_proc" path="adsp_proc"/>
+  <project name="AtlasM/Qualcomm/msm8976_boot_images" path="boot_images"/>
+  <project name="AtlasM/Qualcomm/msm8976_common" path="common"/>
+  <project name="AtlasM/Qualcomm/msm8976_cpe_proc" path="cpe_proc"/>
+  <project name="AtlasM/Qualcomm/msm8976_modem_proc" path="modem_proc"/>
+  <project name="AtlasM/Qualcomm/msm8976_rpm_proc" path="rpm_proc"/>
+  <project name="AtlasM/Qualcomm/msm8976_trustzone_images" path="trustzone_images"/>
+  <project name="AtlasM/Qualcomm/msm8976_wcnss_proc" path="wcnss_proc"/>
+  <project name="AtlasM/Qualcomm/msm8976_proprietary" path="LINUX/android/vendor/qcom/proprietary"/>
+
+
+  <!-- Projects from symbol Start-->
+  <project name="AtlasN/CodeAurora8976/device/symbol/falcon" path="LINUX/android/device/symbol/falcon"/>
+  <project name="AtlasN/CodeAurora8976/device/symbol/common" path="LINUX/android/device/symbol/common"/>
+  <project name="AtlasN/CodeAurora8976/device/symbol/valueadds" path="LINUX/android/device/symbol/valueadds"/>
+  <project name="AtlasN/buildscripts" path="buildscripts"/>
+  <!-- Projects from symbol End-->
+
+  <!-- Projects from MXMs Start-->
+    <project name="public_mx/mxms_product_rel" path="LINUX/android/device/symbol/valueadds/MXMs" revision="tut_internal_pi2.17" />
+  <!-- Projects from MXMs End-->
+
+  <!-- Projects from DW Start-->
+    <project name="public_tut/tut_datawedge" path="LINUX/android/device/symbol/valueadds/DataWedge" revision="tut_internal_pi2.17" />
+  <!-- Projects from DW End-->
+
+  <!-- Projects from EMDKA Start-->
+    <project name="public_tut/tut_emdka" path="LINUX/android/device/symbol/valueadds/EMDK" revision="tut_internal_pi2.17" />
+  <!-- Projects from EMDKA End-->
+
+  <!-- Projects from StageNow Start-->
+    <project name="public_tut/tut_stagenow" path="LINUX/android/device/symbol/valueadds/StageNow" revision="tut_internal_pi2.17" />
+  <!-- Projects from StageNow End-->
+
+  <!-- Projects from StageNow Start-->
+    <project name="public_tut/tut_fileexplorer" path="LINUX/android/device/symbol/valueadds/FileXp" revision="tut_internal_pi2.17" />
+  <!-- Projects from StageNow End-->
+  <!-- Projects from SimulScan Start-->
+    <project name="public_dpx/SimulScanEngineering" path="LINUX/android/device/symbol/valueadds/simulscan" revision="master" />
+  <!-- Projects from Simulscan End-->
+</manifest>
