@@ -66,7 +66,7 @@ def runGitstats(pathsArr):
 	output_dir=sys.argv[2]
 	for path in pathsArr:
 		if gitDirectoryExists(path):
-			os.system("./gitstats "+path+" "+output_dir)
+			os.system("./gitstats "+os.path.join("/home/gschultz/8956n/.repo/projects",path)+" "+output_dir)
 
 	os.system("./gitstats " +path)
 
