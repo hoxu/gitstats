@@ -63,7 +63,11 @@ Project name to show on the generated pages. Default is to use basename of the r
 
 =item start_date
 
-Specify a starting date to pass with --since to git.
+Specify a starting date to pass with --since to git. If end_date is used it will pass --after to git.
+
+=item end_date
+
+Specify a end date to pass with --before to git.
 
 =item style
 
