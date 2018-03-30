@@ -1,13 +1,10 @@
+import logging
 import os
-import platform
 import re
 import subprocess
-import sys
 import time
 
 os.environ['LC_ALL'] = 'C'
-
-ON_LINUX = (platform.system() == 'Linux')
 
 # By default, gnuplot is searched from path, but can be overridden with the
 # environment variable "GNUPLOT"
@@ -16,10 +13,8 @@ if 'GNUPLOT' in os.environ:
     gnuplot_cmd = os.environ['GNUPLOT']
 
 
-def getpipeoutput(cmds, quiet=False):
+def getpipeoutput(cmds):
     start = time.time()
-    if not quiet and ON_LINUX and os.isatty(1):
-        print('>> ' + ' | '.join(cmds), sys.stdout.flush())
     p = subprocess.Popen(cmds[0], stdout=subprocess.PIPE, shell=True)
     processes = [p]
     for x in cmds[1:]:
@@ -29,9 +24,7 @@ def getpipeoutput(cmds, quiet=False):
     for p in processes:
         p.wait()
     end = time.time()
-    if not quiet:
-        if ON_LINUX and os.isatty(1):
-            print(f'\r[{end - start}] >> {" | ".join(cmds)}')
+    logging.info(f'\r[{end - start:.4f}] >> {" | ".join(cmds)}')
     return output.rstrip('\n')
 
 

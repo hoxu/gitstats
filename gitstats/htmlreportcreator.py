@@ -1,5 +1,6 @@
 import datetime
 import glob
+import logging
 import pkg_resources
 import os
 import shutil
@@ -36,7 +37,7 @@ class HTMLReportCreator(ReportCreator):
             if os.path.exists(resource_file):
                 shutil.copyfile(resource_file, os.path.join(path, resource))
             else:
-                print(f'Warning: "{resource}" not found, so not copied')
+                logging.warning(f'"{resource}" not found, so not copied')
 
         f = open(path + "/index.html", 'w')
         format = '%Y-%m-%d %H:%M:%S'
@@ -500,7 +501,7 @@ class HTMLReportCreator(ReportCreator):
         self.createGraphs(path)
 
     def createGraphs(self, path):
-        print('Generating graphs...')
+        logging.info('Generating graphs...')
 
         # hour of day
         f = open(path + '/hour_of_day.plot', 'w')

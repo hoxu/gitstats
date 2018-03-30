@@ -37,6 +37,7 @@ setup(
         'setuptools>=18.0'
     ],
     install_requires=[
+        'multiprocessing_logging'
     ],
 
     extras_require={

@@ -1,4 +1,5 @@
 import datetime
+import logging
 import os
 import pickle
 import time
@@ -81,7 +82,7 @@ class DataCollector:
     def loadCache(self, cachefile):
         if not os.path.exists(cachefile):
             return
-        print('Loading cache...')
+        logging.info('Loading cache...')
         f = open(cachefile, 'rb')
         try:
             self.cache = pickle.loads(zlib.decompress(f.read()))
@@ -143,7 +144,7 @@ class DataCollector:
     ##
     # Save cacheable data
     def saveCache(self, cachefile):
-        print('Saving cache...')
+        logging.info('Saving cache...')
         tempfile = cachefile + '.tmp'
         f = open(tempfile, 'wb')
         # pickle.dump(self.cache, f)

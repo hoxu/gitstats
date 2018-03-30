@@ -1,4 +1,5 @@
 import datetime
+import logging
 import re
 import os
 
@@ -209,7 +210,7 @@ class GitDataCollector(DataCollector):
             try:
                 self.files_by_stamp[int(stamp)] = int(files)
             except ValueError:
-                print(f'Warning: failed to parse line "{line}"')
+                logging.warning(f'Failed to parse line "{line}"')
 
         # extensions and size of files
         lines = getpipeoutput(['git ls-tree -r -l -z %s' % getcommitrange(self.conf, 'HEAD', end_only=True)]).split('\000')
@@ -298,9 +299,9 @@ class GitDataCollector(DataCollector):
 
                         files, inserted, deleted = 0, 0, 0
                     except ValueError:
-                        print(f'Warning: unexpected line "{line}')
+                        logging.warning(f'unexpected line "{line}')
                 else:
-                    print(f'Warning: unexpected line "{line}')
+                    logging.warning(f'unexpected line "{line}')
             else:
                 numbers = getstatsummarycounts(line)
 
@@ -312,7 +313,7 @@ class GitDataCollector(DataCollector):
                     self.total_lines_removed += deleted
 
                 else:
-                    print(f'Warning: failed to handle line "{line}"')
+                    logging.warning(f'Failed to handle line "{line}"')
                     (files, inserted, deleted) = (0, 0, 0)
             # self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted }
         self.total_lines += total_lines
@@ -359,16 +360,16 @@ class GitDataCollector(DataCollector):
                         self.changes_by_date_by_author[stamp][author]['commits'] = self.authors[author]['commits']
                         files, inserted, deleted = 0, 0, 0
                     except ValueError:
-                        print(f'Warning: unexpected line "{line}')
+                        logging.warning(f'unexpected line "{line}')
                 else:
-                    print(f'Warning: unexpected line "{line}')
+                    logging.warning(f'unexpected line "{line}')
             else:
                 numbers = getstatsummarycounts(line)
 
                 if len(numbers) == 3:
                     (files, inserted, deleted) = map(lambda el: int(el), numbers)
                 else:
-                    print(f'Warning: failed to handle line "{line}"')
+                    logging.warning(f'Failed to handle line "{line}"')
                     (files, inserted, deleted) = (0, 0, 0)
 
     def refine(self):
