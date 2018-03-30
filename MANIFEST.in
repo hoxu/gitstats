@@ -1,0 +1,3 @@
+include versioneer.py
+include gitstats/_version.py
+include gitstats/resources/*

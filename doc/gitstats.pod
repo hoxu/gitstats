@@ -103,7 +103,7 @@ A: Use git .mailmap feature described in B<MAPPING AUTHORS> of L<git-shortlog(1)
 
 B<gitstats> was written by Heikki Hokkanen and others.
 
-See the git repository at https://github.com/hoxu/gitstats for an up-to-date full list of contributors.
+See the git repository at https://github.com/rappdw/gitstats for an up-to-date full list of contributors.
 
 =head1 WWW
 
