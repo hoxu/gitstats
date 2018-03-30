@@ -52,7 +52,7 @@ class HTMLReportCreator(ReportCreator):
         f.write('<dt>Generated</dt><dd>%s (in %d seconds)</dd>' % (
             datetime.datetime.now().strftime(format), time.time() - data.getStampCreated()))
         f.write(
-            '<dt>Generator</dt><dd><a href="https://github.com/hoxu/gitstats">GitStats</a> (version %s), %s, %s</dd>' % (
+            '<dt>Generator</dt><dd><a href="https://github.com/rappdw/gitstats">GitStats</a> (version %s), %s, %s</dd>' % (
                 getversion(), getgitversion(), getgnuplotversion()))
         f.write('<dt>Report Period</dt><dd>%s to %s</dd>' % (
             data.getFirstCommitDate().strftime(format), data.getLastCommitDate().strftime(format)))
