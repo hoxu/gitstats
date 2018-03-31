@@ -26,6 +26,11 @@ class GitDataCollector(DataCollector):
         self.get_loc_info()
         self.get_author_info()
 
+    def xlate(self, name):
+        if name in self.conf['name_xlate']:
+            return self.conf['name_xlate'][name]
+        return name
+
     def get_author_info(self):
         # Per-author statistics
         # defined for stamp, author only if author commited at this timestamp.
@@ -51,6 +56,7 @@ class GitDataCollector(DataCollector):
                     try:
                         oldstamp = stamp
                         (stamp, author) = (int(line[:pos]), line[pos + 1:])
+                        author = self.xlate(author)
                         if oldstamp > stamp:
                             # clock skew, keep old timestamp to avoid having ugly graph
                             stamp = oldstamp
@@ -202,7 +208,7 @@ class GitDataCollector(DataCollector):
                 stamp = 0
             timezone = parts[3]
             author, mail = parts[4].split('<', 1)
-            author = author.rstrip()
+            author = self.xlate(author.rstrip())
             mail = mail.rstrip('>')
             domain = '?'
             if mail.find('@') != -1:
@@ -254,6 +260,7 @@ class GitDataCollector(DataCollector):
             # author stats
             if author not in self.authors:
                 self.authors[author] = Author()
+            self.authors[author].activity_by_day_and_hour[day][hour] += 1
             # commits, note again that commits may be in any date order because of cherry-picking and patches
             if not self.authors[author].last_commit_stamp:
                 self.authors[author].last_commit_stamp = stamp
@@ -395,6 +402,11 @@ class GitDataCollector(DataCollector):
             a.date_first = date_first.strftime('%Y-%m-%d')
             a.date_last = date_last.strftime('%Y-%m-%d')
             a.timedelta = delta
+            for day in range(6):
+                for hour in range(24):
+                    if day > 4 or hour < 8 or hour > 17:
+                        a.extra_effort += a.activity_by_day_and_hour[day][hour]
+            a.extra_frac = (100 * float(a.extra_effort)) / a.commits
 
     def getActiveDays(self):
         return self.active_days
@@ -435,7 +447,9 @@ class GitDataCollector(DataCollector):
         return self.revToDate('tags/' + tag)
 
     def getTotalAuthors(self):
-        return self.total_authors
+        # because we are equating names (see name_xlate), the total authors will be the number of
+        # elements in the authors dictionary rather than the count from the git log
+        return len(self.authors)
 
     def getTotalCommits(self):
         return self.total_commits

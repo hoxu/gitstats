@@ -28,7 +28,12 @@ conf = {
     'project_name': '',
     'processes': 8,
     'start_date': '',
-    'logging': logging.INFO
+    'logging': logging.INFO,
+    'name_xlate': {
+        'lmonson': 'Lynn Monson',
+        'DallanQ': 'Dallan Quass',
+        'Daniel Rapp': 'Dan Rapp'
+    }
 }
 
 class GitStats:
