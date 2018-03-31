@@ -9,6 +9,8 @@ import time
 
 import multiprocessing_logging
 
+from collections import defaultdict
+
 from .gitdatacollector import GitDataCollector
 from .htmlreportcreator import HTMLReportCreator
 from .miscfuncs import getgnuplotversion
@@ -29,11 +31,7 @@ conf = {
     'processes': 8,
     'start_date': '',
     'logging': logging.INFO,
-    'name_xlate': {
-        'lmonson': 'Lynn Monson',
-        'DallanQ': 'Dallan Quass',
-        'Daniel Rapp': 'Dan Rapp'
-    }
+    'name_xlate': defaultdict(dict)
 }
 
 class GitStats:
@@ -43,6 +41,7 @@ class GitStats:
 
     Options:
     -c key=value     Override configuration value
+    -n key=value     Define author name equivalency (key will treated the same as value)
 
     Default config values:
     {conf}
@@ -51,7 +50,7 @@ class GitStats:
     """)
 
     def run(self):
-        optlist, args = getopt.getopt(sys.argv[1:], 'hc:', ["help"])
+        optlist, args = getopt.getopt(sys.argv[1:], 'hc:n:', ["help"])
         for o, v in optlist:
             if o == '-c':
                 key, value = v.split('=', 1)
@@ -64,6 +63,10 @@ class GitStats:
             elif o in ('-h', '--help'):
                 self._usage()
                 sys.exit()
+            elif o == '-n':
+                key, value = v.split('=', 1)
+                conf['name_xlate'][key] = value
+
 
         if len(args) < 2:
             self._usage()
