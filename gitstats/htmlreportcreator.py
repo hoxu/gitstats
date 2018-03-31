@@ -282,9 +282,9 @@ class HTMLReportCreator(ReportCreator):
             info = data.getAuthorInfo(author)
             f.write(
                 '<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td></tr>' % (
-                    author, info['commits'], info['commits_frac'], info['lines_added'], info['lines_removed'],
-                    info['date_first'], info['date_last'], info['timedelta'], len(info['active_days']),
-                    info['place_by_commits']))
+                    author, info.commits, info.commits_frac, info.lines_added, info.lines_removed,
+                    info.date_first, info.date_last, info.timedelta, len(info.active_days),
+                    info.place_by_commits))
         f.write('</table>')
 
         allauthors = data.getAuthors()
@@ -325,8 +325,8 @@ class HTMLReportCreator(ReportCreator):
             fgc.write('%d' % stamp)
             for author in self.authors_to_plot:
                 if author in data.changes_by_date_by_author[stamp].keys():
-                    lines_by_authors[author] = data.changes_by_date_by_author[stamp][author]['lines_added']
-                    commits_by_authors[author] = data.changes_by_date_by_author[stamp][author]['commits']
+                    lines_by_authors[author] = data.changes_by_date_by_author[stamp][author].lines_added
+                    commits_by_authors[author] = data.changes_by_date_by_author[stamp][author].commits
                 fgl.write(' %d' % lines_by_authors[author])
                 fgc.write(' %d' % commits_by_authors[author])
             fgl.write('\n')

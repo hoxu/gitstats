@@ -5,6 +5,9 @@ import pickle
 import time
 import zlib
 
+from typing import Dict
+from gitstats.data.author import Author
+
 
 class DataCollector:
     """Manages data collection from a revision control repository."""
@@ -23,7 +26,7 @@ class DataCollector:
         self.activity_by_year_week = {}  # yy_wNN -> commits
         self.activity_by_year_week_peak = 0
 
-        self.authors = {}  # name -> {commits, first_commit_stamp, last_commit_stamp, last_active_day, active_days, lines_added, lines_removed}
+        self.authors: Dict[Author] = {}  # name -> Author
 
         self.total_commits = 0
         self.total_files = 0

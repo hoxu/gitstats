@@ -104,8 +104,9 @@ class GitStats:
 
             os.chdir(prevdir)
 
-            logging.info('Refining data...')
         data.saveCache(cachefile)
+
+        logging.info('Refining data...')
         data.refine()
 
         os.chdir(rundir)
