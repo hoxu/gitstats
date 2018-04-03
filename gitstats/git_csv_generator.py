@@ -120,6 +120,11 @@ class GitCsvGenerator():
 def gen_csv():
     conf, paths, outputpath = cli.get_cli()
 
+    for path in paths:
+        if not os.path.isdir(path):
+            logging.fatal(f'Input path {path} does not exist')
+            sys.exit(1)
+
     logging.basicConfig(level=conf['logging'], format='%(message)s')
     multiprocessing_logging.install_mp_handler()
     try:

@@ -27,34 +27,37 @@ def gen_revision_data(conf, row_processor):
         ['git rev-list --pretty=format:"%%T %%H %%at %%ai %%aN <%%aE>" %s' % getlogrange(conf, 'HEAD'),
          'grep -v ^commit']).split('\n')
     for line in lines:
-        parts = line.split(' ', 6)
-        tree_hash = parts[0]
-        sha = parts[1]
-        try:
-            stamp = int(parts[2])
-        except ValueError:
-            stamp = 0
-        timezone = parts[5]
-        author, mail = parts[6].split('<', 1)
-        author = author.strip()
-        mail = mail.rstrip('>')
-        domain = '?'
-        if mail.find('@') != -1:
-            domain = mail.rsplit('@', 1)[1]
-            domain.rstrip('>')
-        revisions[tree_hash] = Revision(sha, stamp, timezone, author, mail, domain)
+        line = line.strip()
+        if line:
+            parts = line.split(' ', 6)
+            tree_hash = parts[0]
+            sha = parts[1]
+            try:
+                stamp = int(parts[2])
+            except ValueError:
+                stamp = 0
+            timezone = parts[5]
+            author, mail = parts[6].split('<', 1)
+            author = author.strip()
+            mail = mail.rstrip('>')
+            domain = '?'
+            if mail.find('@') != -1:
+                domain = mail.rsplit('@', 1)[1]
+                domain.rstrip('>')
+            revisions[tree_hash] = Revision(sha, stamp, timezone, author, mail, domain)
 
-    # todo: consider putting in a cache for this. There was one in the original code
-    # DBG: git ls-tree -r --name-only "ceb3165b51ae0680724fd71e16a5ff836a0de41e"', 'wc -l'
-    pool = Pool(processes=conf['processes'])
-    rev_count = pool.map(getnumoffilesfromrev, revisions.keys())
-    pool.terminate()
-    pool.join()
-    # Update cache with new revisions and append then to general list
-    for (rev, count) in rev_count:
-        revision = revisions[rev]
-        revision.file_count = count
-        row_processor(revision)
+    if revisions:
+        # todo: consider putting in a cache for this. There was one in the original code
+        # DBG: git ls-tree -r --name-only "ceb3165b51ae0680724fd71e16a5ff836a0de41e"', 'wc -l'
+        pool = Pool(processes=conf['processes'])
+        rev_count = pool.map(getnumoffilesfromrev, revisions.keys())
+        pool.terminate()
+        pool.join()
+        # Update cache with new revisions and append then to general list
+        for (rev, count) in rev_count:
+            revision = revisions[rev]
+            revision.file_count = count
+            row_processor(revision)
 
     return len(lines)
 
