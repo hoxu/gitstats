@@ -7,6 +7,8 @@ from gitstats import cli, cd
 from gitstats.miscfuncs import getlogrange, getpipeoutput, getstatsummarycounts
 from gitstats.data import LocByDate
 
+# TODO: the author isn't working here because it's the commit that merges to master, so we
+# TODO: probably need to back up a commit. Each commit here represents a merged PR
 
 def gen_loc_data(conf, row_processor):
     '''
@@ -74,7 +76,7 @@ if __name__ == "__main__":
         for path in paths:
             repo_name = os.path.split(path)[1]
             with (cd.cd(path)):
-
-                gen_loc_data(
-                    conf,
-                    lambda row: writer.writerow([repo_name, row.hash, row.stamp, row.file_count, row.lines_inserted, row.lines_deleted, row.total_lines]))
+                def row_processor(row: LocByDate):
+                    writer.writerow([repo_name, row.hash, row.stamp, row.file_count, row.lines_inserted,
+                                     row.lines_deleted, row.total_lines])
+                gen_loc_data(conf, row_processor)

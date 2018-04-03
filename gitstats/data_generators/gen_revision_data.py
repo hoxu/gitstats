@@ -68,8 +68,7 @@ if __name__ == "__main__":
         for path in paths:
             repo_name = os.path.split(path)[1]
             with (cd.cd(path)):
-
-                gen_revision_data(
-                    conf,
-                    lambda row: writer.writerow([repo_name, row.sha, row.stamp, row.timezone, row.author, row.email,
-                                                 row.domain, row.file_count]))
+                def row_processor(row: Revision):
+                    writer.writerow([repo_name, row.hash, row.stamp, row.timezone, row.author, row.email,
+                                     row.domain, row.file_count])
+                gen_revision_data(conf, row_processor)

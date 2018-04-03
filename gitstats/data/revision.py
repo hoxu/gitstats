@@ -6,7 +6,7 @@ from typing import Dict
 
 @dataclass
 class Revision:
-    sha: str
+    hash: str
     stamp: int
     timezone: int = 0
     author: str = ''

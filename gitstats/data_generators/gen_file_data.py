@@ -59,7 +59,6 @@ if __name__ == "__main__":
         for path in paths:
             repo_name = os.path.split(path)[1]
             with (cd.cd(path)):
-
-                gen_file_data(
-                    conf,
-                    lambda row: writer.writerow([repo_name, row.full_path, row.ext, row.size, row.lines]))
+                def row_processor(row: File):
+                    writer.writerow([repo_name, row.full_path, row.ext, row.size, row.lines])
+                gen_file_data(conf, row_processor)

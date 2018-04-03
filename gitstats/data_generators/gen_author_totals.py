@@ -42,6 +42,6 @@ if __name__ == "__main__":
         for path in paths:
             repo_name = os.path.split(path)[1]
             with (cd.cd(path)):
-                gen_author_totals_data(
-                    conf,
-                    lambda row: writer.writerow([repo_name, row.author, row.total_commits]))
+                def row_processor(row: AuthorTotals):
+                    writer.writerow([repo_name, row.author, row.total_commits])
+                gen_author_totals_data(conf, row_processor)

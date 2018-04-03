@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 @dataclass
 class AuthorRow:
-    sha: str
+    hash: str
     stamp: int
     author: str
     files_modified: int

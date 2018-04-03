@@ -81,8 +81,7 @@ if __name__ == "__main__":
         for path in paths:
             repo_name = os.path.split(path)[1]
             with (cd.cd(path)):
-
-                gen_author_data(
-                    conf,
-                    lambda row: writer.writerow([repo_name, row.sha, row.stamp, row.author, row.files_modified,
-                                                 row.lines_inserted, row.lines_deleted]))
+                def row_processor(row: AuthorRow):
+                    writer.writerow([repo_name, row.hash, row.stamp, row.author, row.files_modified,
+                                     row.lines_inserted, row.lines_deleted])
+                gen_author_data(conf, row_processor)

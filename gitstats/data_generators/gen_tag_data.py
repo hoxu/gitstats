@@ -66,9 +66,7 @@ if __name__ == "__main__":
         for path in paths:
             repo_name = os.path.split(path)[1]
             with (cd.cd(path)):
-
-                def process_row(row):
+                def row_processor(row: Tag):
                     for author, commits in row.authors.items():
                         writer.writerow([repo_name, row.hash, row.stamp, row.commits, author, commits])
-
-                gen_tag_data(conf, process_row)
+                gen_tag_data(conf, row_processor)

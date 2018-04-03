@@ -25,7 +25,6 @@ Usage: gitstats [options] <gitpath..> <outputpath>
 
 Options:
 -c key=value     Override configuration value
--n key=value     Define author name equivalency (key will treated the same as value)
 
 Default config values:
 {conf}

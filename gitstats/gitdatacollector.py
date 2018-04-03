@@ -15,7 +15,6 @@ class GitDataCollector(DataCollector):
         
     def collect(self, directory):
         super(GitDataCollector, self).collect(directory)
-
         self.total_authors += self.get_total_authors()
         self.get_tags()
         self.get_revision_info()
