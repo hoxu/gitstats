@@ -5,6 +5,7 @@ import pickle
 import time
 import zlib
 
+from collections import defaultdict
 from typing import Dict
 from gitstats.data.author import Author
 
@@ -26,7 +27,7 @@ class DataCollector:
         self.activity_by_year_week = {}  # yy_wNN -> commits
         self.activity_by_year_week_peak = 0
 
-        self.authors: Dict[Author] = {}  # name -> Author
+        self.authors: Dict[Author] = defaultdict(lambda: Author())
 
         self.total_commits = 0
         self.total_files = 0

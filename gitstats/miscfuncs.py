@@ -80,19 +80,20 @@ def getgnuplotversion():
     return getpipeoutput(['%s --version' % gnuplot_cmd]).split('\n')[0]
 
 
-def getnumoffilesfromrev(time_rev):
+def getnumoffilesfromrev(tree_hash):
     """
     Get number of files changed in commit
     """
-    time_portion, rev = time_rev
-    return (int(time_portion), rev, int(getpipeoutput(['git ls-tree -r --name-only "%s"' % rev, 'wc -l']).split('\n')[0]))
+    # DBG: git ls-tree -r --name-only "ceb3165b51ae0680724fd71e16a5ff836a0de41e"' | 'wc -l'
+    return (tree_hash, int(getpipeoutput(['git ls-tree -r --name-only "%s"' % tree_hash, 'wc -l']).split('\n')[0]))
 
 
-def getnumoflinesinblob(ext_blob):
+def getnumoflinesinblob(blob_id):
     """
     Get number of lines in blob
     """
-    ext, blob_id = ext_blob
-    return ext, blob_id, int(getpipeoutput(['git cat-file blob %s' % blob_id, 'wc -l']).split()[0])
+
+    # DBG: git cat-file blob e4f17a621893811250be96c8ef9c37b5e97a1df7', 'wc -l'
+    return blob_id, int(getpipeoutput(['git cat-file blob %s' % blob_id, 'wc -l']).split()[0])
 
 
