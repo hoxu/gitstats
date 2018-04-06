@@ -17,7 +17,7 @@ def gen_loc_data(conf, row_processor):
 
     :param conf: configuration (mostly used for date limits)
     :param row_processor: function to receive the callback
-    :return: total lines in repo
+    :return: (total_files, total_lines) in repo
     '''
 
     # line statistics
@@ -64,7 +64,20 @@ def gen_loc_data(conf, row_processor):
             else:
                 logging.warning(f'Failed to handle line "{line}"')
                 (files, inserted, deleted) = (0, 0, 0)
-    return total_lines
+
+    totals = getpipeoutput(
+        ['git diff --shortstat `git hash-object -t tree /dev/null`']
+    )
+    total_files, remainder = totals.strip().split(' file')
+    total_lines = remainder.split('hanged, ')[1].split(' insert')[0]
+    try:
+        total_files = int(total_files)
+        total_lines = int(total_lines)
+    except ValueError:
+        total_lines = 0
+        total_files = 0
+        logging.warning(f"Unable to parse results: {totals}")
+    return total_files, total_lines
 
 
 if __name__ == "__main__":

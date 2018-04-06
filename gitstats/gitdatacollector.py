@@ -62,7 +62,7 @@ class GitDataCollector(DataCollector):
             self.total_lines_added += row.lines_inserted
             self.total_lines_removed += row.lines_deleted
 
-        self.total_lines += gen_loc_data(self.conf, row_processor)
+        self.total_lines += gen_loc_data(self.conf, row_processor)[1]
 
     def get_file_info(self):
         # extensions and size of files

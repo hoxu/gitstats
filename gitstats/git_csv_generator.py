@@ -43,6 +43,10 @@ class _FileHandles:
         self.loc_info_writer.writerow(['Repo', 'CommitHash', 'TimeStamp', 'FileCount', 'LinesInserted', 'LinesDeleted',
                                        'TotalLines'])
 
+        self.repo_info = open(os.path.join(output_dir, 'repo.csv'), 'w', encoding='utf8')
+        self.repo_info_writer = csv.writer(self.repo_info)
+        self.repo_info_writer.writerow(['Repo', 'TotalFiles', 'TotalLines'])
+
     def close(self):
         self.author_info.close()
         self.author_totals_info.close()
@@ -50,6 +54,7 @@ class _FileHandles:
         self.revision_info.close()
         self.files_info.close()
         self.loc_info.close()
+        self.repo_info.close()
 
 
 class GitCsvGenerator():
@@ -108,7 +113,8 @@ class GitCsvGenerator():
         def row_processor(row: LocByDate):
             self.files.loc_info_writer.writerow([self.projectname, row.hash, row.stamp, row.file_count,
                                                  row.lines_inserted, row.lines_deleted, row.total_lines])
-        gen_loc_data(self.conf, row_processor)
+        total_files, total_lines = gen_loc_data(self.conf, row_processor)
+        self.files.repo_info_writer.writerow([self.projectname, total_files, total_lines])
 
     def get_author_info(self):
         logging.info(f"Getting author info for {self.projectname}")
