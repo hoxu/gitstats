@@ -6,9 +6,9 @@ import sys
 import multiprocessing_logging
 
 from gitstats import cli
-from gitstats.data import AuthorTotals, AuthorRow, File, LocByDate, Revision, Tag
+from gitstats.data import AuthorTotals, AuthorRow, File, LocByDate, PullRequest, Revision, Tag
 from gitstats.data_generators import gen_author_data, gen_author_totals_data, gen_tag_data, gen_revision_data, \
-    gen_file_data, gen_loc_data
+    gen_file_data, gen_loc_data, gen_pr_data
 
 exectime_internal = 0.0
 exectime_external = 0.0
@@ -47,6 +47,10 @@ class _FileHandles:
         self.repo_info_writer = csv.writer(self.repo_info)
         self.repo_info_writer.writerow(['Repo', 'TotalFiles', 'TotalLines'])
 
+        self.prs_info = open(os.path.join(output_dir, 'prs.csv'), 'w', encoding='utf8')
+        self.prs_info_writer = csv.writer(self.prs_info)
+        self.prs_info_writer.writerow(['Repo', 'CommitHash', 'TimeStamp', 'ParentHashMaster', 'ParentHashBranch', 'PrMergeDuration'])
+
     def close(self):
         self.author_info.close()
         self.author_totals_info.close()
@@ -55,6 +59,7 @@ class _FileHandles:
         self.files_info.close()
         self.loc_info.close()
         self.repo_info.close()
+        self.prs_info.close()
 
 
 class GitCsvGenerator():
@@ -81,6 +86,7 @@ class GitCsvGenerator():
         self.get_file_info()
         self.get_loc_info()
         self.get_author_info()
+        self.get_pr_info()
 
     def get_total_authors(self):
         logging.info(f"Getting author totals for {self.projectname}")
@@ -122,6 +128,13 @@ class GitCsvGenerator():
             self.files.author_info_writer.writerow([self.projectname, row.hash, row.stamp, row.author,
                                                     row.files_modified, row.lines_inserted, row.lines_deleted])
         gen_author_data(self.conf, row_processor)
+
+    def get_pr_info(self):
+        logging.info(f"Getting pull request info for {self.projectname}")
+        def row_processor(row: PullRequest):
+            self.files.prs_info_writer.writerow([self.projectname, row.hash, row.stamp, row.master_rev,
+                                                    row.branch_rev, row.duration.total_seconds()])
+        gen_pr_data(self.conf, row_processor)
 
 def gen_csv():
     conf, paths, outputpath = cli.get_cli()

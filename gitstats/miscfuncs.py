@@ -1,3 +1,4 @@
+import datetime
 import logging
 import os
 import re
@@ -95,5 +96,16 @@ def getnumoflinesinblob(blob_id):
 
     # DBG: git cat-file blob e4f17a621893811250be96c8ef9c37b5e97a1df7', 'wc -l'
     return blob_id, int(getpipeoutput(['git cat-file blob %s' % blob_id, 'wc -l']).split()[0])
+
+def gettimedelta(sha_tuple):
+    """
+    Get the time delta between the time stamp passed in the tuple ([1]) and the sha of the second rev in the tuple ([2])
+    return the result, keyed by the sha of the first rev in the tuple ([0])
+    """
+    # DBG:  git log -n 1 --format=%at "ceb3165b51ae0680724fd71e16a5ff836a0de41e"'
+    timestamp_branch = int(getpipeoutput([' git log -n 1 --format=%%at "%s"' % sha_tuple[2]]).split('\n')[0])
+    delta = datetime.datetime.utcfromtimestamp(sha_tuple[1]) - datetime.datetime.utcfromtimestamp(timestamp_branch)
+
+    return (sha_tuple[0], delta)
 
 
