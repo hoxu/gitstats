@@ -10,7 +10,7 @@ from gitstats.data import LocByDate
 # TODO: the author isn't working here because it's the commit that merges to master, so we
 # TODO: probably need to back up a commit. Each commit here represents a merged PR
 
-def gen_loc_data(conf, row_processor):
+def gen_loc_data(conf, row_processor, ignore_files=''):
     '''
     Given a configuration, pull authorship information. For
     each author, callback to the row_processor passing an AuthorRow
@@ -32,7 +32,7 @@ def gen_loc_data(conf, row_processor):
 
     # DBG: git log --shortstat --first-parent -m --pretty=format:"%at %aN" --since="2017-10-01" "HEAD"'
     lines = getpipeoutput(
-        ['git log --shortstat %s --pretty=format:"%%H %%at %%aN" %s' % (extra, getlogrange(conf, 'HEAD'))]).split('\n')
+        ['git log --shortstat %s --pretty=format:"%%H %%at %%aN" %s %s' % (extra, getlogrange(conf, 'HEAD'), ignore_files)]).split('\n')
     lines.reverse()
     files = 0
     inserted = 0
@@ -66,7 +66,7 @@ def gen_loc_data(conf, row_processor):
                 (files, inserted, deleted) = (0, 0, 0)
 
     totals = getpipeoutput(
-        ['git diff --shortstat `git hash-object -t tree /dev/null`']
+        ['git diff --shortstat `git hash-object -t tree /dev/null` %s' % (ignore_files)]
     )
     total_files, remainder = totals.strip().split(' file')
     total_lines = remainder.split('hanged, ')[1].split(' insert')[0]

@@ -8,7 +8,7 @@ from gitstats.miscfuncs import getlogrange, getpipeoutput, getstatsummarycounts
 from gitstats.data import AuthorRow
 
 
-def gen_author_data(conf, row_processor):
+def gen_author_data(conf, row_processor, ignore_files=''):
     '''
     Given a configuration, pull authorship information. For
     each author, callback to the row_processor passing an AuthorRow
@@ -29,8 +29,8 @@ def gen_author_data(conf, row_processor):
     # The first line(s) is the merge to master or other branch
     # The last line is the commit on the branch
     lines = getpipeoutput(
-        ['git log --shortstat --date-order --pretty=format:"%%H %%at %%aN" %s' % (
-            getlogrange(conf, 'HEAD'))]).split('\n')
+        ['git log --shortstat --date-order --pretty=format:"%%H %%at %%aN" %s %s' % (
+            getlogrange(conf, 'HEAD'), ignore_files)]).split('\n')
     lines.reverse()
 
     files = 0

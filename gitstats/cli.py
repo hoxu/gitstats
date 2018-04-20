@@ -16,6 +16,7 @@ conf = {
     'processes': 8,
     'start_date': '',
     'logging': logging.INFO,
+    'resrouce_file_pattern': '**/resources/**/*',
 }
 
 

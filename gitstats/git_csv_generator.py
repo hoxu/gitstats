@@ -1,9 +1,11 @@
 import csv
+import glob
 import logging
 import os
 import sys
 
 import multiprocessing_logging
+from gitstats.cd import cd
 
 from gitstats import cli
 from gitstats.data import AuthorTotals, AuthorRow, File, LocByDate, PullRequest, Revision, Tag
@@ -36,7 +38,7 @@ class _FileHandles:
 
         self.files_info = open(os.path.join(output_dir, 'files.csv'), 'w', encoding='utf8')
         self.files_info_writer = csv.writer(self.files_info)
-        self.files_info_writer.writerow(['Repo', 'File', 'Ext', 'Size', 'Lines'])
+        self.files_info_writer.writerow(['Repo', 'File', 'Ext', 'Size', 'Lines', 'Resource'])
 
         self.loc_info = open(os.path.join(output_dir, 'loc.csv'), 'w', encoding='utf8')
         self.loc_info_writer = csv.writer(self.loc_info)
@@ -61,12 +63,13 @@ class _FileHandles:
         self.repo_info.close()
         self.prs_info.close()
 
-
 class GitCsvGenerator():
     def __init__(self, conf, output_dir):
         self.conf = conf
         self.files: _FileHandles = None
         self.output_dir = output_dir
+        self.resource_files = []
+        self.igore_files = ''
 
     def __enter__(self):
         self.files = _FileHandles(self.output_dir)
@@ -75,18 +78,26 @@ class GitCsvGenerator():
         self.files.close()
 
     def collect(self, dir):
-        if len(self.conf['project_name']) == 0:
-            self.projectname = os.path.basename(os.path.abspath(dir))
-        else:
-            self.projectname = self.conf['project_name']
 
-        self.get_total_authors()
-        self.get_tags()
-        self.get_revision_info()
-        self.get_file_info()
-        self.get_loc_info()
-        self.get_author_info()
-        self.get_pr_info()
+        with cd(dir):
+            self.resource_files = [file for file in glob.glob(self.conf['resrouce_file_pattern'], recursive=True) if os.path.isfile(file)]
+
+            if self.resource_files:
+                self.ignore_files = '" "'.join([f":(exclude){file}" for file in self.resource_files])
+                self.ignore_files = f'-- "{self.ignore_files}"'
+
+            if len(self.conf['project_name']) == 0:
+                self.projectname = os.path.basename(os.path.abspath(dir))
+            else:
+                self.projectname = self.conf['project_name']
+
+            self.get_total_authors()
+            self.get_tags()
+            self.get_revision_info()
+            self.get_file_info()
+            self.get_loc_info()
+            self.get_author_info()
+            self.get_pr_info()
 
     def get_total_authors(self):
         logging.info(f"Getting author totals for {self.projectname}")
@@ -111,7 +122,7 @@ class GitCsvGenerator():
     def get_file_info(self):
         logging.info(f"Getting file info for {self.projectname}")
         def row_processor(row: File):
-            self.files.files_info_writer.writerow([self.projectname, row.full_path, row.ext, row.size, row.lines])
+            self.files.files_info_writer.writerow([self.projectname, row.full_path, row.ext, row.size, row.lines, row.full_path in self.resource_files])
         gen_file_data(self.conf, row_processor)
 
     def get_loc_info(self):
@@ -119,7 +130,7 @@ class GitCsvGenerator():
         def row_processor(row: LocByDate):
             self.files.loc_info_writer.writerow([self.projectname, row.hash, row.stamp, row.file_count,
                                                  row.lines_inserted, row.lines_deleted, row.total_lines])
-        total_files, total_lines = gen_loc_data(self.conf, row_processor)
+        total_files, total_lines = gen_loc_data(self.conf, row_processor, self.ignore_files)
         self.files.repo_info_writer.writerow([self.projectname, total_files, total_lines])
 
     def get_author_info(self):
@@ -127,7 +138,7 @@ class GitCsvGenerator():
         def row_processor(row: AuthorRow):
             self.files.author_info_writer.writerow([self.projectname, row.hash, row.stamp, row.author,
                                                     row.files_modified, row.lines_inserted, row.lines_deleted])
-        gen_author_data(self.conf, row_processor)
+        gen_author_data(self.conf, row_processor, self.ignore_files)
 
     def get_pr_info(self):
         logging.info(f"Getting pull request info for {self.projectname}")
