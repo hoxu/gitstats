@@ -2,7 +2,7 @@ import versioneer
 from setuptools import setup, find_packages
 
 setup(
-    name='gitstats',
+    name='gitstats-dwr',
     version=versioneer.get_version(),
     cmdclass=versioneer.get_cmdclass(),
     description='gitstats',
@@ -56,6 +56,7 @@ setup(
     entry_points={
         'console_scripts': [
             'gitstats = gitstats:main',
+            'gencsvstats = gitstats.git_csv_generator:gen_csv'
         ],
     },
     # entry_points={
