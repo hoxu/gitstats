@@ -56,7 +56,6 @@ setup(
     entry_points={
         'console_scripts': [
             'gitstats = gitstats:main',
-            'gencsvstats = gitstats.git_csv_generator:gen_csv'
         ],
     },
     # entry_points={
