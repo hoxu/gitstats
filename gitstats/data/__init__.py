@@ -6,3 +6,5 @@ from .revision import Revision
 from .file import File
 from .loc_by_date import LocByDate
 from .pr import PullRequest
+from .file_info import FileInfo
+from .revision_graph import RevisionGraph

@@ -1,17 +1,18 @@
 #! /usr/bin/env python3
 import csv
-import glob
 import logging
 import os
 import sys
 
 import multiprocessing_logging
+
+from collections import defaultdict
+
 from gitstats.cd import cd
 
 from gitstats import cli
-from gitstats.data import AuthorTotals, AuthorRow, File, LocByDate, PullRequest, Revision, Tag
-from gitstats.data_generators import gen_author_data, gen_author_totals_data, gen_tag_data, gen_revision_data, \
-    gen_file_data, gen_loc_data, gen_pr_data
+from gitstats.data import PullRequest, Revision
+from gitstats.data_generators import gen_pr_data, gen_revision_graph, gen_complete_file_info
 
 exectime_internal = 0.0
 exectime_external = 0.0
@@ -19,48 +20,39 @@ exectime_external = 0.0
 
 class _FileHandles:
     def __init__(self, output_dir):
-        self.author_info = open(os.path.join(output_dir, 'authors.csv'), 'w', encoding='utf8')
-        self.author_info_writer = csv.writer(self.author_info)
-        self.author_info_writer.writerow(['Repo', 'CommitHash', 'TimeStamp', 'Author', 'FilesChanged', 'LinesInserted',
-                                          'LinesDeleted'])
-
         self.author_totals_info = open(os.path.join(output_dir, 'author_totals.csv'), 'w', encoding='utf8')
         self.author_totals_info_writer = csv.writer(self.author_totals_info)
         self.author_totals_info_writer.writerow(["Repo", "Author", "Commits"])
 
-        self.tag_info = open(os.path.join(output_dir, 'tags.csv'), 'w', encoding='utf8')
-        self.tag_info_writer = csv.writer(self.tag_info)
-        self.tag_info_writer.writerow(["Repo", "CommitHash", "Timestamp", "TotalCommits", "Author", "AuthorCommits"])
-
         self.revision_info = open(os.path.join(output_dir, 'revs.csv'), 'w', encoding='utf8')
         self.revision_info_writer = csv.writer(self.revision_info)
         self.revision_info_writer.writerow(['Repo', 'CommitHash', 'TimeStamp', 'TimeZone', 'Author', 'AuthorEmail',
-                                            'Domain', 'FilesChanged'])
-
-        self.files_info = open(os.path.join(output_dir, 'files.csv'), 'w', encoding='utf8')
-        self.files_info_writer = csv.writer(self.files_info)
-        self.files_info_writer.writerow(['Repo', 'File', 'Ext', 'Size', 'Lines', 'Resource'])
+                                            'Domain'])
 
         self.loc_info = open(os.path.join(output_dir, 'loc.csv'), 'w', encoding='utf8')
         self.loc_info_writer = csv.writer(self.loc_info)
-        self.loc_info_writer.writerow(['Repo', 'CommitHash', 'TimeStamp', 'FileCount', 'LinesInserted', 'LinesDeleted',
-                                       'TotalLines'])
+        self.loc_info_writer.writerow(['repo', 'hash', 'stamp', 'language', 'files', 'lines', 'code', 'comments',
+                                       'blanks'])
+
+        self.loc_delta = open(os.path.join(output_dir, 'loc_delta.csv'), 'w', encoding='utf8')
+        self.loc_delta_writer = csv.writer(self.loc_delta)
+        self.loc_delta_writer.writerow(['repo', 'hash', 'stamp', 'author', 'language', 'files', 'lines', 'code',
+                                        'comments', 'blanks'])
 
         self.repo_info = open(os.path.join(output_dir, 'repo.csv'), 'w', encoding='utf8')
         self.repo_info_writer = csv.writer(self.repo_info)
-        self.repo_info_writer.writerow(['Repo', 'TotalFiles', 'TotalLines'])
+        self.repo_info_writer.writerow(['Repo', 'Language', 'TotalFiles', 'TotalLines', 'TotalCodeLines', 'TotalCommentLlines',
+                                        'TotalBlankLines'])
 
         self.prs_info = open(os.path.join(output_dir, 'prs.csv'), 'w', encoding='utf8')
         self.prs_info_writer = csv.writer(self.prs_info)
         self.prs_info_writer.writerow(['Repo', 'CommitHash', 'TimeStamp', 'ParentHashMaster', 'ParentHashBranch', 'PrMergeDuration'])
 
     def close(self):
-        self.author_info.close()
         self.author_totals_info.close()
-        self.tag_info.close()
         self.revision_info.close()
-        self.files_info.close()
         self.loc_info.close()
+        self.loc_delta.close()
         self.repo_info.close()
         self.prs_info.close()
 
@@ -69,8 +61,7 @@ class GitCsvGenerator():
         self.conf = conf
         self.files: _FileHandles = None
         self.output_dir = output_dir
-        self.resource_files = []
-        self.igore_files = ''
+        self.begin, self.end = cli.get_begin_end_timestamps(conf)
 
     def __enter__(self):
         self.files = _FileHandles(self.output_dir)
@@ -81,72 +72,109 @@ class GitCsvGenerator():
     def collect(self, dir):
 
         with cd(dir):
-            self.resource_files = [file for file in glob.glob(self.conf['resrouce_file_pattern'], recursive=True) if os.path.isfile(file)]
-
-            if self.resource_files:
-                self.ignore_files = '" "'.join([f":(exclude){file}" for file in self.resource_files])
-                self.ignore_files = f'-- "{self.ignore_files}"'
-
             if len(self.conf['project_name']) == 0:
                 self.projectname = os.path.basename(os.path.abspath(dir))
             else:
                 self.projectname = self.conf['project_name']
 
-            self.get_total_authors()
-            self.get_tags()
-            self.get_revision_info()
-            self.get_file_info()
-            self.get_loc_info()
-            self.get_author_info()
-            self.get_pr_info()
+            graph = gen_revision_graph()
+            gen_complete_file_info(graph)
 
-    def get_total_authors(self):
+            self.extract_total_authors(graph)
+            self.extract_pr_info(graph)
+            self.extract_code_info(graph)
+            self.extract_revision_info(graph)
+            # self.get_revision_info(graph)
+            # self.get_tags()
+            # self.get_file_info()
+            # self.get_loc_info()
+            # self.get_author_info()
+
+    def extract_total_authors(self, graph):
         logging.info(f"Getting author totals for {self.projectname}")
-        def row_processor(row: AuthorTotals):
-            self.files.author_totals_info_writer.writerow([self.projectname, row.author, row.total_commits])
-        gen_author_totals_data(self.conf, row_processor)
 
-    def get_tags(self):
-        logging.info(f"Getting tag info for {self.projectname}")
-        def row_processor(row: Tag):
-            for author, commits in row.authors.items():
-                self.files.tag_info_writer.writerow([self.projectname, row.hash, row.stamp, row.commits, author, commits])
-        gen_tag_data(self.conf, row_processor)
+        authors = defaultdict(int)
+        for rev in graph.revisions.values():
+            # don't include merge to master as a commit in counting total author
+            # commits.
+            if rev.stamp >= self.begin and rev.stamp <= self.end and rev.master_pr == 0:
+                authors[rev.author] += 1
 
-    def get_revision_info(self):
-        logging.info(f"Getting rev info for {self.projectname}")
-        def row_processor(row: Revision):
-            self.files.revision_info_writer.writerow([self.projectname, row.hash, row.stamp, row.timezone, row.author,
-                                                      row.email, row.domain, row.file_count])
-        gen_revision_data(self.conf, row_processor)
+        for author, total_commits in authors.items():
+            self.files.author_totals_info_writer.writerow([self.projectname, author, total_commits])
 
-    def get_file_info(self):
-        logging.info(f"Getting file info for {self.projectname}")
-        def row_processor(row: File):
-            self.files.files_info_writer.writerow([self.projectname, row.full_path, row.ext, row.size, row.lines, row.full_path in self.resource_files])
-        gen_file_data(self.conf, row_processor)
-
-    def get_loc_info(self):
-        logging.info(f"Getting LOC info for {self.projectname}")
-        def row_processor(row: LocByDate):
-            self.files.loc_info_writer.writerow([self.projectname, row.hash, row.stamp, row.file_count,
-                                                 row.lines_inserted, row.lines_deleted, row.total_lines])
-        total_files, total_lines = gen_loc_data(self.conf, row_processor, self.ignore_files)
-        self.files.repo_info_writer.writerow([self.projectname, total_files, total_lines])
-
-    def get_author_info(self):
-        logging.info(f"Getting author info for {self.projectname}")
-        def row_processor(row: AuthorRow):
-            self.files.author_info_writer.writerow([self.projectname, row.hash, row.stamp, row.author,
-                                                    row.files_modified, row.lines_inserted, row.lines_deleted])
-        gen_author_data(self.conf, row_processor, self.ignore_files)
-
-    def get_pr_info(self):
+    def extract_pr_info(self, graph):
         logging.info(f"Getting pull request info for {self.projectname}")
         def row_processor(row: PullRequest):
-            self.files.prs_info_writer.writerow([self.projectname, row.hash, row.stamp, row.master_rev,
-                                                    row.branch_rev, row.duration.total_seconds()])
-        gen_pr_data(self.conf, row_processor)
+            if row.stamp >= self.begin and row.stamp <= self.end:
+                self.files.prs_info_writer.writerow([self.projectname, row.hash, row.stamp, row.master_rev,
+                                                        row.branch_rev, row.duration.total_seconds()])
+        gen_pr_data(row_processor, graph)
+
+    def extract_code_info(self, graph):
+        rev_max: Revision = None
+        for rev in graph.master_revs:
+            revision: Revision = graph.revisions[rev]
+            if not rev_max or revision.stamp > rev_max.stamp:
+                rev_max = revision
+            if revision.stamp >= self.begin and revision.stamp <= self.end:
+                for lang, file_info in revision.delta.items():
+                        if file_info.file_count or \
+                                file_info.line_count or \
+                                file_info.code_line_count or \
+                                file_info.comment_line_count or \
+                                file_info.blank_line_count:
+
+                            if revision.branch_parent in graph.revisions:
+                                parent = revision.branch_parent
+                            else:
+                                parent = revision.master_parent
+                            if parent:
+                                self.files.loc_delta_writer.writerow([self.projectname,
+                                                 revision.hash,
+                                                 revision.stamp,
+                                                 graph.revisions[parent].author,
+                                                 lang,
+                                                 file_info.file_count,
+                                                 file_info.line_count,
+                                                 file_info.code_line_count,
+                                                 file_info.comment_line_count,
+                                                 file_info.blank_line_count])
+                for lang, file_info in revision.file_infos.items():
+                        if file_info.file_count or \
+                                file_info.line_count or \
+                                file_info.code_line_count or \
+                                file_info.comment_line_count or \
+                                file_info.blank_line_count:
+                            self.files.loc_info_writer.writerow([self.projectname,
+                                             revision.hash,
+                                             revision.stamp,
+                                             lang,
+                                             file_info.file_count,
+                                             file_info.line_count,
+                                             file_info.code_line_count,
+                                             file_info.comment_line_count,
+                                             file_info.blank_line_count])
+
+        for file_info in rev_max.file_infos.values():
+            self.files.repo_info_writer.writerow([self.projectname,
+                                                  file_info.language,
+                                                  file_info.file_count,
+                                                  file_info.line_count,
+                                                  file_info.code_line_count,
+                                                  file_info.comment_line_count,
+                                                  file_info.blank_line_count])
+
+    def extract_revision_info(self, graph):
+        for revision in graph.revisions.values():
+            if revision.stamp >= self.begin and revision.stamp <= self.end:
+                self.files.revision_info_writer.writerow([self.projectname,
+                                                          revision.hash,
+                                                          revision.stamp,
+                                                          revision.timezone,
+                                                          revision.author,
+                                                          revision.email,
+                                                          revision.domain])
 
 def gen_csv():
     conf, paths, outputpath = cli.get_cli()
