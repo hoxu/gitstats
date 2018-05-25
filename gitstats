@@ -72,7 +72,7 @@ def getpipeoutput(cmds, quiet = False):
 	exectime_external += (end - start)
 	return output.rstrip('\n')
 
-def getlogrange(defaultrange = 'HEAD', end_only = True):
+def getlogrange(defaultrange = 'HEAD', end_only = False):
 	commit_range = getcommitrange(defaultrange, end_only)
 	if len(conf['start_date']) > 0:
 		return '--since="%s" "%s"' % (conf['start_date'], commit_range)
