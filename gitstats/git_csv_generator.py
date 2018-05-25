@@ -31,22 +31,23 @@ class _FileHandles:
 
         self.loc_info = open(os.path.join(output_dir, 'loc.csv'), 'w', encoding='utf8')
         self.loc_info_writer = csv.writer(self.loc_info)
-        self.loc_info_writer.writerow(['repo', 'hash', 'stamp', 'language', 'files', 'lines', 'code', 'comments',
-                                       'blanks'])
+        self.loc_info_writer.writerow(['Repo', 'CommitHash', 'TimeStamp', 'Language', 'Files', 'Lines', 'Code',
+                                       'Comments', 'Blanks'])
 
         self.loc_delta = open(os.path.join(output_dir, 'loc_delta.csv'), 'w', encoding='utf8')
         self.loc_delta_writer = csv.writer(self.loc_delta)
-        self.loc_delta_writer.writerow(['repo', 'hash', 'stamp', 'author', 'language', 'files', 'lines', 'code',
-                                        'comments', 'blanks'])
+        self.loc_delta_writer.writerow(['Repo', 'CommitHash', 'TimeStamp', 'Author', 'Language', 'Files', 'Lines',
+                                        'Code', 'Comments', 'Blanks'])
 
         self.repo_info = open(os.path.join(output_dir, 'repo.csv'), 'w', encoding='utf8')
         self.repo_info_writer = csv.writer(self.repo_info)
-        self.repo_info_writer.writerow(['Repo', 'Language', 'TotalFiles', 'TotalLines', 'TotalCodeLines', 'TotalCommentLlines',
-                                        'TotalBlankLines'])
+        self.repo_info_writer.writerow(['Repo', 'Language', 'Files', 'Lines',
+                                        'Code', 'Comments', 'Blanks'])
 
         self.prs_info = open(os.path.join(output_dir, 'prs.csv'), 'w', encoding='utf8')
         self.prs_info_writer = csv.writer(self.prs_info)
-        self.prs_info_writer.writerow(['Repo', 'CommitHash', 'TimeStamp', 'ParentHashMaster', 'ParentHashBranch', 'PrMergeDuration'])
+        self.prs_info_writer.writerow(['Repo', 'CommitHash', 'TimeStamp', 'ParentHashMaster', 'ParentHashBranch',
+                                       'PrMergeDuration'])
 
     def close(self):
         self.author_totals_info.close()
