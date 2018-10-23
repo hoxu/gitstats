@@ -47,7 +47,8 @@ conf = {
 	'linear_linestats': 1,
 	'project_name': '',
 	'processes': 8,
-	'start_date': ''
+	'start_date': '',
+	'end_date': '',
 }
 
 def getpipeoutput(cmds, quiet = False):
@@ -74,8 +75,13 @@ def getpipeoutput(cmds, quiet = False):
 
 def getlogrange(defaultrange = 'HEAD', end_only = True):
 	commit_range = getcommitrange(defaultrange, end_only)
+        datesel = ''
 	if len(conf['start_date']) > 0:
-		return '--since="%s" "%s"' % (conf['start_date'], commit_range)
+		datesel = '--since="%s" %s' % (conf['start_date'], datesel)
+	if len(conf['end_date']) > 0:
+		datesel = '--until="%s" %s' % (conf['end_date'], datesel)
+        if (len(datesel) > 0):
+		commit_range = '%s "%s"' % (datesel, commit_range)
 	return commit_range
 
 def getcommitrange(defaultrange = 'HEAD', end_only = False):
@@ -330,6 +336,9 @@ class GitDataCollector(DataCollector):
 		lines = getpipeoutput(['git rev-list --pretty=format:"%%at %%ai %%aN <%%aE>" %s' % getlogrange('HEAD'), 'grep -v ^commit']).split('\n')
 		for line in lines:
 			parts = line.split(' ', 4)
+                        if (len(parts) != 4):
+				print 'Warning: failed to parse line "%s"' % line
+                                continue
 			author = ''
 			try:
 				stamp = int(parts[0])
@@ -441,7 +450,12 @@ class GitDataCollector(DataCollector):
 		#Look up rev in cache and take info from cache if found
 		#If not append rev to list of rev to read from repo
 		for revline in revlines:
-			time, rev = revline.split(' ')
+			try:
+                              time, rev = revline.split(' ')
+			except ValueError:
+				print 'Warning: failed to parse line "%s"' % line
+                                continue
+ 
 			#if cache empty then add time and rev to list of new rev's
 			#otherwise try to read needed info from cache
 			if 'files_in_tree' not in self.cache.keys():
