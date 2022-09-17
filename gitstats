@@ -697,7 +697,7 @@ class HTMLReportCreator(ReportCreator):
 		binarypath = os.path.dirname(os.path.abspath(__file__))
 		secondarypath = os.path.join(binarypath, '..', 'share', 'gitstats')
 		basedirs = [binarypath, secondarypath, '/usr/share/gitstats']
-		for file in ('gitstats.css', 'sortable.js', 'arrow-up.gif', 'arrow-down.gif', 'arrow-none.gif'):
+		for file in ('bootstrap.js','bootstrap.css','gitstats.css', 'sortable.js', 'arrow-up.gif', 'arrow-down.gif', 'arrow-none.gif'):
 			for base in basedirs:
 				src = base + '/' + file
 				if os.path.exists(src):
@@ -1328,8 +1328,10 @@ plot """
 <head>
 	<title>GitStats - %s</title>
 	<link rel="stylesheet" href="%s" type="text/css" />
+	<link rel="stylesheet" href="bootstrap.css" type="text/css" />
 	<meta name="generator" content="GitStats %s" />
 	<script type="text/javascript" src="sortable.js"></script>
+	<script type="text/javascript" src="bootstrap.js"></script>
 </head>
 <body>
 """ % (self.title, conf['style'], getversion()))
