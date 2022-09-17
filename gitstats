@@ -1030,14 +1030,14 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<h1>Files</h1>')
 		self.printNav(f)
 
-		f.write('<dl>\n')
+		f.write('<div><div class="card-body"><dl>\n')
 		f.write('<dt>Total files</dt><dd>%d</dd>' % data.getTotalFiles())
 		f.write('<dt>Total lines</dt><dd>%d</dd>' % data.getTotalLOC())
 		try:
 			f.write('<dt>Average file size</dt><dd>%.2f bytes</dd>' % (float(data.getTotalSize()) / data.getTotalFiles()))
 		except ZeroDivisionError:
 			pass
-		f.write('</dl>\n')
+		f.write('</dl></div>\n')
 
 		# Files :: File count by date
 		f.write(html_header(2, 'File count by date'))
@@ -1081,9 +1081,9 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<h1>Lines</h1>')
 		self.printNav(f)
 
-		f.write('<dl>\n')
+		f.write('<div><div class="card-body"><dl>\n')
 		f.write('<dt>Total lines</dt><dd>%d</dd>' % data.getTotalLOC())
-		f.write('</dl>\n')
+		f.write('</dl></div>\n')
 
 		f.write(html_header(2, 'Lines of Code'))
 		f.write('<img src="lines_of_code.png" />')
@@ -1103,11 +1103,11 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<h1>Tags</h1>')
 		self.printNav(f)
 
-		f.write('<dl>')
+		f.write('<div><div class="card-body"><dl>')
 		f.write('<dt>Total tags</dt><dd>%d</dd>' % len(data.tags))
 		if len(data.tags) > 0:
 			f.write('<dt>Average commits per tag</dt><dd>%.2f</dd>' % (1.0 * data.getTotalCommits() / len(data.tags)))
-		f.write('</dl>')
+		f.write('</dl></div>')
 
 		f.write('<div><div class="card-body"><table class="tags">')
 		f.write('<tr><th>Name</th><th>Date</th><th>Commits</th><th>Authors</th></tr>')
