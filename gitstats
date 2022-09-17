@@ -714,7 +714,7 @@ class HTMLReportCreator(ReportCreator):
 
 		self.printNav(f)
 
-		f.write('<dl>')
+		f.write('<div><div class="card-body"><dl>')
 		f.write('<dt>Project name</dt><dd>%s</dd>' % (data.projectname))
 		f.write('<dt>Generated</dt><dd>%s (in %d seconds)</dd>' % (datetime.datetime.now().strftime(format), time.time() - data.getStampCreated()))
 		f.write('<dt>Generator</dt><dd><a href="http://gitstats.sourceforge.net/">GitStats</a> (version %s), %s, %s</dd>' % (getversion(), getgitversion(), getgnuplotversion()))
@@ -724,7 +724,7 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<dt>Total Lines of Code</dt><dd>%s (%d added, %d removed)</dd>' % (data.getTotalLOC(), data.total_lines_added, data.total_lines_removed))
 		f.write('<dt>Total Commits</dt><dd>%s (average %.1f commits per active day, %.1f per all days)</dd>' % (data.getTotalCommits(), float(data.getTotalCommits()) / len(data.getActiveDays()), float(data.getTotalCommits()) / data.getCommitDeltaDays()))
 		f.write('<dt>Authors</dt><dd>%s (average %.1f commits per author)</dd>' % (data.getTotalAuthors(), (1.0 * data.getTotalCommits()) / data.getTotalAuthors()))
-		f.write('</dl>')
+		f.write('</dl></div')
 
 		f.write('</body>\n</html>')
 		f.close()
@@ -755,7 +755,7 @@ class HTMLReportCreator(ReportCreator):
 			stampcur -= deltaweek
 
 		# top row: commits & bar
-		f.write('<table class="noborders"><tr>')
+		f.write('<div><div class="card-body"><table class="noborders"><tr>')
 		for i in range(0, WEEKS):
 			commits = 0
 			if weeks[i] in data.activity_by_year_week:
@@ -771,12 +771,12 @@ class HTMLReportCreator(ReportCreator):
 		f.write('</tr><tr>')
 		for i in range(0, WEEKS):
 			f.write('<td>%s</td>' % (WEEKS - i))
-		f.write('</tr></table>')
+		f.write('</tr></table></div>')
 
 		# Hour of Day
 		f.write(html_header(2, 'Hour of Day'))
 		hour_of_day = data.getActivityByHourOfDay()
-		f.write('<table><tr><th>Hour</th>')
+		f.write('<div><div class="card-body"><table><tr><th>Hour</th>')
 		for i in range(0, 24):
 			f.write('<th>%d</th>' % i)
 		f.write('</tr>\n<tr><th>Commits</th>')
@@ -798,7 +798,7 @@ class HTMLReportCreator(ReportCreator):
 				f.write('<td style="background-color: rgb(%d, 0, 0)">%.2f</td>' % (r, (100.0 * hour_of_day[i]) / totalcommits))
 			else:
 				f.write('<td>0.00</td>')
-		f.write('</tr></table>')
+		f.write('</tr></table></div>')
 		f.write('<img src="hour_of_day.png" alt="Hour of Day" />')
 		fg = open(path + '/hour_of_day.dat', 'w')
 		for i in range(0, 24):
@@ -832,7 +832,7 @@ class HTMLReportCreator(ReportCreator):
 
 		# Hour of Week
 		f.write(html_header(2, 'Hour of Week'))
-		f.write('<table>')
+		f.write('<div><div class="card-body"><table>')
 
 		f.write('<tr><th>Weekday</th>')
 		for hour in range(0, 24):
@@ -855,7 +855,7 @@ class HTMLReportCreator(ReportCreator):
 					f.write('<td></td>')
 			f.write('</tr>')
 
-		f.write('</table>')
+		f.write('</table></div>')
 
 		# Month of Year
 		f.write(html_header(2, 'Month of Year'))
@@ -898,14 +898,14 @@ class HTMLReportCreator(ReportCreator):
 
 		# Commits by timezone
 		f.write(html_header(2, 'Commits by Timezone'))
-		f.write('<table><tr>')
+		f.write('<div><div class="card-body"><table><tr>')
 		f.write('<th>Timezone</th><th>Commits</th>')
 		max_commits_on_tz = max(data.commits_by_timezone.values())
 		for i in sorted(data.commits_by_timezone.keys(), key = lambda n : int(n)):
 			commits = data.commits_by_timezone[i]
 			r = 127 + int((float(commits) / max_commits_on_tz) * 128)
 			f.write('<tr><th>%s</th><td style="background-color: rgb(%d, 0, 0)">%d</td></tr>' % (i, r, commits))
-		f.write('</tr></table>')
+		f.write('</tr></table></div>')
 
 		f.write('</body></html>')
 		f.close()
@@ -921,12 +921,12 @@ class HTMLReportCreator(ReportCreator):
 		# Authors :: List of authors
 		f.write(html_header(2, 'List of Authors'))
 
-		f.write('<table class="authors sortable" id="authors">')
+		f.write('<div><div class="card-body"><table class="authors sortable" id="authors">')
 		f.write('<tr><th>Author</th><th>Commits (%)</th><th>+ lines</th><th>- lines</th><th>First commit</th><th>Last commit</th><th class="unsortable">Age</th><th>Active days</th><th># by commits</th></tr>')
 		for author in data.getAuthors(conf['max_authors']):
 			info = data.getAuthorInfo(author)
 			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td></tr>' % (author, info['commits'], info['commits_frac'], info['lines_added'], info['lines_removed'], info['date_first'], info['date_last'], info['timedelta'], len(info['active_days']), info['place_by_commits']))
-		f.write('</table>')
+		f.write('</table></div>')
 
 		allauthors = data.getAuthors()
 		if len(allauthors) > conf['max_authors']:
@@ -977,7 +977,7 @@ class HTMLReportCreator(ReportCreator):
 
 		# Authors :: Author of Month
 		f.write(html_header(2, 'Author of Month'))
-		f.write('<table class="sortable" id="aom">')
+		f.write('<div><div class="card-body"><table class="sortable" id="aom">')
 		f.write('<tr><th>Month</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' % conf['authors_top'])
 		for yymm in reversed(sorted(data.author_of_month.keys())):
 			authordict = data.author_of_month[yymm]
@@ -987,10 +987,10 @@ class HTMLReportCreator(ReportCreator):
 			next = ', '.join(authors[1:conf['authors_top']+1])
 			f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (yymm, authors[0], commits, (100.0 * commits) / data.commits_by_month[yymm], data.commits_by_month[yymm], next, len(authors)))
 
-		f.write('</table>')
+		f.write('</table></div>')
 
 		f.write(html_header(2, 'Author of Year'))
-		f.write('<table class="sortable" id="aoy"><tr><th>Year</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' % conf['authors_top'])
+		f.write('<div><div class="card-body"><table class="sortable" id="aoy"><tr><th>Year</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' % conf['authors_top'])
 		for yy in reversed(sorted(data.author_of_year.keys())):
 			authordict = data.author_of_year[yy]
 			authors = getkeyssortedbyvalues(authordict)
@@ -998,7 +998,7 @@ class HTMLReportCreator(ReportCreator):
 			commits = data.author_of_year[yy][authors[0]]
 			next = ', '.join(authors[1:conf['authors_top']+1])
 			f.write('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (yy, authors[0], commits, (100.0 * commits) / data.commits_by_year[yy], data.commits_by_year[yy], next, len(authors)))
-		f.write('</table>')
+		f.write('</table></div>')
 
 		# Domains
 		f.write(html_header(2, 'Commits by Domains'))
@@ -1060,7 +1060,7 @@ class HTMLReportCreator(ReportCreator):
 
 		# Files :: Extensions
 		f.write(html_header(2, 'Extensions'))
-		f.write('<table class="sortable" id="ext"><tr><th>Extension</th><th>Files (%)</th><th>Lines (%)</th><th>Lines/file</th></tr>')
+		f.write('<div><div class="card-body"><table class="sortable" id="ext"><tr><th>Extension</th><th>Files (%)</th><th>Lines (%)</th><th>Lines/file</th></tr>')
 		for ext in sorted(data.extensions.keys()):
 			files = data.extensions[ext]['files']
 			lines = data.extensions[ext]['lines']
@@ -1069,7 +1069,7 @@ class HTMLReportCreator(ReportCreator):
 			except ZeroDivisionError:
 				loc_percentage = 0
 			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d (%.2f%%)</td><td>%d</td></tr>' % (ext, files, (100.0 * files) / data.getTotalFiles(), lines, loc_percentage, lines / files))
-		f.write('</table>')
+		f.write('</table></div>')
 
 		f.write('</body></html>')
 		f.close()
@@ -1109,7 +1109,7 @@ class HTMLReportCreator(ReportCreator):
 			f.write('<dt>Average commits per tag</dt><dd>%.2f</dd>' % (1.0 * data.getTotalCommits() / len(data.tags)))
 		f.write('</dl>')
 
-		f.write('<table class="tags">')
+		f.write('<div><div class="card-body"><table class="tags">')
 		f.write('<tr><th>Name</th><th>Date</th><th>Commits</th><th>Authors</th></tr>')
 		# sort the tags by date desc
 		tags_sorted_by_date_desc = map(lambda el : el[1], reversed(sorted(map(lambda el : (el[1]['date'], el[0]), data.tags.items()))))
@@ -1119,7 +1119,7 @@ class HTMLReportCreator(ReportCreator):
 			for i in reversed(self.authors_by_commits):
 				authorinfo.append('%s (%d)' % (i, data.tags[tag]['authors'][i]))
 			f.write('<tr><td>%s</td><td>%s</td><td>%d</td><td>%s</td></tr>' % (tag, data.tags[tag]['date'], data.tags[tag]['commits'], ', '.join(authorinfo)))
-		f.write('</table>')
+		f.write('</table></div>')
 
 		f.write('</body></html>')
 		f.close()
@@ -1338,16 +1338,16 @@ plot """
 
 	def printNav(self, f):
 		f.write("""
-<div class="nav">
-<ul>
-<li><a href="index.html">General</a></li>
-<li><a href="activity.html">Activity</a></li>
-<li><a href="authors.html">Authors</a></li>
-<li><a href="files.html">Files</a></li>
-<li><a href="lines.html">Lines</a></li>
-<li><a href="tags.html">Tags</a></li>
-</ul>
-</div>
+<nav aria-label="breadcrumb">
+<ol class="breadcrumb">
+ <li class="breadcrumb-item" aria-current="page"><a href="index.html">General</a></li>
+ <li class="breadcrumb-item" aria-current="page"><a href="activity.html">Activity</a></li>
+ <li class="breadcrumb-item" aria-current="page"><a href="authors.html">Authors</a></li>
+ <li class="breadcrumb-item" aria-current="page"><a href="files.html">Files</a></li>
+ <li class="breadcrumb-item" aria-current="page"><a href="lines.html">Lines</a></li>
+ <li class="breadcrumb-item" aria-current="page"><a href="tags.html">Tags</a></li>
+</ol>
+</nav>
 """)
 		
 
