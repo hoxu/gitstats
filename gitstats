@@ -14,8 +14,8 @@ import sys
 import time
 import zlib
 
-if sys.version_info < (2, 6):
-	print >> sys.stderr, "Python 2.6 or higher is required for gitstats"
+if sys.version_info < (3, 5):
+	print("Python 2.6 or higher is required for gitstats", file=sys.stderr)
 	sys.exit(1)
 
 from multiprocessing import Pool
@@ -54,7 +54,7 @@ def getpipeoutput(cmds, quiet = False):
 	global exectime_external
 	start = time.time()
 	if not quiet and ON_LINUX and os.isatty(1):
-		print '>> ' + ' | '.join(cmds),
+		print('>> ' + ' | '.join(cmds), end=' ')
 		sys.stdout.flush()
 	p = subprocess.Popen(cmds[0], stdout = subprocess.PIPE, shell = True)
 	processes=[p]
@@ -67,10 +67,10 @@ def getpipeoutput(cmds, quiet = False):
 	end = time.time()
 	if not quiet:
 		if ON_LINUX and os.isatty(1):
-			print '\r',
-		print '[%.5f] >> %s' % (end - start, ' | '.join(cmds))
+			print('\r', end=' ')
+		print('[%.5f] >> %s' % (end - start, ' | '.join(cmds)))
 	exectime_external += (end - start)
-	return output.rstrip('\n')
+	return output.decode('utf-8').rstrip('\n')
 
 def getlogrange(defaultrange = 'HEAD', end_only = True):
 	commit_range = getcommitrange(defaultrange, end_only)
@@ -86,11 +86,11 @@ def getcommitrange(defaultrange = 'HEAD', end_only = False):
 	return defaultrange
 
 def getkeyssortedbyvalues(dict):
-	return map(lambda el : el[1], sorted(map(lambda el : (el[1], el[0]), dict.items())))
+	return [el[1] for el in sorted([(el[1], el[0]) for el in list(dict.items())])]
 
 # dict['author'] = { 'commits': 512 } - ...key(dict, 'commits')
 def getkeyssortedbyvaluekey(d, key):
-	return map(lambda el : el[1], sorted(map(lambda el : (d[el][key], el), d.keys())))
+	return [el[1] for el in sorted([(d[el][key], el) for el in list(d.keys())])]
 
 def getstatsummarycounts(line):
 	numbers = re.findall('\d+', line)
@@ -207,7 +207,7 @@ class DataCollector:
 	def loadCache(self, cachefile):
 		if not os.path.exists(cachefile):
 			return
-		print 'Loading cache...'
+		print('Loading cache...')
 		f = open(cachefile, 'rb')
 		try:
 			self.cache = pickle.loads(zlib.decompress(f.read()))
@@ -269,7 +269,7 @@ class DataCollector:
 	##
 	# Save cacheable data
 	def saveCache(self, cachefile):
-		print 'Saving cache...'
+		print('Saving cache...')
 		tempfile = cachefile + '.tmp'
 		f = open(tempfile, 'wb')
 		#pickle.dump(self.cache, f)
@@ -308,7 +308,7 @@ class GitDataCollector(DataCollector):
 				self.tags[tag] = { 'stamp': stamp, 'hash' : hash, 'date' : datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d'), 'commits': 0, 'authors': {} }
 
 		# collect info on tags, starting from latest
-		tags_sorted_by_date_desc = map(lambda el : el[1], reversed(sorted(map(lambda el : (el[1]['date'], el[0]), self.tags.items()))))
+		tags_sorted_by_date_desc = [el[1] for el in reversed(sorted([(el[1]['date'], el[0]) for el in list(self.tags.items())]))]
 		prev = None
 		for tag in reversed(tags_sorted_by_date_desc):
 			cmd = 'git shortlog -s "%s"' % tag
@@ -444,10 +444,10 @@ class GitDataCollector(DataCollector):
 			time, rev = revline.split(' ')
 			#if cache empty then add time and rev to list of new rev's
 			#otherwise try to read needed info from cache
-			if 'files_in_tree' not in self.cache.keys():
+			if 'files_in_tree' not in list(self.cache.keys()):
 				revs_to_read.append((time,rev))
 				continue
-			if rev in self.cache['files_in_tree'].keys():
+			if rev in list(self.cache['files_in_tree'].keys()):
 				lines.append('%d %d' % (int(time), self.cache['files_in_tree'][rev]))
 			else:
 				revs_to_read.append((time,rev))
@@ -474,7 +474,7 @@ class GitDataCollector(DataCollector):
 			try:
 				self.files_by_stamp[int(stamp)] = int(files)
 			except ValueError:
-				print 'Warning: failed to parse line "%s"' % line
+				print('Warning: failed to parse line "%s"' % line)
 
 		# extensions and size of files
 		lines = getpipeoutput(['git ls-tree -r -l -z %s' % getcommitrange('HEAD', end_only = True)]).split('\000')
@@ -505,10 +505,10 @@ class GitDataCollector(DataCollector):
 			self.extensions[ext]['files'] += 1
 			#if cache empty then add ext and blob id to list of new blob's
 			#otherwise try to read needed info from cache
-			if 'lines_in_blob' not in self.cache.keys():
+			if 'lines_in_blob' not in list(self.cache.keys()):
 				blobs_to_read.append((ext,blob_id))
 				continue
-			if blob_id in self.cache['lines_in_blob'].keys():
+			if blob_id in list(self.cache['lines_in_blob'].keys()):
 				self.extensions[ext]['lines'] += self.cache['lines_in_blob'][blob_id]
 			else:
 				blobs_to_read.append((ext,blob_id))
@@ -563,21 +563,21 @@ class GitDataCollector(DataCollector):
 
 						files, inserted, deleted = 0, 0, 0
 					except ValueError:
-						print 'Warning: unexpected line "%s"' % line
+						print('Warning: unexpected line "%s"' % line)
 				else:
-					print 'Warning: unexpected line "%s"' % line
+					print('Warning: unexpected line "%s"' % line)
 			else:
 				numbers = getstatsummarycounts(line)
 
 				if len(numbers) == 3:
-					(files, inserted, deleted) = map(lambda el : int(el), numbers)
+					(files, inserted, deleted) = [int(el) for el in numbers]
 					total_lines += inserted
 					total_lines -= deleted
 					self.total_lines_added += inserted
 					self.total_lines_removed += deleted
 
 				else:
-					print 'Warning: failed to handle line "%s"' % line
+					print('Warning: failed to handle line "%s"' % line)
 					(files, inserted, deleted) = (0, 0, 0)
 				#self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted }
 		self.total_lines += total_lines
@@ -622,16 +622,16 @@ class GitDataCollector(DataCollector):
 						self.changes_by_date_by_author[stamp][author]['commits'] = self.authors[author]['commits']
 						files, inserted, deleted = 0, 0, 0
 					except ValueError:
-						print 'Warning: unexpected line "%s"' % line
+						print('Warning: unexpected line "%s"' % line)
 				else:
-					print 'Warning: unexpected line "%s"' % line
+					print('Warning: unexpected line "%s"' % line)
 			else:
 				numbers = getstatsummarycounts(line);
 
 				if len(numbers) == 3:
-					(files, inserted, deleted) = map(lambda el : int(el), numbers)
+					(files, inserted, deleted) = [int(el) for el in numbers]
 				else:
-					print 'Warning: failed to handle line "%s"' % line
+					print('Warning: failed to handle line "%s"' % line)
 					(files, inserted, deleted) = (0, 0, 0)
 	
 	def refine(self):
@@ -642,7 +642,7 @@ class GitDataCollector(DataCollector):
 		for i, name in enumerate(self.authors_by_commits):
 			self.authors[name]['place_by_commits'] = i + 1
 
-		for name in self.authors.keys():
+		for name in list(self.authors.keys()):
 			a = self.authors[name]
 			a['commits_frac'] = (100 * float(a['commits'])) / self.getTotalCommits()
 			date_first = datetime.datetime.fromtimestamp(a['first_commit_stamp'])
@@ -678,7 +678,7 @@ class GitDataCollector(DataCollector):
 		return self.domains[domain]
 
 	def getDomains(self):
-		return self.domains.keys()
+		return list(self.domains.keys())
 	
 	def getFirstCommitDate(self):
 		return datetime.datetime.fromtimestamp(self.first_commit_stamp)
@@ -744,7 +744,7 @@ class HTMLReportCreator(ReportCreator):
 					shutil.copyfile(src, path + '/' + file)
 					break
 			else:
-				print 'Warning: "%s" not found, so not copied (searched: %s)' % (file, basedirs)
+				print('Warning: "%s" not found, so not copied (searched: %s)' % (file, basedirs))
 
 		f = open(path + "/index.html", 'w')
 		format = '%Y-%m-%d %H:%M:%S'
@@ -942,7 +942,7 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<th>Timezone</th><th>Commits</th>')
 		f.write('</tr>')
 		max_commits_on_tz = max(data.commits_by_timezone.values())
-		for i in sorted(data.commits_by_timezone.keys(), key = lambda n : int(n)):
+		for i in sorted(list(data.commits_by_timezone.keys()), key = lambda n : int(n)):
 			commits = data.commits_by_timezone[i]
 			r = 127 + int((float(commits) / max_commits_on_tz) * 128)
 			f.write('<tr><th>%s</th><td style="background-color: rgb(%d, 0, 0)">%d</td></tr>' % (i, r, commits))
@@ -1006,7 +1006,7 @@ class HTMLReportCreator(ReportCreator):
 			fgl.write('%d' % stamp)
 			fgc.write('%d' % stamp)
 			for author in self.authors_to_plot:
-				if author in data.changes_by_date_by_author[stamp].keys():
+				if author in list(data.changes_by_date_by_author[stamp].keys()):
 					lines_by_authors[author] = data.changes_by_date_by_author[stamp][author]['lines_added']
 					commits_by_authors[author] = data.changes_by_date_by_author[stamp][author]['commits']
 				fgl.write(' %d' % lines_by_authors[author])
@@ -1153,7 +1153,7 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<table class="tags">')
 		f.write('<tr><th>Name</th><th>Date</th><th>Commits</th><th>Authors</th></tr>')
 		# sort the tags by date desc
-		tags_sorted_by_date_desc = map(lambda el : el[1], reversed(sorted(map(lambda el : (el[1]['date'], el[0]), data.tags.items()))))
+		tags_sorted_by_date_desc = [el[1] for el in reversed(sorted([(el[1]['date'], el[0]) for el in list(data.tags.items())]))]
 		for tag in tags_sorted_by_date_desc:
 			authorinfo = []
 			self.authors_by_commits = getkeyssortedbyvalues(data.tags[tag]['authors'])
@@ -1168,7 +1168,7 @@ class HTMLReportCreator(ReportCreator):
 		self.createGraphs(path)
 	
 	def createGraphs(self, path):
-		print 'Generating graphs...'
+		print('Generating graphs...')
 
 		# hour of day
 		f = open(path + '/hour_of_day.plot', 'w')
@@ -1370,7 +1370,7 @@ plot """
 		for f in files:
 			out = getpipeoutput([gnuplot_cmd + ' "%s"' % f])
 			if len(out) > 0:
-				print out
+				print(out)
 
 	def printHeader(self, f, title = ''):
 		f.write(
@@ -1401,7 +1401,7 @@ plot """
 """)
 		
 def usage():
-	print """
+	print("""
 Usage: gitstats [options] <gitpath..> <outputpath>
 
 Options:
@@ -1411,7 +1411,7 @@ Default config values:
 %s
 
 Please see the manual page for more details.
-""" % conf
+""" % conf)
 
 
 class GitStats:
@@ -1442,48 +1442,48 @@ class GitStats:
 		except OSError:
 			pass
 		if not os.path.isdir(outputpath):
-			print 'FATAL: Output path is not a directory or does not exist'
+			print('FATAL: Output path is not a directory or does not exist')
 			sys.exit(1)
 
 		if not getgnuplotversion():
-			print 'gnuplot not found'
+			print('gnuplot not found')
 			sys.exit(1)
 
-		print 'Output path: %s' % outputpath
+		print('Output path: %s' % outputpath)
 		cachefile = os.path.join(outputpath, 'gitstats.cache')
 
 		data = GitDataCollector()
 		data.loadCache(cachefile)
 
 		for gitpath in args[0:-1]:
-			print 'Git path: %s' % gitpath
+			print('Git path: %s' % gitpath)
 
 			prevdir = os.getcwd()
 			os.chdir(gitpath)
 
-			print 'Collecting data...'
+			print('Collecting data...')
 			data.collect(gitpath)
 
 			os.chdir(prevdir)
 
-		print 'Refining data...'
+		print('Refining data...')
 		data.saveCache(cachefile)
 		data.refine()
 
 		os.chdir(rundir)
 
-		print 'Generating report...'
+		print('Generating report...')
 		report = HTMLReportCreator()
 		report.create(data, outputpath)
 
 		time_end = time.time()
 		exectime_internal = time_end - time_start
-		print 'Execution time %.5f secs, %.5f secs (%.2f %%) in external commands)' % (exectime_internal, exectime_external, (100.0 * exectime_external) / exectime_internal)
+		print('Execution time %.5f secs, %.5f secs (%.2f %%) in external commands)' % (exectime_internal, exectime_external, (100.0 * exectime_external) / exectime_internal))
 		if sys.stdin.isatty():
-			print 'You may now run:'
-			print
-			print '   sensible-browser \'%s\'' % os.path.join(outputpath, 'index.html').replace("'", "'\\''")
-			print
+			print('You may now run:')
+			print()
+			print('   sensible-browser \'%s\'' % os.path.join(outputpath, 'index.html').replace("'", "'\\''"))
+			print()
 
 if __name__=='__main__':
 	g = GitStats()
