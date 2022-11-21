@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-# Copyright (c) 2007-2012 Heikki Hokkanen <hoxu@users.sf.net> & others (see doc/author.txt)
+#!/usr/bin/env python2
+# Copyright (c) 2007-2014 Heikki Hokkanen <hoxu@users.sf.net> & others (see doc/AUTHOR)
 # GPLv2 / GPLv3
 import datetime
 import getopt
@@ -13,6 +13,12 @@ import subprocess
 import sys
 import time
 import zlib
+
+if sys.version_info < (2, 6):
+	print >> sys.stderr, "Python 2.6 or higher is required for gitstats"
+	sys.exit(1)
+
+from multiprocessing import Pool
 
 os.environ['LC_ALL'] = 'C'
 
@@ -40,7 +46,8 @@ conf = {
 	'commit_end': 'HEAD',
 	'linear_linestats': 1,
 	'project_name': '',
-	'merge_authors': {}
+	'processes': 8,
+	'start_date': ''
 }
 
 def getpipeoutput(cmds, quiet = False):
@@ -49,12 +56,14 @@ def getpipeoutput(cmds, quiet = False):
 	if not quiet and ON_LINUX and os.isatty(1):
 		print '>> ' + ' | '.join(cmds),
 		sys.stdout.flush()
-	p0 = subprocess.Popen(cmds[0], stdout = subprocess.PIPE, shell = True)
-	p = p0
+	p = subprocess.Popen(cmds[0], stdout = subprocess.PIPE, shell = True)
+	processes=[p]
 	for x in cmds[1:]:
-		p = subprocess.Popen(x, stdin = p0.stdout, stdout = subprocess.PIPE, shell = True)
-		p0 = p
+		p = subprocess.Popen(x, stdin = p.stdout, stdout = subprocess.PIPE, shell = True)
+		processes.append(p)
 	output = p.communicate()[0]
+	for p in processes:
+		p.wait()
 	end = time.time()
 	if not quiet:
 		if ON_LINUX and os.isatty(1):
@@ -62,6 +71,12 @@ def getpipeoutput(cmds, quiet = False):
 		print '[%.5f] >> %s' % (end - start, ' | '.join(cmds))
 	exectime_external += (end - start)
 	return output.rstrip('\n')
+
+def getlogrange(defaultrange = 'HEAD', end_only = True):
+	commit_range = getcommitrange(defaultrange, end_only)
+	if len(conf['start_date']) > 0:
+		return '--since="%s" "%s"' % (conf['start_date'], commit_range)
+	return commit_range
 
 def getcommitrange(defaultrange = 'HEAD', end_only = False):
 	if len(conf['commit_end']) > 0:
@@ -103,6 +118,20 @@ def getgitversion():
 
 def getgnuplotversion():
 	return getpipeoutput(['%s --version' % gnuplot_cmd]).split('\n')[0]
+
+def getnumoffilesfromrev(time_rev):
+	"""
+	Get number of files changed in commit
+	"""
+	time, rev = time_rev
+	return (int(time), rev, int(getpipeoutput(['git ls-tree -r --name-only "%s"' % rev, 'wc -l']).split('\n')[0]))
+
+def getnumoflinesinblob(ext_blob):
+	"""
+	Get number of lines in blob
+	"""
+	ext, blob_id = ext_blob
+	return (ext, blob_id, int(getpipeoutput(['git cat-file blob %s' % blob_id, 'wc -l']).split()[0]))
 
 class DataCollector:
 	"""Manages data collection from a revision control repository."""
@@ -257,7 +286,7 @@ class GitDataCollector(DataCollector):
 	def collect(self, dir):
 		DataCollector.collect(self, dir)
 
-		self.total_authors += int(getpipeoutput(['git shortlog -s %s' % getcommitrange(), 'wc -l']))
+		self.total_authors += int(getpipeoutput(['git shortlog -s %s' % getlogrange(), 'wc -l']))
 		#self.total_lines = int(getoutput('git-ls-files -z |xargs -0 cat |wc -l'))
 
 		# tags
@@ -293,14 +322,12 @@ class GitDataCollector(DataCollector):
 				parts = re.split('\s+', line, 2)
 				commits = int(parts[1])
 				author = parts[2]
-				if author in conf['merge_authors']:
-					author = conf['merge_authors'][author]
 				self.tags[tag]['commits'] += commits
 				self.tags[tag]['authors'][author] = commits
 
 		# Collect revision statistics
 		# Outputs "<stamp> <date> <time> <timezone> <author> '<' <mail> '>'"
-		lines = getpipeoutput(['git rev-list --pretty=format:"%%at %%ai %%aN <%%aE>" %s' % getcommitrange('HEAD'), 'grep -v ^commit']).split('\n')
+		lines = getpipeoutput(['git rev-list --pretty=format:"%%at %%ai %%aN <%%aE>" %s' % getlogrange('HEAD'), 'grep -v ^commit']).split('\n')
 		for line in lines:
 			parts = line.split(' ', 4)
 			author = ''
@@ -311,8 +338,6 @@ class GitDataCollector(DataCollector):
 			timezone = parts[3]
 			author, mail = parts[4].split('<', 1)
 			author = author.rstrip()
-			if author in conf['merge_authors']:
-				author = conf['merge_authors'][author]
 			mail = mail.rstrip('>')
 			domain = '?'
 			if mail.find('@') != -1:
@@ -408,14 +433,37 @@ class GitDataCollector(DataCollector):
 			# timezone
 			self.commits_by_timezone[timezone] = self.commits_by_timezone.get(timezone, 0) + 1
 
-		# TODO Optimize this, it's the worst bottleneck
 		# outputs "<stamp> <files>" for each revision
-		revlines = getpipeoutput(['git rev-list --pretty=format:"%%at %%T" %s' % getcommitrange('HEAD'), 'grep -v ^commit']).strip().split('\n')
+		revlines = getpipeoutput(['git rev-list --pretty=format:"%%at %%T" %s' % getlogrange('HEAD'), 'grep -v ^commit']).strip().split('\n')
 		lines = []
+		revs_to_read = []
+		time_rev_count = []
+		#Look up rev in cache and take info from cache if found
+		#If not append rev to list of rev to read from repo
 		for revline in revlines:
 			time, rev = revline.split(' ')
-			linecount = self.getFilesInCommit(rev)
-			lines.append('%d %d' % (int(time), linecount))
+			#if cache empty then add time and rev to list of new rev's
+			#otherwise try to read needed info from cache
+			if 'files_in_tree' not in self.cache.keys():
+				revs_to_read.append((time,rev))
+				continue
+			if rev in self.cache['files_in_tree'].keys():
+				lines.append('%d %d' % (int(time), self.cache['files_in_tree'][rev]))
+			else:
+				revs_to_read.append((time,rev))
+
+		#Read revisions from repo
+		pool = Pool(processes=conf['processes'])
+		time_rev_count = pool.map(getnumoffilesfromrev, revs_to_read)
+		pool.terminate()
+		pool.join()
+
+		#Update cache with new revisions and append then to general list
+		for (time, rev, count) in time_rev_count:
+			if 'files_in_tree' not in self.cache:
+				self.cache['files_in_tree'] = {}
+			self.cache['files_in_tree'][rev] = count
+			lines.append('%d %d' % (int(time), count))
 
 		self.total_commits += len(lines)
 		for line in lines:
@@ -430,14 +478,15 @@ class GitDataCollector(DataCollector):
 
 		# extensions and size of files
 		lines = getpipeoutput(['git ls-tree -r -l -z %s' % getcommitrange('HEAD', end_only = True)]).split('\000')
+		blobs_to_read = []
 		for line in lines:
 			if len(line) == 0:
 				continue
-			parts = re.split('\s+', line, 5)
+			parts = re.split('\s+', line, 4)
 			if parts[0] == '160000' and parts[3] == '-':
 				# skip submodules
 				continue
-			sha1 = parts[2]
+			blob_id = parts[2]
 			size = int(parts[3])
 			fullpath = parts[4]
 
@@ -451,15 +500,31 @@ class GitDataCollector(DataCollector):
 				ext = filename[(filename.rfind('.') + 1):]
 			if len(ext) > conf['max_ext_length']:
 				ext = ''
-
 			if ext not in self.extensions:
 				self.extensions[ext] = {'files': 0, 'lines': 0}
-
 			self.extensions[ext]['files'] += 1
-			try:
-				self.extensions[ext]['lines'] += self.getLinesInBlob(sha1)
-			except:
-				print 'Warning: Could not count lines for file "%s"' % line
+			#if cache empty then add ext and blob id to list of new blob's
+			#otherwise try to read needed info from cache
+			if 'lines_in_blob' not in self.cache.keys():
+				blobs_to_read.append((ext,blob_id))
+				continue
+			if blob_id in self.cache['lines_in_blob'].keys():
+				self.extensions[ext]['lines'] += self.cache['lines_in_blob'][blob_id]
+			else:
+				blobs_to_read.append((ext,blob_id))
+
+		#Get info abount line count for new blob's that wasn't found in cache
+		pool = Pool(processes=conf['processes'])
+		ext_blob_linecount = pool.map(getnumoflinesinblob, blobs_to_read)
+		pool.terminate()
+		pool.join()
+
+		#Update cache and write down info about number of number of lines
+		for (ext, blob_id, linecount) in ext_blob_linecount:
+			if 'lines_in_blob' not in self.cache:
+				self.cache['lines_in_blob'] = {}
+			self.cache['lines_in_blob'][blob_id] = linecount
+			self.extensions[ext]['lines'] += self.cache['lines_in_blob'][blob_id]
 
 		# line statistics
 		# outputs:
@@ -471,7 +536,7 @@ class GitDataCollector(DataCollector):
 		extra = ''
 		if conf['linear_linestats']:
 			extra = '--first-parent -m'
-		lines = getpipeoutput(['git log --shortstat %s --pretty=format:"%%at %%aN" %s' % (extra, getcommitrange('HEAD'))]).split('\n')
+		lines = getpipeoutput(['git log --shortstat %s --pretty=format:"%%at %%aN" %s' % (extra, getlogrange('HEAD'))]).split('\n')
 		lines.reverse()
 		files = 0; inserted = 0; deleted = 0; total_lines = 0
 		author = None
@@ -485,8 +550,6 @@ class GitDataCollector(DataCollector):
 				if pos != -1:
 					try:
 						(stamp, author) = (int(line[:pos]), line[pos+1:])
-						if author in conf['merge_authors']:
-							author = conf['merge_authors'][author]
 						self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted, 'lines': total_lines }
 
 						date = datetime.datetime.fromtimestamp(stamp)
@@ -517,7 +580,7 @@ class GitDataCollector(DataCollector):
 					print 'Warning: failed to handle line "%s"' % line
 					(files, inserted, deleted) = (0, 0, 0)
 				#self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted }
-		self.total_lines = total_lines
+		self.total_lines += total_lines
 
 		# Per-author statistics
 
@@ -527,7 +590,7 @@ class GitDataCollector(DataCollector):
 		# Similar to the above, but never use --first-parent
 		# (we need to walk through every commit to know who
 		# committed what, not just through mainline)
-		lines = getpipeoutput(['git log --shortstat --date-order --pretty=format:"%%at %%aN" %s' % (getcommitrange('HEAD'))]).split('\n')
+		lines = getpipeoutput(['git log --shortstat --date-order --pretty=format:"%%at %%aN" %s' % (getlogrange('HEAD'))]).split('\n')
 		lines.reverse()
 		files = 0; inserted = 0; deleted = 0
 		author = None
@@ -543,8 +606,6 @@ class GitDataCollector(DataCollector):
 					try:
 						oldstamp = stamp
 						(stamp, author) = (int(line[:pos]), line[pos+1:])
-						if author in conf['merge_authors']:
-							author = conf['merge_authors'][author]
 						if oldstamp > stamp:
 							# clock skew, keep old timestamp to avoid having ugly graph
 							stamp = oldstamp
@@ -619,33 +680,12 @@ class GitDataCollector(DataCollector):
 	def getDomains(self):
 		return self.domains.keys()
 	
-	def getFilesInCommit(self, rev):
-		try:
-			res = self.cache['files_in_tree'][rev]
-		except:
-			res = int(getpipeoutput(['git ls-tree -r --name-only "%s"' % rev, 'wc -l']).split('\n')[0])
-			if 'files_in_tree' not in self.cache:
-				self.cache['files_in_tree'] = {}
-			self.cache['files_in_tree'][rev] = res
-
-		return res
-
 	def getFirstCommitDate(self):
 		return datetime.datetime.fromtimestamp(self.first_commit_stamp)
 	
 	def getLastCommitDate(self):
 		return datetime.datetime.fromtimestamp(self.last_commit_stamp)
 	
-	def getLinesInBlob(self, sha1):
-		try:
-			res = self.cache['lines_in_blob'][sha1]
-		except:
-			res = int(getpipeoutput(['git cat-file blob %s' % sha1, 'wc -l']).split()[0])
-			if 'lines_in_blob' not in self.cache:
-				self.cache['lines_in_blob'] = {}
-			self.cache['lines_in_blob'][sha1] = res
-		return res
-
 	def getTags(self):
 		lines = getpipeoutput(['git show-ref --tags', 'cut -d/ -f3'])
 		return lines.split('\n')
@@ -686,7 +726,7 @@ def html_linkify(text):
 
 def html_header(level, text):
 	name = html_linkify(text)
-	return '\n<h%d><a href="#%s" name="%s">%s</a></h%d>\n\n' % (level, name, name, text, level)
+	return '\n<h%d id="%s"><a href="#%s">%s</a></h%d>\n\n' % (level, name, name, text, level)
 
 class HTMLReportCreator(ReportCreator):
 	def create(self, data, path):
@@ -827,7 +867,7 @@ class HTMLReportCreator(ReportCreator):
 				f.write('<td>0</td>')
 			f.write('</tr>')
 		f.write('</table></div>')
-		f.write('<img src="day_of_week.png" alt="Day of Week" />')
+		f.write('<img src="day_of_week.png" alt="Day of Week">')
 		fp.close()
 
 		# Hour of Week
@@ -870,7 +910,7 @@ class HTMLReportCreator(ReportCreator):
 			fp.write('%d %d\n' % (mm, commits))
 		fp.close()
 		f.write('</table></div>')
-		f.write('<img src="month_of_year.png" alt="Month of Year" />')
+		f.write('<img src="month_of_year.png" alt="Month of Year">')
 
 		# Commits by year/month
 		f.write(html_header(2, 'Commits by year/month'))
@@ -878,7 +918,7 @@ class HTMLReportCreator(ReportCreator):
 		for yymm in reversed(sorted(data.commits_by_month.keys())):
 			f.write('<tr><td>%s</td><td>%d</td><td>%d</td><td>%d</td></tr>' % (yymm, data.commits_by_month.get(yymm,0), data.lines_added_by_month.get(yymm,0), data.lines_removed_by_month.get(yymm,0)))
 		f.write('</table></div>')
-		f.write('<img src="commits_by_year_month.png" alt="Commits by year/month" />')
+		f.write('<img src="commits_by_year_month.png" alt="Commits by year/month">')
 		fg = open(path + '/commits_by_year_month.dat', 'w')
 		for yymm in sorted(data.commits_by_month.keys()):
 			fg.write('%s %s\n' % (yymm, data.commits_by_month[yymm]))
@@ -890,7 +930,7 @@ class HTMLReportCreator(ReportCreator):
 		for yy in reversed(sorted(data.commits_by_year.keys())):
 			f.write('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td></tr>' % (yy, data.commits_by_year.get(yy,0), (100.0 * data.commits_by_year.get(yy,0)) / data.getTotalCommits(), data.lines_added_by_year.get(yy,0), data.lines_removed_by_year.get(yy,0)))
 		f.write('</table></div>')
-		f.write('<img src="commits_by_year.png" alt="Commits by Year" />')
+		f.write('<img src="commits_by_year.png" alt="Commits by Year">')
 		fg = open(path + '/commits_by_year.dat', 'w')
 		for yy in sorted(data.commits_by_year.keys()):
 			fg.write('%d %d\n' % (yy, data.commits_by_year[yy]))
@@ -900,13 +940,13 @@ class HTMLReportCreator(ReportCreator):
 		f.write(html_header(2, 'Commits by Timezone'))
 		f.write('<div><div class="card-body"><table><tr>')
 		f.write('<th>Timezone</th><th>Commits</th>')
+		f.write('</tr>')
 		max_commits_on_tz = max(data.commits_by_timezone.values())
 		for i in sorted(data.commits_by_timezone.keys(), key = lambda n : int(n)):
 			commits = data.commits_by_timezone[i]
 			r = 127 + int((float(commits) / max_commits_on_tz) * 128)
 			f.write('<tr><th>%s</th><td style="background-color: rgb(%d, 0, 0)">%d</td></tr>' % (i, r, commits))
 		f.write('</tr></table></div>')
-
 		f.write('</body></html>')
 		f.close()
 
@@ -934,12 +974,12 @@ class HTMLReportCreator(ReportCreator):
 			f.write('<p class="moreauthors">These didn\'t make it to the top: %s</p>' % ', '.join(rest))
 
 		f.write(html_header(2, 'Cumulated Added Lines of Code per Author'))
-		f.write('<img src="lines_of_code_by_author.png" alt="Lines of code per Author" />')
+		f.write('<img src="lines_of_code_by_author.png" alt="Lines of code per Author">')
 		if len(allauthors) > conf['max_authors']:
 			f.write('<p class="moreauthors">Only top %d authors shown</p>' % conf['max_authors'])
 
 		f.write(html_header(2, 'Commits per Author'))
-		f.write('<img src="commits_by_author.png" alt="Commits per Author" />')
+		f.write('<img src="commits_by_author.png" alt="Commits per Author">')
 		if len(allauthors) > conf['max_authors']:
 			f.write('<p class="moreauthors">Only top %d authors shown</p>' % conf['max_authors'])
 
@@ -1017,7 +1057,7 @@ class HTMLReportCreator(ReportCreator):
 			fp.write('%s %d %d\n' % (domain, n , info['commits']))
 			f.write('<tr><th>%s</th><td>%d (%.2f%%)</td></tr>' % (domain, info['commits'], (100.0 * info['commits'] / totalcommits)))
 		f.write('</table></div>')
-		f.write('<img src="domains.png" alt="Commits by Domains" />')
+		f.write('<img src="domains.png" alt="Commits by Domains">')
 		fp.close()
 
 		f.write('</body></html>')
@@ -1054,7 +1094,7 @@ class HTMLReportCreator(ReportCreator):
 		#	fg.write('%s %d\n' % (datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d'), data.files_by_stamp[stamp]))
 		fg.close()
 			
-		f.write('<img src="files_by_date.png" alt="Files by Date" />')
+		f.write('<img src="files_by_date.png" alt="Files by Date">')
 
 		#f.write('<h2>Average file size by date</h2>')
 
@@ -1086,7 +1126,7 @@ class HTMLReportCreator(ReportCreator):
 		f.write('</dl></div>\n')
 
 		f.write(html_header(2, 'Lines of Code'))
-		f.write('<img src="lines_of_code.png" />')
+		f.write('<img src="lines_of_code.png" alt="Lines of Code">')
 
 		fg = open(path + '/lines_of_code.dat', 'w')
 		for stamp in sorted(data.changes_by_date.keys()):
@@ -1137,6 +1177,7 @@ class HTMLReportCreator(ReportCreator):
 set output 'hour_of_day.png'
 unset key
 set xrange [0.5:24.5]
+set yrange [0:]
 set xtics 4
 set grid y
 set ylabel "Commits"
@@ -1152,6 +1193,7 @@ plot 'hour_of_day.dat' using 1:2:(0.5) w boxes fs solid
 set output 'day_of_week.png'
 unset key
 set xrange [0.5:7.5]
+set yrange [0:]
 set xtics 1
 set grid y
 set ylabel "Commits"
@@ -1182,6 +1224,7 @@ plot 'domains.dat' using 2:3:(0.5) with boxes fs solid, '' using 2:3:1 with labe
 set output 'month_of_year.png'
 unset key
 set xrange [0.5:12.5]
+set yrange [0:]
 set xtics 1
 set grid y
 set ylabel "Commits"
@@ -1196,6 +1239,7 @@ plot 'month_of_year.dat' using 1:2:(0.5) w boxes fs solid
 """
 set output 'commits_by_year_month.png'
 unset key
+set yrange [0:]
 set xdata time
 set timefmt "%Y-%m"
 set format x "%Y-%m"
@@ -1214,6 +1258,7 @@ plot 'commits_by_year_month.dat' using 1:2:(0.5) w boxes fs solid
 """
 set output 'commits_by_year.png'
 unset key
+set yrange [0:]
 set xtics 1 rotate
 set grid y
 set ylabel "Commits"
@@ -1229,6 +1274,7 @@ plot 'commits_by_year.dat' using 1:2:(0.5) w boxes fs solid
 """
 set output 'files_by_date.png'
 unset key
+set yrange [0:]
 set xdata time
 set timefmt "%Y-%m-%d"
 set format x "%Y-%m-%d"
@@ -1248,6 +1294,7 @@ plot 'files_by_date.dat' using 1:2 w steps
 """
 set output 'lines_of_code.png'
 unset key
+set yrange [0:]
 set xdata time
 set timefmt "%s"
 set format x "%Y-%m-%d"
@@ -1267,6 +1314,7 @@ plot 'lines_of_code.dat' using 1:2 w lines
 set terminal png transparent size 640,480
 set output 'lines_of_code_by_author.png'
 set key left top
+set yrange [0:]
 set xdata time
 set timefmt "%s"
 set format x "%Y-%m-%d"
@@ -1280,7 +1328,8 @@ plot """
 		plots = []
 		for a in self.authors_to_plot:
 			i = i + 1
-			plots.append("""'lines_of_code_by_author.dat' using 1:%d title "%s" w lines""" % (i, a.replace("\"", "\\\"")))
+			author = a.replace("\"", "\\\"").replace("`", "")
+			plots.append("""'lines_of_code_by_author.dat' using 1:%d title "%s" w lines""" % (i, author))
 		f.write(", ".join(plots))
 		f.write('\n')
 
@@ -1294,6 +1343,7 @@ plot """
 set terminal png transparent size 640,480
 set output 'commits_by_author.png'
 set key left top
+set yrange [0:]
 set xdata time
 set timefmt "%s"
 set format x "%Y-%m-%d"
@@ -1307,7 +1357,8 @@ plot """
 		plots = []
 		for a in self.authors_to_plot:
 			i = i + 1
-			plots.append("""'commits_by_author.dat' using 1:%d title "%s" w lines""" % (i, a.replace("\"", "\\\"")))
+			author = a.replace("\"", "\\\"").replace("`", "")
+			plots.append("""'commits_by_author.dat' using 1:%d title "%s" w lines""" % (i, author))
 		f.write(", ".join(plots))
 		f.write('\n')
 
@@ -1322,10 +1373,10 @@ plot """
 
 	def printHeader(self, f, title = ''):
 		f.write(
-"""<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+"""<!DOCTYPE html>
+<html>
 <head>
+	<meta charset="UTF-8">
 	<title>GitStats - %s</title>
 	<link rel="stylesheet" href="%s" type="text/css" />
 	<link rel="stylesheet" href="bootstrap.css" type="text/css" />
@@ -1350,25 +1401,8 @@ plot """
 </nav>
 """)
 		
-
-class GitStats:
-	def run(self, args_orig):
-		optlist, args = getopt.getopt(args_orig, 'c:')
-		for o,v in optlist:
-			if o == '-c':
-				key, value = v.split('=', 1)
-				if key not in conf:
-					raise KeyError('no such key "%s" in config' % key)
-				if isinstance(conf[key], int):
-					conf[key] = int(value)
-				elif isinstance(conf[key], dict):
-					kk,vv = value.split(',', 1)
-					conf[key][kk] = vv
-				else:
-					conf[key] = value
-
-		if len(args) < 2:
-			print """
+def usage():
+	print """
 Usage: gitstats [options] <gitpath..> <outputpath>
 
 Options:
@@ -1376,7 +1410,29 @@ Options:
 
 Default config values:
 %s
+
+Please see the manual page for more details.
 """ % conf
+
+
+class GitStats:
+	def run(self, args_orig):
+		optlist, args = getopt.getopt(args_orig, 'hc:', ["help"])
+		for o,v in optlist:
+			if o == '-c':
+				key, value = v.split('=', 1)
+				if key not in conf:
+					raise KeyError('no such key "%s" in config' % key)
+				if isinstance(conf[key], int):
+					conf[key] = int(value)
+				else:
+					conf[key] = value
+			elif o in ('-h', '--help'):
+				usage()
+				sys.exit()
+
+		if len(args) < 2:
+			usage()
 			sys.exit(0)
 
 		outputpath = os.path.abspath(args[-1])
@@ -1403,10 +1459,13 @@ Default config values:
 		for gitpath in args[0:-1]:
 			print 'Git path: %s' % gitpath
 
+			prevdir = os.getcwd()
 			os.chdir(gitpath)
 
 			print 'Collecting data...'
 			data.collect(gitpath)
+
+			os.chdir(prevdir)
 
 		print 'Refining data...'
 		data.saveCache(cachefile)
