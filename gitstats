@@ -99,11 +99,11 @@ def getcommitrange(defaultrange = 'HEAD', end_only = False):
 	return defaultrange
 
 def getkeyssortedbyvalues(dict):
-	return list(map(lambda el : el[1], sorted(map(lambda el : (el[1], el[0]), dict.items()))))
+	return [el[1] for el in sorted([(el[1], el[0]) for el in list(dict.items())])]
 
 # dict['author'] = { 'commits': 512 } - ...key(dict, 'commits')
 def getkeyssortedbyvaluekey(d, key):
-	return list(map(lambda el : el[1], sorted(map(lambda el : (d[el][key], el), d.keys()))))
+	return [el[1] for el in sorted([(d[el][key], el) for el in list(d.keys())])]
 
 def getstatsummarycounts(line):
 	numbers = re.findall('\d+', line)
@@ -168,6 +168,7 @@ class DataCollector:
 		self.lineactivity_by_hour_of_week_busiest = 0
 		self.lineactivity_by_year_week = {} # yy_wNN -> commits
 		self.lineactivity_by_year_week_peak = 0
+		self.changes_by_date_by_author = {} # stamp -> author -> lines_added
 
 		self.authors = {} # name -> {commits, first_commit_stamp, last_commit_stamp, last_active_day, active_days, lines_added, lines_removed}
 
@@ -649,7 +650,7 @@ class GitDataCollector(DataCollector):
 
 							numbers = getstatsummarycounts(last_line)
 							if len(numbers) == 3:
-								(files, inserted, deleted) = map(lambda el : int(el), numbers)
+								(files, inserted, deleted) = [int(el) for el in numbers]
 								total_lines += inserted
 								total_lines -= deleted
 								self.total_lines_added += inserted
@@ -669,7 +670,6 @@ class GitDataCollector(DataCollector):
 		# Per-author statistics
 
 		# defined for stamp, author only if author commited at this timestamp.
-		self.changes_by_date_by_author = {} # stamp -> author -> lines_added
 
 		# Similar to the above, but never use --first-parent
 		# (we need to walk through every commit to know who
@@ -714,7 +714,7 @@ class GitDataCollector(DataCollector):
 				numbers = getstatsummarycounts(line);
 
 				if len(numbers) == 3:
-					(files, inserted, deleted) = list(map(lambda el : int(el), numbers))
+					(files, inserted, deleted) = [int(el) for el in numbers]
 				else:
 					print('Warning: failed to handle line "%s"' % line)
 					(files, inserted, deleted) = (0, 0, 0)
@@ -1432,7 +1432,7 @@ class HTMLReportCreator(ReportCreator):
 		f.write('<table class="tags">')
 		f.write('<tr><th>Name</th><th>Date</th><th>Commits</th><th>Authors</th></tr>')
 		# sort the tags by date desc
-		tags_sorted_by_date_desc = list(map(lambda el : el[1], reversed(sorted(map(lambda el : (el[1]['date'], el[0]), data.tags.items())))))
+		tags_sorted_by_date_desc = [el[1] for el in reversed(sorted([(el[1]['date'], el[0]) for el in list(data.tags.items())]))]
 		for tag in tags_sorted_by_date_desc:
 			authorinfo = []
 			self.authors_by_commits = getkeyssortedbyvalues(data.tags[tag]['authors'])
