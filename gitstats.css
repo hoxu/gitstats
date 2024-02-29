@@ -1,10 +1,6 @@
 /**
  * GitStats - default style
  */
-body {
-	color: black;
-	background-color: #dfd;
-}
 
 dt {
 	font-weight: bold;
