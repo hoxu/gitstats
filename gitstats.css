@@ -65,7 +65,7 @@ td {
 }
 
 /* Navigation bar; tabbed style */
-.nav {
+/* .nav {
 	border-bottom: 1px solid black;
 	padding: 0.3em;
 }
@@ -93,9 +93,9 @@ td {
 .nav li a:hover {
 	background-color: #ddd;
 	border-bottom: 1px solid #ddf;
-}
+} */
 
-img {
+main img {
 	border: 1px solid black;
 	padding: 0.5em;
 	background-color: white;
@@ -112,17 +112,17 @@ h1 a, h2 a {
 	text-decoration: none;
 }
 
-h1:hover a:after,
-h2:hover a:after {
+main  h1:hover a:after,
+main  h2:hover a:after {
 	content: '¶';
 	color: #555;
 }
 
-h1 {
+main h1 {
 	font-size: x-large;
 }
 
-h2 {
+main  h2 {
 	background-color: #564;
 	border: 1px solid black;
 	padding-left: 0.5em;
@@ -132,10 +132,10 @@ h2 {
 	clear: both;
 }
 
-h2 a {
+main h2 a {
 	color: white;
 }
 
-.moreauthors {
+main .moreauthors {
 	font-size: 80%;
 }
