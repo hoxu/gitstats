@@ -3,65 +3,65 @@
  */
 
 dt {
-	font-weight: bold;
-	float: left;
-	margin-right: 1em;
+  font-weight: bold;
+  float: left;
+  margin-right: 1em;
 }
 
 dt:after {
-	content: ': ';
+  content: ": ";
 }
 
 dd {
-	display: block;
-	clear: left;
+  display: block;
+  clear: left;
 }
 
 table {
-	border: 1px solid black;
-	border-collapse: collapse;
-	font-size: 80%;
-	margin-bottom: 1em;
+  border: 1px solid black;
+  border-collapse: collapse;
+  font-size: 80%;
+  margin-bottom: 1em;
 }
 
 table.noborders {
-	border: none;
+  border: none;
 }
 
 table.noborders td {
-	border: none;
+  border: none;
 }
 
 .vtable {
-	float: right;
-	clear: both;
+  float: right;
+  clear: both;
 }
 
 table.tags td {
-	vertical-align: top;
+  vertical-align: top;
 }
 
 td {
-	background-color: white;
+  background-color: white;
 }
 
 th {
-	background-color: #ddf;
+  background-color: #ddf;
 }
 
 th a {
-	text-decoration: none;
+  text-decoration: none;
 }
 
 tr:hover {
-	background-color: #ddf;
+  background-color: #ddf;
 }
 
 td {
-	border: 1px solid black;
-	padding: 0.2em;
-	padding-left: 0.3em;
-	padding-right: 0.2em;
+  border: 1px solid black;
+  padding: 0.2em;
+  padding-left: 0.3em;
+  padding-right: 0.2em;
 }
 
 /* Navigation bar; tabbed style */
@@ -96,47 +96,111 @@ td {
 } */
 
 main img {
-	border: 1px solid black;
-	padding: 0.5em;
-	background-color: white;
+  border: 1px solid black;
+  padding: 0.5em;
+  background-color: white;
 }
 
 th img {
-	border: 0px;
-	padding: 0px;
-	background-color: #ddf;
+  border: 0px;
+  padding: 0px;
+  background-color: #ddf;
 }
 
-h1 a, h2 a {
-	color: black;
-	text-decoration: none;
+h1 a,
+h2 a {
+  color: black;
+  text-decoration: none;
 }
 
-main  h1:hover a:after,
-main  h2:hover a:after {
-	content: '¶';
-	color: #555;
+main h1:hover a:after,
+main h2:hover a:after {
+  content: "¶";
+  color: #555;
 }
 
 main h1 {
-	font-size: x-large;
+  font-size: x-large;
 }
 
-main  h2 {
-	background-color: #564;
-	border: 1px solid black;
-	padding-left: 0.5em;
-	padding-right: 0.5em;
-	color: white;
-	font-size: large;
-	clear: both;
+main h2 {
+  background-color: #564;
+  border: 1px solid black;
+  padding-left: 0.5em;
+  padding-right: 0.5em;
+  color: white;
+  font-size: large;
+  clear: both;
 }
 
 main h2 a {
-	color: white;
+  color: white;
 }
 
 main .moreauthors {
-	font-size: 80%;
+  font-size: 80%;
 }
 
+.dark .apexcharts-canvas .apexcharts-legend-text {
+  color: #aeb7c0 !important;
+}
+.apexcharts-canvas .apexcharts-legend-text {
+  color: #64748b !important;
+}
+
+.dark .apexcharts-canvas .apexcharts-text {
+  fill: #aeb7c0 !important;
+}
+
+.apexcharts-canvas .apexcharts-text {
+  fill: #64748b !important;
+}
+
+.dark .apexcharts-canvas .apexcharts-xcrosshairs {
+  fill: #2e3a47 !important;
+}
+.apexcharts-canvas .apexcharts-xcrosshairs {
+  fill: #e2e8f0 !important;
+}
+
+
+.dark .apexcharts-canvas .apexcharts-gridline {
+  stroke: #2e3a47 !important;
+}
+.apexcharts-canvas .apexcharts-gridline {
+  stroke: #e2e8f0 !important;
+}
+
+.dark .apexcharts-canvas .apexcharts-series.apexcharts-pie-series path {
+  stroke: transparent !important;
+}
+
+.apexcharts-canvas .apexcharts-legend-series {
+  display: inline-flex;
+  gap: 0.375rem
+}
+
+/*
+.apexcharts-tooltip.apexcharts-theme-light {
+  @apply dark:!border-strokedark dark:!bg-boxdark;
+}
+.apexcharts-tooltip.apexcharts-theme-light .apexcharts-tooltip-title {
+  @apply dark:!border-strokedark dark:!bg-meta-4;
+}
+.apexcharts-xaxistooltip,
+.apexcharts-yaxistooltip {
+  @apply dark:!border-meta-4 dark:!bg-meta-4 dark:!text-bodydark1;
+}
+.apexcharts-xaxistooltip-bottom:after {
+  @apply !border-b-gray dark:!border-b-meta-4;
+}
+.apexcharts-xaxistooltip-bottom:before {
+  @apply !border-b-gray dark:!border-b-meta-4;
+}
+.apexcharts-xaxistooltip-bottom {
+  @apply !rounded !border-none !bg-gray !text-xs !font-medium !text-black dark:!text-white;
+}
+.apexcharts-tooltip-series-group {
+  @apply !pl-1.5;
+}
+*/

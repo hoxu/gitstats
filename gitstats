@@ -45,7 +45,7 @@ conf = {
 	'max_domains': 10,
 	'max_ext_length': 10,
 	'style': 'gitstats.css',
-	'max_authors': 20,
+	'max_authors': 7,
 	'authors_top': 5,
 	'commit_begin': '',
 	'commit_end': 'HEAD',
@@ -923,9 +923,8 @@ class HTMLReportCreator(ReportCreator):
 
 		activity_content.append('<div class="grid grid-cols-12 gap-4 md:gap-6 2xl:gap-7.5">')
 
-		#activity_content.append('<h2>Last 30 days</h2>')
-
-		#activity_content.append('<h2>Last 12 months</h2>')
+		# Last 30 days
+		# Last 12 months
 
 		# Weekly activity
 		WEEKS = 32
@@ -938,24 +937,19 @@ class HTMLReportCreator(ReportCreator):
 			weeks.insert(0, stampcur.strftime('%Y-%W'))
 			stampcur -= deltaweek
 		
-		activity_per_weekly_serie = []
+		activity_per_weekly_series = [
+			{"name": "Commits", "color": "#1A56DB", "data": []},
+			{"name": "Percentage", "color": "#779EF1", "data": []},
+		]
 		for i in range(0, WEEKS):
 			commits = data.activity_by_year_week[weeks[i]] if weeks[i] in data.activity_by_year_week else 0
-			activity_per_weekly_serie.append({"x": f'{WEEKS-i}', "y": commits, "percentage": (100.0 * commits) / totalcommits})
+			activity_per_weekly_series[0]['data'].append({"x": f'{WEEKS-i}', "y": commits})
+			activity_per_weekly_series[1]['data'].append({"x": f'{WEEKS-i}', "y": f'{((100.0 * commits) / totalcommits):.2f}'})
 		
-		activity_per_weekly_config = chart_default_config.copy()
-
-		activity_per_weekly_config.update({"series": [{
-			"name": "Commits",
-			"color": "#1A56DB",
-			"data": activity_per_weekly_serie}]})
-
-		# current_config.update({"series": [{
-		# 	"name": "Organic",
-		# 	"color": "#1A56DB",
-		# 	"data": commits_per_days_values
-		# 	}]})
-		# current_config['xaxis']['categories'] = commits_per_days_labels
+		activity_per_weekly_config = {
+			**chart_default_config,
+			"series": activity_per_weekly_series
+		}
 
 		activity_content.append(activity_html.addChart(activity_per_weekly_config, name='chartWeeklyActivity', title=f'Weekly activity <span class="text-xs font-medium">Last {WEEKS} weeks</span>', className=""))
 		
@@ -963,202 +957,146 @@ class HTMLReportCreator(ReportCreator):
 		# Hour of Day
 		hour_of_day = data.getActivityByHourOfDay()
 
-		activity_per_hours_day_serie = []
+		activity_per_hours_day_series = [
+			{"name": "Commits", "color": "#1A56DB", "data": []},
+			{"name": "Percentage", "color": "#779EF1", "data": []},
+		]
 
 		for i in range(0, 24):
 			commits = hour_of_day[i] if i in hour_of_day else 0
-			activity_per_hours_day_serie.append({"x": f'{i}', "y": commits, "percentage": (100.0 * commits) / totalcommits})
+			activity_per_hours_day_series[0]["data"].append({"x": f'{i}', "y": commits})
+			activity_per_hours_day_series[1]["data"].append({"x": f'{i}', "y": f'{((100.0 * commits) / totalcommits):.2f}'})
 
-		activity_per_hours_day_config = chart_default_config.copy()
-
-		activity_per_hours_day_config.update({"series": [{
-			"name": "Commits",
-			"color": "#1A56DB",
-			"data": activity_per_hours_day_serie}]})
+		activity_per_hours_day_config = {
+			**chart_default_config, 
+			"series": activity_per_hours_day_series
+		}
 		
 		activity_content.append(activity_html.addChart(activity_per_hours_day_config, name='chartHourOfDay', title='Hour of Day', className=""))
-				
-		
-		# activity_content.append('<div><div class="card-body"><table><tr><th>Hour</th>')
-		# for i in range(0, 24):
-		# 	activity_content.append('<th>%d</th>' % i)
-		# activity_content.append('</tr>\n<tr><th>Commits</th>')
-		# fp = open(path + '/hour_of_day.dat', 'w')
-		# for i in range(0, 24):
-		# 	if i in hour_of_day:
-		# 		r = 127 + int((float(hour_of_day[i]) / data.activity_by_hour_of_day_busiest) * 128)
-		# 		activity_content.append('<td style="background-color: rgb(%d, 0, 0)">%d</td>' % (r, hour_of_day[i]))
-		# 		fp.write('%d %d\n' % (i, hour_of_day[i]))
-		# 	else:
-		# 		activity_content.append('<td>0</td>')
-		# 		fp.write('%d 0\n' % i)
-		# fp.close()
-		# activity_content.append('</tr>\n<tr><th>%</th>')
-
-		# for i in range(0, 24):
-		# 	if i in hour_of_day:
-		# 		r = 127 + int((float(hour_of_day[i]) / data.activity_by_hour_of_day_busiest) * 128)
-		# 		activity_content.append('<td style="background-color: rgb(%d, 0, 0)">%.2f</td>' % (r, (100.0 * hour_of_day[i]) / totalcommits))
-		# 	else:
-		# 		activity_content.append('<td>0.00</td>')
-		# activity_content.append('</tr></table>')
 
 
 		# Day of Week
-		# activity_content.append(html_header(2, 'Day of Week'))
 		day_of_week = data.getActivityByDayOfWeek()
-		# activity_content.append('<div class="vtable"><table>')
-		# activity_content.append('<tr><th>Day</th><th>Total (%)</th></tr>')
 
-		activity_per_day_week_serie =[]
+		activity_per_day_week_series = [
+			{"name": "Commits", "color": "#1A56DB", "data": []},
+			{"name": "Percentage", "color": "#779EF1", "data": []},
+		]
 
 		for d in range(0, 7):
 			commits = day_of_week[d] if d in day_of_week else 0
-			activity_per_day_week_serie.append({"x": WEEKDAYS[d], "y": commits, "percentage": (100.0 * commits) / totalcommits})
+			activity_per_day_week_series[0]["data"].append({"x": WEEKDAYS[d], "y": commits})
+			activity_per_day_week_series[1]["data"].append({"x": WEEKDAYS[d], "y": f'{((100.0 * commits) / totalcommits):.2f}'})
 
-			# activity_content.append('<tr>')
-			# activity_content.append('<th>%s</th>' % (WEEKDAYS[d]))
-			# if d in day_of_week:
-			# 	activity_content.append('<td>%d (%.2f%%)</td>' % (day_of_week[d], (100.0 * day_of_week[d]) / totalcommits))
-			# else:
-			# 	activity_content.append('<td>0</td>')
-			# activity_content.append('</tr>')
-		# activity_content.append('</table></div>')
-
-		activity_per_day_week_config = chart_default_config.copy()
-
-		activity_per_day_week_config.update({"series": [{
-			"name": "Commits",
-			"color": "#1A56DB",
-			"data": activity_per_day_week_serie}]})
+		activity_per_day_week_config = {
+			**chart_default_config,
+			"series": activity_per_day_week_series
+		}
 		
 		activity_content.append(activity_html.addChart(activity_per_day_week_config, name='chartDayofWeek', title='Day of Week', className="xl:col-span-4"))
 
 		# Hour of Week
-		activity_hour_of_week__content= ['<table>']
-
-		activity_hour_of_week__content.append('<tr><th>Weekday</th>')
-		for hour in range(0, 24):
-			activity_hour_of_week__content.append('<th>%d</th>' % (hour))
-		activity_hour_of_week__content.append('</tr>')
+		activity_hour_of_week_series = []
 
 		for weekday in range(0, 7):
-			activity_hour_of_week__content.append('<tr><th>%s</th>' % (WEEKDAYS[weekday]))
+			activity_hour_of_week_series.append({"name": WEEKDAYS[weekday], "data": []})
 			for hour in range(0, 24):
 				try:
 					commits = data.activity_by_hour_of_week[weekday][hour]
 				except KeyError:
 					commits = 0
-				if commits != 0:
-					activity_hour_of_week__content.append('<td')
-					r = 127 + int((float(commits) / data.activity_by_hour_of_week_busiest) * 128)
-					activity_hour_of_week__content.append(' style="background-color: rgb(%d, 0, 0)"' % r)
-					activity_hour_of_week__content.append('>%d</td>' % commits)
-				else:
-					activity_hour_of_week__content.append('<td></td>')
-			activity_hour_of_week__content.append('</tr>')
+				
+				activity_hour_of_week_series[weekday]["data"].append({"x": f'{hour}', "y": commits})
 
-		activity_hour_of_week__content.append('</table>')
+		activity_hour_of_week_series.reverse()
 
-		activity_content.append(activity_html.addCard(activity_hour_of_week__content, title='Hour of Week', className='xl:col-span-8'))
+		activity_hour_of_week_config = {
+			"series": activity_hour_of_week_series,
+			"chart": {**chart_default_config["chart"], "type": 'heatmap'},
+      		"dataLabels": chart_default_config["dataLabels"],
+			"colors": ["#3C50E0"],
+			"xaxis": chart_default_config["xaxis"],
+			"yaxis": chart_default_config["yaxis"],
+		}
 
-
+		activity_content.append(activity_html.addChart(activity_hour_of_week_config, name='chartHourOfWeek', title='Hour of Week', className="xl:col-span-8"))
+	
 		# Month of Year
-		activity_per_month_of_year_serie = []
-		# activity_content.append(html_header(2, 'Month of Year'))
-		# activity_content.append('<div class="vtable"><table>')
-		# activity_content.append('<tr><th>Month</th><th>Commits (%)</th></tr>')
-		# fp = open (path + '/month_of_year.dat', 'w')
+		activity_per_month_of_year_series = [
+			{"name": "Commits", "color": "#1A56DB", "data": []},
+			{"name": "Percentage", "color": "#779EF1", "data": []},
+		]
 		for mm in range(1, 13):
 			commits = data.activity_by_month_of_year[mm] if mm in data.activity_by_month_of_year else 0
-			# activity_content.append('<tr><td>%d</td><td>%d (%.2f %%)</td></tr>' % (mm, commits, (100.0 * commits) / data.getTotalCommits()))
-			# fp.write('%d %d\n' % (mm, commits))
-			activity_per_month_of_year_serie.append({"x": f'{mm}', "y": commits, "percentage": (100.0 * commits) /totalcommits})
-		# fp.close()
-		# activity_content.append('</table></div>')
-		# activity_content.append('<img src="month_of_year.png" alt="Month of Year">')
+			activity_per_month_of_year_series[0]["data"].append({"x": f'{mm}', "y": commits, "percentage": (100.0 * commits) /totalcommits})
+			activity_per_month_of_year_series[1]["data"].append({"x": f'{mm}', "y": f'{((100.0 * commits) /totalcommits):.2f}'})
 
-		activity_per_month_of_year_config = chart_default_config.copy()
-
-		activity_per_month_of_year_config.update({"series": [{
-			"name": "Commits",
-			"color": "#1A56DB",
-			"data": activity_per_month_of_year_serie}]})
+		activity_per_month_of_year_config = {
+			**chart_default_config,
+			"series": activity_per_month_of_year_series
+		}
 
 		activity_content.append(activity_html.addChart(activity_per_month_of_year_config, name='chartMonthOfYear', title='Month of Year', className="xl:col-span-5"))
 
 
 		# Commits by year/month
 		activity_per_year_month_serie = []
-		# activity_content.append(html_header(2, 'Commits by year/month'))
-		# activity_content.append('<div class="vtable"><table><tr><th>Month</th><th>Commits</th><th>Lines added</th><th>Lines removed</th></tr>')
-		# for yymm in reversed(sorted(data.commits_by_month.keys())):
-			# activity_content.append('<tr><td>%s</td><td>%d</td><td>%d</td><td>%d</td></tr>' % (yymm, data.commits_by_month.get(yymm,0), data.lines_added_by_month.get(yymm,0), data.lines_removed_by_month.get(yymm,0)))
-		# activity_content.append('</table></div>')
-		# activity_content.append('<img src="commits_by_year_month.png" alt="Commits by year/month">')
-		# fg = open(path + '/commits_by_year_month.dat', 'w')
 		for yymm in sorted(data.commits_by_month.keys()):
-			# fg.write('%s %s\n' % (yymm, data.commits_by_month[yymm]))
 			activity_per_year_month_serie.append({"x": f'{yymm}', "y": data.commits_by_month.get(yymm,0), "lines_added": data.lines_added_by_month.get(yymm,0), "lines_removed": data.lines_removed_by_month.get(yymm,0), "percentage": (100.0 * data.commits_by_month.get(yymm,0)) /totalcommits})
-		# fg.close()
 
-		activity_per_year_month_config = chart_default_config.copy()
+		activity_per_year_month_config = dict(chart_default_config)
 
-		activity_per_year_month_config.update({"series": [{
+		activity_per_year_month_config = {
+			**chart_default_config,
+			"series": [{
 			"name": "Commits",
 			"color": "#1A56DB",
-			"data": activity_per_year_month_serie}]})
-		
-		activity_per_year_month_config["xaxis"]["labels"]["show"] = False
+			"data": activity_per_year_month_serie}],
+			"xaxis": {
+				**chart_default_config["xaxis"], 
+				"labels": {
+					**activity_per_year_month_config["xaxis"]["labels"] , 
+					"show" : False
+					}}}
 
 		activity_content.append(activity_html.addChart(activity_per_year_month_config, name='chartCommitsByYearMonth', title='Commits by year/month', className="xl:col-span-7"))
 
 
 		# Commits by year
-		activity_by_year_serie = []
-		# activity_content.append(html_header(2, 'Commits by Year'))
-		# activity_content.append('<div class="vtable"><table><tr><th>Year</th><th>Commits (% of all)</th><th>Lines added</th><th>Lines removed</th></tr>')
-		# for yy in reversed(sorted(data.commits_by_year.keys())):
-			# activity_content.append('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td></tr>' % (yy, data.commits_by_year.get(yy,0), (100.0 * data.commits_by_year.get(yy,0)) / data.getTotalCommits(), data.lines_added_by_year.get(yy,0), data.lines_removed_by_year.get(yy,0)))
-		# activity_content.append('</table></div>')
-		# activity_content.append('<img src="commits_by_year.png" alt="Commits by Year">')
-		# fg = open(path + '/commits_by_year.dat', 'w')
-		for yy in sorted(data.commits_by_year.keys()):
-			# fg.write('%d %d\n' % (yy, data.commits_by_year[yy]))
-			activity_by_year_serie.append({"x": f'{yy}', "y": data.commits_by_year.get(yy,0), "lines_added": data.lines_added_by_year.get(yymm,0), "lines_removed": data.lines_removed_by_year.get(yymm,0), "percentage": (100.0 * data.commits_by_year.get(yy,0)) /totalcommits})
-		# fg.close()
-
-		activity_by_year_config = chart_default_config.copy()
-
-		activity_by_year_config.update({"series": [{
-			"name": "Commits",
-			"color": "#1A56DB",
-			"data": activity_by_year_serie}]})
+		activity_by_year_series = [
+			{"name": "Commits", "color": "#1A56DB", "data": []},
+			{"name": "Lines Added", "color": "#23961B","data": []},
+			{"name": "Lines Removed", "color": "#DB1A1A","data": []},
+			{"name": "Percentage", "color": "#779EF1","data": []}]
 		
-		activity_by_year_config["xaxis"]["labels"]["show"] = True
+		for yy in sorted(data.commits_by_year.keys()):
+			activity_by_year_series[0]["data"].append({"x": f'{yy}', "y": data.commits_by_year.get(yy,0)})
+			activity_by_year_series[1]["data"].append({"x": f'{yy}', "y": data.lines_added_by_year.get(yy,0)})
+			activity_by_year_series[2]["data"].append({"x": f'{yy}', "y": data.lines_removed_by_year.get(yy,0)})
+			activity_by_year_series[3]["data"].append({"x": f'{yy}', "y": f'{((100.0 * data.commits_by_year.get(yy,0)) /totalcommits):.2f}'})
+
+		activity_by_year_config = {
+			**chart_default_config,
+			"series": activity_by_year_series
+			}
 
 		activity_content.append(activity_html.addChart(activity_by_year_config, name='chartCommitsByYear', title='Commits by Year', className="xl:col-span-6"))
 
 		# Commits by timezone
-		activity_by_timezone_serie = []
-		# activity_content.append(html_header(2, 'Commits by Timezone'))
-		# activity_content.append('<div><div class="card-body"><table><tr>')
-		# activity_content.append('<th>Timezone</th><th>Commits</th>')
-		# activity_content.append('</tr>')
+		activity_by_timezone_series = [
+			{"name": "Commits", "color": "#1A56DB", "data": []},
+			{"name": "Percentage", "color": "#779EF1", "data": []},
+		]
 		max_commits_on_tz = max(data.commits_by_timezone.values())
 		for i in sorted(data.commits_by_timezone.keys(), key = lambda n : int(n)):
 			commits = data.commits_by_timezone.get(i, 0)
-			activity_by_timezone_serie.append({"x": f'{i}', "y": commits, "percentage": (100.0 * commits) /totalcommits})
-			# r = 127 + int((float(commits) / max_commits_on_tz) * 128)
-			# activity_content.append('<tr><th>%s</th><td style="background-color: rgb(%d, 0, 0)">%d</td></tr>' % (i, r, commits))
-		# activity_content.append('</table></div>')
+			activity_by_timezone_series[0]["data"].append({"x": f'{i}', "y": commits})
+			activity_by_timezone_series[1]["data"].append({"x": f'{i}', "y": f'{((100.0 * commits) /totalcommits):.2f}'})
 
-		activity_by_timezone_config = chart_default_config.copy()
-
-		activity_by_timezone_config.update({"series": [{
-			"name": "Commits",
-			"color": "#1A56DB",
-			"data": activity_by_timezone_serie}]})
+		activity_by_timezone_config = {
+			**chart_default_config,
+			"series": activity_by_timezone_series
+		}
 
 		activity_content.append(activity_html.addChart(activity_by_timezone_config, name='chartCommitsByTimezone', title='Commits by Timezone', className="xl:col-span-6"))
 
@@ -1170,35 +1108,35 @@ class HTMLReportCreator(ReportCreator):
 		# authors.html
 		# Authors
 		authors_content = []
+		authors_content.append('<div class="grid grid-cols-12 gap-4 md:gap-6 2xl:gap-7.5">')
+		
 		authors_html = html.HTML(path=f'{path}/authors.html', title='Authors', version= getversion())
 
 		# Authors :: List of authors
-		authors_content.append(html_header(2, 'List of Authors'))
+		list_authors_content = []
 
-		authors_content.append('<div><div class="card-body"><table class="authors sortable" id="authors">')
-		authors_content.append('<tr><th>Author</th><th>Commits (%)</th><th>+ lines</th><th>- lines</th><th>First commit</th><th>Last commit</th><th class="unsortable">Age</th><th>Active days</th><th># by commits</th></tr>')
+		list_authors_content.append('<div><div class="card-body"><table class="authors sortable" id="authors">')
+		list_authors_content.append('<tr><th>Author</th><th>Commits (%)</th><th>+ lines</th><th>- lines</th><th>First commit</th><th>Last commit</th><th class="unsortable">Age</th><th>Active days</th><th># by commits</th></tr>')
 		for author in data.getAuthors(conf['max_authors']):
 			info = data.getAuthorInfo(author)
-			authors_content.append('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td></tr>' % (author, info['commits'], info['commits_frac'], info['lines_added'], info['lines_removed'], info['date_first'], info['date_last'], info['timedelta'], len(info['active_days']), info['place_by_commits']))
-		authors_content.append('</table></div></div>')
+			list_authors_content.append('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td><td>%s</td><td>%s</td><td>%s</td><td>%d</td><td>%d</td></tr>' % (author, info['commits'], info['commits_frac'], info['lines_added'], info['lines_removed'], info['date_first'], info['date_last'], info['timedelta'], len(info['active_days']), info['place_by_commits']))
+		list_authors_content.append('</table></div></div>')
 
 		allauthors = data.getAuthors()
 		if len(allauthors) > conf['max_authors']:
 			rest = allauthors[conf['max_authors']:]
-			authors_content.append('<p class="moreauthors">These didn\'t make it to the top: %s</p>' % ', '.join(rest))
+			list_authors_content.append('<p class="moreauthors">These didn\'t make it to the top: %s</p>' % ', '.join(rest))
+		
+		authors_content.append(authors_html.addCard(list_authors_content, title='List of Authors'))
 
-		authors_content.append(html_header(2, 'Cumulated Added Lines of Code per Author'))
-		authors_content.append('<img src="lines_of_code_by_author.png" alt="Lines of code per Author">')
-		if len(allauthors) > conf['max_authors']:
-			authors_content.append('<p class="moreauthors">Only top %d authors shown</p>' % conf['max_authors'])
+		# Authors :: Commits
+		author_disclaimer = ''
+		max_authors = conf['max_authors']
+		if len(allauthors) > max_authors:
+			author_disclaimer =f'<span class="text-xs font-medium">Only top {max_authors} authors shown</span>'
 
-		authors_content.append(html_header(2, 'Commits per Author'))
-		authors_content.append('<img src="commits_by_author.png" alt="Commits per Author">')
-		if len(allauthors) > conf['max_authors']:
-			authors_content.append('<p class="moreauthors">Only top %d authors shown</p>' % conf['max_authors'])
-
-		fgl = open(path + '/lines_of_code_by_author.dat', 'w')
-		fgc = open(path + '/commits_by_author.dat', 'w')
+		# fgl = open(path + '/lines_of_code_by_author.dat', 'w')
+		# fgc = open(path + '/commits_by_author.dat', 'w')
 
 		lines_by_authors = {} # cumulated added lines by
 		# author. to save memory,
@@ -1211,56 +1149,133 @@ class HTMLReportCreator(ReportCreator):
 		# time. Be robust and keep the list in a variable.
 		commits_by_authors = {} # cumulated added lines by
 
+		colors = [
+		"#4B0082",
+		"#2E8B57",
+		"#7B68EE",
+		"#BA55D3",
+		"#DB7093",
+		"#FFD700",
+		"#006400",
+		"#008080",
+		"#191970",
+		"#0000CD",
+		"#CD5C5C",
+		"#FAFAD2",
+		"#7FFF00",
+		"#9966CC",
+		"#D2B48C",
+		"#000080",
+		"#AFEEEE",
+		"#8B008B",
+		"#008000",
+		"#6A5ACD"]
+
+		authors_cumulated_commits_series = {}
+		authors_commits_series = {}
+
 		self.authors_to_plot = data.getAuthors(conf['max_authors'])
-		for author in self.authors_to_plot:
+		for idx, author in enumerate(self.authors_to_plot):
 			lines_by_authors[author] = 0
 			commits_by_authors[author] = 0
+			authors_cumulated_commits_series[author]= {"name": author, "color": colors[idx], "data": []}
+			authors_commits_series[author]= {"name": author, "color": colors[idx], "data": []}
+
 		for stamp in sorted(data.changes_by_date_by_author.keys()):
-			fgl.write('%d' % stamp)
-			fgc.write('%d' % stamp)
+			# fgl.write('%d' % stamp)
+			# fgc.write('%d' % stamp)
 			for author in self.authors_to_plot:
 				if author in data.changes_by_date_by_author[stamp].keys():
 					lines_by_authors[author] = data.changes_by_date_by_author[stamp][author]['lines_added']
 					commits_by_authors[author] = data.changes_by_date_by_author[stamp][author]['commits']
-				fgl.write(' %d' % lines_by_authors[author])
-				fgc.write(' %d' % commits_by_authors[author])
-			fgl.write('\n')
-			fgc.write('\n')
-		fgl.close()
-		fgc.close()
+				# fgl.write(' %d' % lines_by_authors[author])
+				# fgc.write(' %d' % commits_by_authors[author])
+				# authors_cumulated_commits_series[author]['data'].append({"x": stamp, "y": lines_by_authors[author]})
+				
+				authors_cumulated_commits_series[author]['data'].append(lines_by_authors[author])
+				authors_commits_series[author]['data'].append(commits_by_authors[author])
+
+		# 	fgl.write('\n')
+		# 	fgc.write('\n')
+		# fgl.close()
+		# fgc.close()
+
+		# Authors :: Cumulated added LoC per author
+		authors_cumulated_commits_config = {
+			**chart_default_config,
+			"chart": {**chart_default_config["chart"], "type": 'line'},
+			"series": list(authors_cumulated_commits_series.values()),
+			"markers": {"size": 0,"hover": {"sizeOffset": 6}},
+			"xaxis": {
+				**chart_default_config["xaxis"], 
+				"labels": {
+					**chart_default_config["xaxis"]["labels"] , 
+					"show" : False
+					}}
+		}
+
+		# authors_content.append(activity_html.addChart(authors_cumulated_commits_config, name='chartCumulatedAddedLoCAuthor', title=f'Cumulated Added LoC per Author {author_disclaimer}', className="xl:col-span-6"))
+
+		# Authors :: Commits per Author
+		authors_commits_config = {
+			**chart_default_config,
+			"chart": {**chart_default_config["chart"], "type": 'line'},
+			"series": list(authors_commits_series.values()),
+			"markers": {"size": 0,"hover": {"sizeOffset": 6}},
+			"xaxis": {
+				**chart_default_config["xaxis"], 
+				"labels": {
+					**chart_default_config["xaxis"]["labels"] , 
+					"show" : False
+					}}
+		}
+
+		# authors_content.append(activity_html.addChart(authors_commits_config, name='chartCommitsPerAuthor', title=f'Commits per Author {author_disclaimer}', className="xl:col-span-6"))
+
 
 		# Authors :: Author of Month
-		authors_content.append(html_header(2, 'Author of Month'))
-		authors_content.append('<table class="sortable" id="aom">')
-		authors_content.append('<tr><th>Month</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' % conf['authors_top'])
+		author_of_month_content = []
+		author_of_month_content.append('<table class="sortable" id="aom">')
+		author_of_month_content.append('<tr><th>Month</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' % conf['authors_top'])
 		for yymm in reversed(sorted(data.author_of_month.keys())):
 			authordict = data.author_of_month[yymm]
 			authors = getkeyssortedbyvalues(authordict)
 			authors.reverse()
 			commits = data.author_of_month[yymm][authors[0]]
 			next = ', '.join(authors[1:conf['authors_top']+1])
-			authors_content.append('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (yymm, authors[0], commits, (100.0 * commits) / data.commits_by_month[yymm], data.commits_by_month[yymm], next, len(authors)))
+			author_of_month_content.append('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (yymm, authors[0], commits, (100.0 * commits) / data.commits_by_month[yymm], data.commits_by_month[yymm], next, len(authors)))
 
-		authors_content.append('</table>')
+		author_of_month_content.append('</table>')
 
-		authors_content.append(html_header(2, 'Author of Year'))
-		authors_content.append('<table class="sortable" id="aoy"><tr><th>Year</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' % conf['authors_top'])
+		authors_content.append(authors_html.addCard(author_of_month_content, title='Author of Month'))
+
+		# Authors :: Author of Year
+		author_of_year_content = []
+		author_of_year_content.append('<table class="sortable" id="aoy"><tr><th>Year</th><th>Author</th><th>Commits (%%)</th><th class="unsortable">Next top %d</th><th>Number of authors</th></tr>' % conf['authors_top'])
 		for yy in reversed(sorted(data.author_of_year.keys())):
 			authordict = data.author_of_year[yy]
 			authors = getkeyssortedbyvalues(authordict)
 			authors.reverse()
 			commits = data.author_of_year[yy][authors[0]]
 			next = ', '.join(authors[1:conf['authors_top']+1])
-			authors_content.append('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (yy, authors[0], commits, (100.0 * commits) / data.commits_by_year[yy], data.commits_by_year[yy], next, len(authors)))
-		authors_content.append('</table>')
+			author_of_year_content.append('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (yy, authors[0], commits, (100.0 * commits) / data.commits_by_year[yy], data.commits_by_year[yy], next, len(authors)))
+		author_of_year_content.append('</table>')
 
-		# Domains
-		authors_content.append(html_header(2, 'Commits by Domains'))
+		authors_content.append(authors_html.addCard(author_of_year_content, title='Author of Year', className="xl:col-span-6"))
+
+		# Authors :: Domains
 		domains_by_commits = getkeyssortedbyvaluekey(data.domains, 'commits')
 		domains_by_commits.reverse() # most first
-		authors_content.append('<div class="vtable"><table>')
-		authors_content.append('<tr><th>Domains</th><th>Total (%)</th></tr>')
-		fp = open(path + '/domains.dat', 'w')
+
+		authors_commits_by_domains_series = [{
+			"name": "Commits",
+			"color": "#1A56DB",
+			"data": []
+		},{
+			"name": "Percentage",
+			"color": "#8FB0F6",
+			"data": []
+		}]
 		n = 0
 		for domain in domains_by_commits:
 			if n == conf['max_domains']:
@@ -1268,11 +1283,18 @@ class HTMLReportCreator(ReportCreator):
 			commits = 0
 			n += 1
 			info = data.getDomainInfo(domain)
-			fp.write('%s %d %d\n' % (domain, n , info['commits']))
-			authors_content.append('<tr><th>%s</th><td>%d (%.2f%%)</td></tr>' % (domain, info['commits'], (100.0 * info['commits'] / totalcommits)))
-		authors_content.append('</table></div>')
-		authors_content.append('<img src="domains.png" alt="Commits by Domains">')
-		fp.close()
+			authors_commits_by_domains_series[0]['data'].append({"x": domain, "y": info['commits']})
+			p = (100.0 * info['commits'] / totalcommits)
+			authors_commits_by_domains_series[1]['data'].append({"x": domain, "y": f'{p:.2f}'})
+
+		authors_commits_by_domains_config = {
+			**chart_default_config,
+			"series": authors_commits_by_domains_series,
+		}
+
+		authors_content.append(activity_html.addChart(authors_commits_by_domains_config, name='chartCommitsbyDomains', title='Commits by Domains', className="xl:col-span-6"))
+
+		authors_content.append('</div>')
 
 		authors_html.create(authors_content)
 

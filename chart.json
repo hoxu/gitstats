@@ -19,6 +19,9 @@
       "columnWidth": "55%",
       "endingShape": "rounded",
       "borderRadius": 2
+    },
+    "heatmap": {
+      "enableShades": false
     }
   },
   "dataLabels": {
