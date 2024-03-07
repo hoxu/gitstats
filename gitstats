@@ -16,17 +16,12 @@ import time
 import zlib
 import multiprocessing
 
-if sys.version_info < (2, 6):
-	print >> sys.stderr, "Python 2.6 or higher is required for gitstats"
-	sys.exit(1)
-
 from multiprocessing import Pool
 
 import html
 
 os.environ['LC_ALL'] = 'C'
 
-GNUPLOT_COMMON = 'set terminal png transparent size 640,240\nset size 1.0,1.0\n'
 ON_LINUX = (platform.system() == 'Linux')
 WEEKDAYS = ('Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun')
 JSONFILE = 'gitstats.json'
@@ -35,17 +30,11 @@ exectime_internal = 0.0
 exectime_external = 0.0
 time_start = time.time()
 
-# By default, gnuplot is searched from path, but can be overridden with the
-# environment variable "GNUPLOT"
-gnuplot_cmd = 'gnuplot'
-if 'GNUPLOT' in os.environ:
-	gnuplot_cmd = os.environ['GNUPLOT']
-
 conf = {
 	'max_domains': 10,
 	'max_ext_length': 10,
 	'style': 'gitstats.css',
-	'max_authors': 7,
+	'max_authors': 20,
 	'authors_top': 5,
 	'commit_begin': '',
 	'commit_end': 'HEAD',
@@ -131,9 +120,6 @@ def getversion():
 def getgitversion():
 	return getpipeoutput(['git --version']).split('\n')[0]
 
-def getgnuplotversion():
-	return getpipeoutput(['%s --version' % gnuplot_cmd]).split('\n')[0]
-
 def getnumoffilesfromrev(time_rev):
 	"""
 	Get number of files changed in commit
@@ -173,6 +159,7 @@ class DataCollector:
 		self.lineactivity_by_year_week = {} # yy_wNN -> commits
 		self.lineactivity_by_year_week_peak = 0
 		self.changes_by_date_by_author = {} # stamp -> author -> lines_added
+		self.changes_by_month_by_author = {} # stamp -> author -> lines_added
 
 		self.authors = {} # name -> {commits, first_commit_stamp, last_commit_stamp, last_active_day, active_days, lines_added, lines_removed}
 
@@ -212,12 +199,15 @@ class DataCollector:
 		self.tags = {}
 
 		self.files_by_stamp = {} # stamp -> files
+		self.files_by_month = {} # year-month -> files
 
 		# extensions
 		self.extensions = {} # extension -> files, lines
 
 		# line statistics
 		self.changes_by_date = {} # stamp -> { files, ins, del }
+		self.changes_by_month = {} # yy-MM -> { files, ins, del }
+		self.changes_by_year = {} # yy -> { files, ins, del }
 
 	##
 	# This should be the main function to extract data from the repository.
@@ -516,8 +506,11 @@ class GitDataCollector(DataCollector):
 			if len(parts) != 2:
 				continue
 			(stamp, files) = parts[0:2]
+			date = datetime.datetime.fromtimestamp(int(stamp))
+			yymm = date.strftime('%Y-%m')
 			try:
 				self.files_by_stamp[int(stamp)] = int(files)
+				self.files_by_month[yymm] = int(files)
 			except ValueError:
 				print('Warning: failed to parse line "%s"' % line)
 
@@ -584,6 +577,8 @@ class GitDataCollector(DataCollector):
 		#  N files changed, N insertions (+), N deletions(-)
 		# <stamp> <author>
 		self.changes_by_date = {} # stamp -> { files, ins, del }
+		self.changes_by_month = {} # yyMM -> { files, ins, del }
+		self.changes_by_year = {} # yy -> { files, ins, del }
 		# computation of lines of code by date is better done
 		# on a linear history.
 		extra = ''
@@ -604,11 +599,24 @@ class GitDataCollector(DataCollector):
 				if pos != -1:
 					try:
 						(stamp, author) = (int(line[:pos]), line[pos+1:])
+						date = datetime.datetime.fromtimestamp(stamp)
+						yymm = date.strftime('%Y-%m')
+
 						if author not in conf["excluded_authors"]:
 							self.changes_by_date[stamp] = { 'files': files, 'ins': inserted, 'del': deleted, 'lines': total_lines }
+							self.changes_by_year[date.year] = { 
+								'files': files, 
+								'ins': inserted, 
+								'del': deleted,
+								'lines': total_lines
+								}
+							self.changes_by_month[yymm] = { 
+								'files': files, 
+								'ins': inserted, 
+								'del': deleted,
+								'lines': total_lines
+								}
 
-							date = datetime.datetime.fromtimestamp(stamp)
-							yymm = date.strftime('%Y-%m')
 							self.lines_added_by_month[yymm] = self.lines_added_by_month.get(yymm, 0) + inserted
 							self.lines_removed_by_month[yymm] = self.lines_removed_by_month.get(yymm, 0) + deleted
 
@@ -696,6 +704,8 @@ class GitDataCollector(DataCollector):
 					try:
 						oldstamp = stamp
 						(stamp, author) = (int(line[:pos]), line[pos+1:])
+						date = datetime.datetime.fromtimestamp(float(stamp))
+						yyMM =  date.strftime('%Y-%m')
 						if author not in conf["excluded_authors"]:
 							if oldstamp > stamp:
 								# clock skew, keep old timestamp to avoid having ugly graph
@@ -705,12 +715,24 @@ class GitDataCollector(DataCollector):
 							self.authors[author]['commits'] = self.authors[author].get('commits', 0) + 1
 							self.authors[author]['lines_added'] = self.authors[author].get('lines_added', 0) + inserted
 							self.authors[author]['lines_removed'] = self.authors[author].get('lines_removed', 0) + deleted
+
 							if stamp not in self.changes_by_date_by_author:
 								self.changes_by_date_by_author[stamp] = {}
+							if yyMM not in self.changes_by_month_by_author:
+								self.changes_by_month_by_author[yyMM] = {}
+
 							if author not in self.changes_by_date_by_author[stamp]:
 								self.changes_by_date_by_author[stamp][author] = {}
+							if author not in self.changes_by_month_by_author[yyMM]:
+								self.changes_by_month_by_author[yyMM][author] = {}
+
 							self.changes_by_date_by_author[stamp][author]['lines_added'] = self.authors[author]['lines_added']
+							self.changes_by_date_by_author[stamp][author]['lines_removed'] = self.authors[author]['lines_removed']
 							self.changes_by_date_by_author[stamp][author]['commits'] = self.authors[author]['commits']
+
+							self.changes_by_month_by_author[yyMM][author]['lines_added'] = self.changes_by_month_by_author[yyMM][author].get('lines_added', 0) + self.authors[author]['lines_added']
+							self.changes_by_month_by_author[yyMM][author]['lines_removed'] = self.changes_by_month_by_author[yyMM][author].get('lines_removed', 0) + self.authors[author]['lines_removed']
+							self.changes_by_month_by_author[yyMM][author]['commits'] = self.changes_by_month_by_author[yyMM][author].get('commits', 0) + self.authors[author]['commits']
 							files, inserted, deleted = 0, 0, 0
 					except ValueError:
 						print('Warning: unexpected line "%s"' % line)
@@ -867,34 +889,28 @@ class HTMLReportCreator(ReportCreator):
 		# index.html
 		# General
 		format = '%Y-%m-%d %H:%M:%S'
-		# general_content = ['<h1 class="text-3xl font-bold underline">GitStats - %s</h1>' % data.projectname]
 
-		general_content = []
 		general_html = html.HTML(path=f'{path}/index.html', title=f"{data.projectname}'S STATS", version= getversion())
 
+		general_html.add('<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">')
+		general_html.tilesItemStat(title='Project name', info=data.projectname)
+		general_html.tilesItemStat(title='Generated', info=datetime.datetime.now().strftime(format))
+		general_html.tilesItemStat(title='Report Period', info=f'{data.getFirstCommitDate().strftime(format)} to {data.getLastCommitDate().strftime(format)}')
+		general_html.add('</div>')
 
-		tiles = '\n'.join([
-			general_html.tilesItemStat(title='Project name', info=data.projectname),
-			general_html.tilesItemStat(title='Generated', info=datetime.datetime.now().strftime(format)),
-			general_html.tilesItemStat(title='Report Period', info=f'{data.getFirstCommitDate().strftime(format)} to {data.getLastCommitDate().strftime(format)}'),
-		])
-
-		cards = '\n'.join([
-			general_html.cardItemStat(title='Branches', count=data.total_branches), 
-			general_html.cardItemStat(title='Tags', count=data.total_tags), 
-			general_html.cardItemStat(title='Age', count=f'{data.getCommitDeltaDays():.1f} days'), 
-			general_html.cardItemStat(title='Active days', count=f'{len(data.getActiveDays())}', stat=f'{(100.0 * len(data.getActiveDays()) / data.getCommitDeltaDays()):3.2f}%', arrow='up'), 
-			general_html.cardItemStat(title='Total files', count=data.getTotalFiles()), 
-			general_html.cardItemStat(title='Total LOC', count=data.getTotalLOC()),
-			general_html.cardItemStat(title='Total lines added', count=data.total_lines_added, stat=f'{((data.total_lines_added/data.getTotalLOC())*100):.2f}%', arrow='up'),
-			general_html.cardItemStat(title='Total lines removed', count=data.total_lines_removed, stat=f'{((data.total_lines_removed/data.getTotalLOC())*100):.2f}%', arrow='up'), 
-			general_html.cardItemStat(title='Total commits', count=data.getTotalCommits(), stat=f'{(float(data.getTotalCommits()) / len(data.getActiveDays())):.1f}', arrow='up'),
-			general_html.cardItemStat(title='Authors', count=data.getTotalAuthors(), stat=f'{((1.0 * data.getTotalCommits()) / data.getTotalAuthors()):.1f}', arrow='up'),
-			])
 		
-		general_content.append(f'<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">{tiles}</div>')
-
-		general_content.append(f'<div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">{cards}</div>')
+		general_html.add('<div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5">')
+		general_html.cardItemStat(title='Branches', count=data.total_branches)
+		general_html.cardItemStat(title='Tags', count=data.total_tags)
+		general_html.cardItemStat(title='Age', count=f'{data.getCommitDeltaDays():.1f} days')
+		general_html.cardItemStat(title='Active days', count=f'{len(data.getActiveDays())}', stat=f'{(100.0 * len(data.getActiveDays()) / data.getCommitDeltaDays()):3.2f}%', arrow='up')
+		general_html.cardItemStat(title='Total files', count=data.getTotalFiles())
+		general_html.cardItemStat(title='Total LOC', count=data.getTotalLOC())
+		general_html.cardItemStat(title='Total lines added', count=data.total_lines_added, stat=f'{((data.total_lines_added/data.getTotalLOC())*100):.2f}%', arrow='up')
+		general_html.cardItemStat(title='Total lines removed', count=data.total_lines_removed, stat=f'{((data.total_lines_removed/data.getTotalLOC())*100):.2f}%', arrow='up')
+		general_html.cardItemStat(title='Total commits', count=data.getTotalCommits(), stat=f'{(float(data.getTotalCommits()) / len(data.getActiveDays())):.1f}', arrow='up')
+		general_html.cardItemStat(title='Authors', count=data.getTotalAuthors(), stat=f'{((1.0 * data.getTotalCommits()) / data.getTotalAuthors()):.1f}', arrow='up')
+		general_html.add('</div>')
 
 		# general_content.append('<div><div class="card-body"><dl>')
 		# general_content.append('<dt>Project name</dt><dd>%s (%s branches, %s tags)</dd>' % (data.projectname, data.total_branches, data.total_tags))
@@ -908,7 +924,7 @@ class HTMLReportCreator(ReportCreator):
 		# general_content.append('<dt>Authors</dt><dd>%s (average %.1f commits per author)</dd>' % (data.getTotalAuthors(), (1.0 * data.getTotalCommits()) / data.getTotalAuthors()))
 		# general_content.append('</dl></div></div>')
 
-		general_html.create(general_content)
+		general_html.create()
 
 
 		chart_default_config = json.load(open('chart.json'))
@@ -918,15 +934,14 @@ class HTMLReportCreator(ReportCreator):
 		# Activity
 		totalcommits = data.getTotalCommits()
 
-		activity_content = []
 		activity_html = html.HTML(path=f'{path}/activity.html', title='Activity', version= getversion())
 
-		activity_content.append('<div class="grid grid-cols-12 gap-4 md:gap-6 2xl:gap-7.5">')
+		activity_html.add('<div class="grid grid-cols-12 gap-4 md:gap-6 2xl:gap-7.5">')
 
 		# Last 30 days
 		# Last 12 months
 
-		# Weekly activity
+		# Activity :: Weekly activity
 		WEEKS = 32
 		# generate weeks to show (previous N weeks from now)
 		now = datetime.datetime.now()
@@ -951,10 +966,10 @@ class HTMLReportCreator(ReportCreator):
 			"series": activity_per_weekly_series
 		}
 
-		activity_content.append(activity_html.addChart(activity_per_weekly_config, name='chartWeeklyActivity', title=f'Weekly activity <span class="text-xs font-medium">Last {WEEKS} weeks</span>', className=""))
+		activity_html.addChart(activity_per_weekly_config, name='chartWeeklyActivity', title=f'Weekly activity <span class="text-xs font-medium">Last {WEEKS} weeks</span>', className="")
 		
 
-		# Hour of Day
+		# Activity :: Hour of Day
 		hour_of_day = data.getActivityByHourOfDay()
 
 		activity_per_hours_day_series = [
@@ -972,10 +987,10 @@ class HTMLReportCreator(ReportCreator):
 			"series": activity_per_hours_day_series
 		}
 		
-		activity_content.append(activity_html.addChart(activity_per_hours_day_config, name='chartHourOfDay', title='Hour of Day', className=""))
+		activity_html.addChart(activity_per_hours_day_config, name='chartHourOfDay', title='Hour of Day', className="")
 
 
-		# Day of Week
+		# Activity :: Day of Week
 		day_of_week = data.getActivityByDayOfWeek()
 
 		activity_per_day_week_series = [
@@ -993,9 +1008,9 @@ class HTMLReportCreator(ReportCreator):
 			"series": activity_per_day_week_series
 		}
 		
-		activity_content.append(activity_html.addChart(activity_per_day_week_config, name='chartDayofWeek', title='Day of Week', className="xl:col-span-4"))
+		activity_html.addChart(activity_per_day_week_config, name='chartDayofWeek', title='Day of Week', className="xl:col-span-4")
 
-		# Hour of Week
+		# Activity :: Hour of Week
 		activity_hour_of_week_series = []
 
 		for weekday in range(0, 7):
@@ -1019,9 +1034,9 @@ class HTMLReportCreator(ReportCreator):
 			"yaxis": chart_default_config["yaxis"],
 		}
 
-		activity_content.append(activity_html.addChart(activity_hour_of_week_config, name='chartHourOfWeek', title='Hour of Week', className="xl:col-span-8"))
+		activity_html.addChart(activity_hour_of_week_config, name='chartHourOfWeek', title='Hour of Week', className="xl:col-span-8")
 	
-		# Month of Year
+		# Activity :: Month of Year
 		activity_per_month_of_year_series = [
 			{"name": "Commits", "color": "#1A56DB", "data": []},
 			{"name": "Percentage", "color": "#779EF1", "data": []},
@@ -1036,15 +1051,13 @@ class HTMLReportCreator(ReportCreator):
 			"series": activity_per_month_of_year_series
 		}
 
-		activity_content.append(activity_html.addChart(activity_per_month_of_year_config, name='chartMonthOfYear', title='Month of Year', className="xl:col-span-5"))
+		activity_html.addChart(activity_per_month_of_year_config, name='chartMonthOfYear', title='Month of Year', className="xl:col-span-5")
 
 
-		# Commits by year/month
+		# Activity :: Commits by year/month
 		activity_per_year_month_serie = []
 		for yymm in sorted(data.commits_by_month.keys()):
 			activity_per_year_month_serie.append({"x": f'{yymm}', "y": data.commits_by_month.get(yymm,0), "lines_added": data.lines_added_by_month.get(yymm,0), "lines_removed": data.lines_removed_by_month.get(yymm,0), "percentage": (100.0 * data.commits_by_month.get(yymm,0)) /totalcommits})
-
-		activity_per_year_month_config = dict(chart_default_config)
 
 		activity_per_year_month_config = {
 			**chart_default_config,
@@ -1055,14 +1068,14 @@ class HTMLReportCreator(ReportCreator):
 			"xaxis": {
 				**chart_default_config["xaxis"], 
 				"labels": {
-					**activity_per_year_month_config["xaxis"]["labels"] , 
+					**chart_default_config["xaxis"]["labels"] , 
 					"show" : False
 					}}}
 
-		activity_content.append(activity_html.addChart(activity_per_year_month_config, name='chartCommitsByYearMonth', title='Commits by year/month', className="xl:col-span-7"))
+		activity_html.addChart(activity_per_year_month_config, name='chartCommitsByYearMonth', title='Commits by year/month', className="xl:col-span-7")
 
 
-		# Commits by year
+		# Activity :: Commits by year
 		activity_by_year_series = [
 			{"name": "Commits", "color": "#1A56DB", "data": []},
 			{"name": "Lines Added", "color": "#23961B","data": []},
@@ -1080,9 +1093,9 @@ class HTMLReportCreator(ReportCreator):
 			"series": activity_by_year_series
 			}
 
-		activity_content.append(activity_html.addChart(activity_by_year_config, name='chartCommitsByYear', title='Commits by Year', className="xl:col-span-6"))
+		activity_html.addChart(activity_by_year_config, name='chartCommitsByYear', title='Commits by Year', className="xl:col-span-6")
 
-		# Commits by timezone
+		# Activity :: Commits by timezone
 		activity_by_timezone_series = [
 			{"name": "Commits", "color": "#1A56DB", "data": []},
 			{"name": "Percentage", "color": "#779EF1", "data": []},
@@ -1098,19 +1111,18 @@ class HTMLReportCreator(ReportCreator):
 			"series": activity_by_timezone_series
 		}
 
-		activity_content.append(activity_html.addChart(activity_by_timezone_config, name='chartCommitsByTimezone', title='Commits by Timezone', className="xl:col-span-6"))
+		activity_html.addChart(activity_by_timezone_config, name='chartCommitsByTimezone', title='Commits by Timezone', className="xl:col-span-6")
 
-		activity_content.append('</div>')
+		activity_html.add('</div>')
 
-		activity_html.create(activity_content)
+		activity_html.create()
 
 		###
 		# authors.html
 		# Authors
-		authors_content = []
-		authors_content.append('<div class="grid grid-cols-12 gap-4 md:gap-6 2xl:gap-7.5">')
-		
 		authors_html = html.HTML(path=f'{path}/authors.html', title='Authors', version= getversion())
+		authors_html.add('<div class="grid grid-cols-12 gap-4 md:gap-6 2xl:gap-7.5">')
+		
 
 		# Authors :: List of authors
 		list_authors_content = []
@@ -1127,7 +1139,7 @@ class HTMLReportCreator(ReportCreator):
 			rest = allauthors[conf['max_authors']:]
 			list_authors_content.append('<p class="moreauthors">These didn\'t make it to the top: %s</p>' % ', '.join(rest))
 		
-		authors_content.append(authors_html.addCard(list_authors_content, title='List of Authors'))
+		authors_html.addCard(list_authors_content, title='List of Authors')
 
 		# Authors :: Commits
 		author_disclaimer = ''
@@ -1135,10 +1147,8 @@ class HTMLReportCreator(ReportCreator):
 		if len(allauthors) > max_authors:
 			author_disclaimer =f'<span class="text-xs font-medium">Only top {max_authors} authors shown</span>'
 
-		# fgl = open(path + '/lines_of_code_by_author.dat', 'w')
-		# fgc = open(path + '/commits_by_author.dat', 'w')
-
 		lines_by_authors = {} # cumulated added lines by
+		# lines_removed_by_authors = {}
 		# author. to save memory,
 		# changes_by_date_by_author[stamp][author] is defined
 		# only at points where author commits.
@@ -1171,40 +1181,48 @@ class HTMLReportCreator(ReportCreator):
 		"#008000",
 		"#6A5ACD"]
 
-		authors_cumulated_commits_series = {}
+		authors_cumulated_lines_added_series = {}
+		# authors_cumulated_lines_removed_series = {}
 		authors_commits_series = {}
 
 		self.authors_to_plot = data.getAuthors(conf['max_authors'])
 		for idx, author in enumerate(self.authors_to_plot):
 			lines_by_authors[author] = 0
+			# lines_removed_by_authors[author] = 0
 			commits_by_authors[author] = 0
-			authors_cumulated_commits_series[author]= {"name": author, "color": colors[idx], "data": []}
+
+			authors_cumulated_lines_added_series[author]= {"name": author, "color": colors[idx], "data": []}
+			# authors_cumulated_lines_removed_series[author]= {"name": author, "color": colors[idx], "data": []}
 			authors_commits_series[author]= {"name": author, "color": colors[idx], "data": []}
 
-		for stamp in sorted(data.changes_by_date_by_author.keys()):
-			# fgl.write('%d' % stamp)
-			# fgc.write('%d' % stamp)
-			for author in self.authors_to_plot:
-				if author in data.changes_by_date_by_author[stamp].keys():
-					lines_by_authors[author] = data.changes_by_date_by_author[stamp][author]['lines_added']
-					commits_by_authors[author] = data.changes_by_date_by_author[stamp][author]['commits']
-				# fgl.write(' %d' % lines_by_authors[author])
-				# fgc.write(' %d' % commits_by_authors[author])
-				# authors_cumulated_commits_series[author]['data'].append({"x": stamp, "y": lines_by_authors[author]})
+		# for stamp in sorted(data.changes_by_date_by_author.keys()):
+		# 	for author in self.authors_to_plot:
+		# 		if author in data.changes_by_date_by_author[stamp].keys():
+		# 			lines_by_authors[author] = data.changes_by_date_by_author[stamp][author]['lines_added']
+		# 			commits_by_authors[author] = data.changes_by_date_by_author[stamp][author]['commits']
+		# 		# authors_cumulated_commits_series[author]['data'].append({"x": stamp, "y": lines_by_authors[author]})
 				
-				authors_cumulated_commits_series[author]['data'].append(lines_by_authors[author])
-				authors_commits_series[author]['data'].append(commits_by_authors[author])
+		# 		authors_cumulated_commits_series[author]['data'].append(lines_by_authors[author])
+		# 		authors_commits_series[author]['data'].append(commits_by_authors[author])
 
-		# 	fgl.write('\n')
-		# 	fgc.write('\n')
-		# fgl.close()
-		# fgc.close()
+		for yyMM in sorted(data.changes_by_month_by_author.keys()):
+			for author in self.authors_to_plot:
+				if author in data.changes_by_month_by_author[yyMM].keys():
+					lines_by_authors[author] = lines_by_authors[author] + data.changes_by_month_by_author[yyMM][author]['lines_added']
+					# lines_removed_by_authors[author] = lines_removed_by_authors[author] + data.changes_by_month_by_author[yyMM][author]['lines_removed']
+					commits_by_authors[author] = commits_by_authors[author] + data.changes_by_month_by_author[yyMM][author]['commits']
+				
+				# authors_cumulated_commits_series[author]['data'].append(lines_by_authors[author])
+				authors_cumulated_lines_added_series[author]['data'].append({"x": yyMM, "y": lines_by_authors[author]})
+				# authors_cumulated_lines_removed_series[author]['data'].append({"x": yyMM, "y": lines_removed_by_authors[author]})
+				authors_commits_series[author]['data'].append({"x": yyMM, "y": commits_by_authors[author]})
+				# authors_commits_series[author]['data'].append(commits_by_authors[author])
 
 		# Authors :: Cumulated added LoC per author
 		authors_cumulated_commits_config = {
 			**chart_default_config,
 			"chart": {**chart_default_config["chart"], "type": 'line'},
-			"series": list(authors_cumulated_commits_series.values()),
+			"series": list(authors_cumulated_lines_added_series.values()),
 			"markers": {"size": 0,"hover": {"sizeOffset": 6}},
 			"xaxis": {
 				**chart_default_config["xaxis"], 
@@ -1214,7 +1232,24 @@ class HTMLReportCreator(ReportCreator):
 					}}
 		}
 
-		# authors_content.append(activity_html.addChart(authors_cumulated_commits_config, name='chartCumulatedAddedLoCAuthor', title=f'Cumulated Added LoC per Author {author_disclaimer}', className="xl:col-span-6"))
+		authors_html.addChart(authors_cumulated_commits_config, name='chartCumulatedAddedLoCAuthor', title=f'Cumulated Added LoC per Author {author_disclaimer}', className="xl:col-span-6")
+
+		# Authors :: Cumulated removed LoC per author
+		# authors_cumulated_removed_loc_config = {
+		# 	**chart_default_config,
+		# 	"chart": {**chart_default_config["chart"], "type": 'line'},
+		# 	"series": list(authors_cumulated_lines_removed_series.values()),
+		# 	"markers": {"size": 0,"hover": {"sizeOffset": 6}},
+		# 	"xaxis": {
+		# 		**chart_default_config["xaxis"], 
+		# 		"labels": {
+		# 			**chart_default_config["xaxis"]["labels"] , 
+		# 			"show" : False
+		# 			}}
+		# }
+
+		# authors_html.addChart(authors_cumulated_removed_loc_config, name='chartCumulatedRemovedLoCAuthor', title=f'Cumulated removed LoC per Author {author_disclaimer}', className="xl:col-span-6")
+
 
 		# Authors :: Commits per Author
 		authors_commits_config = {
@@ -1230,7 +1265,7 @@ class HTMLReportCreator(ReportCreator):
 					}}
 		}
 
-		# authors_content.append(activity_html.addChart(authors_commits_config, name='chartCommitsPerAuthor', title=f'Commits per Author {author_disclaimer}', className="xl:col-span-6"))
+		authors_html.addChart(authors_commits_config, name='chartCommitsPerAuthor', title=f'Commits per Author {author_disclaimer}', className="xl:col-span-6")
 
 
 		# Authors :: Author of Month
@@ -1247,7 +1282,7 @@ class HTMLReportCreator(ReportCreator):
 
 		author_of_month_content.append('</table>')
 
-		authors_content.append(authors_html.addCard(author_of_month_content, title='Author of Month'))
+		authors_html.addCard(author_of_month_content, title='Author of Month')
 
 		# Authors :: Author of Year
 		author_of_year_content = []
@@ -1261,7 +1296,7 @@ class HTMLReportCreator(ReportCreator):
 			author_of_year_content.append('<tr><td>%s</td><td>%s</td><td>%d (%.2f%% of %d)</td><td>%s</td><td>%d</td></tr>' % (yy, authors[0], commits, (100.0 * commits) / data.commits_by_year[yy], data.commits_by_year[yy], next, len(authors)))
 		author_of_year_content.append('</table>')
 
-		authors_content.append(authors_html.addCard(author_of_year_content, title='Author of Year', className="xl:col-span-6"))
+		authors_html.addCard(author_of_year_content, title='Author of Year', className="xl:col-span-6")
 
 		# Authors :: Domains
 		domains_by_commits = getkeyssortedbyvaluekey(data.domains, 'commits')
@@ -1292,50 +1327,60 @@ class HTMLReportCreator(ReportCreator):
 			"series": authors_commits_by_domains_series,
 		}
 
-		authors_content.append(activity_html.addChart(authors_commits_by_domains_config, name='chartCommitsbyDomains', title='Commits by Domains', className="xl:col-span-6"))
+		authors_html.addChart(authors_commits_by_domains_config, name='chartCommitsbyDomains', title='Commits by Domains', className="xl:col-span-6")
 
-		authors_content.append('</div>')
+		authors_html.add('</div>')
 
-		authors_html.create(authors_content)
+		authors_html.create()
 
 		###
 		# files.html
 		# Files
-
-		files_content = []
 		files_html = html.HTML(path=f'{path}/files.html', title='Files', version= getversion())
 
-		files_content.append('<dl>\n')
-		files_content.append('<dt>Total files</dt><dd>%d</dd>' % data.getTotalFiles())
-		files_content.append('<dt>Total lines</dt><dd>%d</dd>' % data.getTotalLOC())
+		files_html.add('<div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5 mb-6">')
+		files_html.cardItemStat(title='Total files', count=data.getTotalFiles())
+		files_html.cardItemStat(title='Total LoC', count=data.getTotalLOC())
 		try:
-			files_content.append('<dt>Average file size</dt><dd>%.2f bytes</dd>' % (float(data.getTotalSize()) / data.getTotalFiles()))
+			files_html.cardItemStat(title='Average file size', count=f'{(float(data.getTotalSize()) / data.getTotalFiles()):2f} bytes')
 		except ZeroDivisionError:
 			pass
-		files_content.append('</dl>\n')
+		files_html.add('</div>')
+
+		files_html.add('<div class="grid grid-cols-12 gap-4 md:gap-6 2xl:gap-7.5">')
 
 		# Files :: File count by date
-		files_content.append(html_header(2, 'File count by date'))
+		files_by_month_series = {"name": 'Files', "color": "#3C50E0", "data": []}
+		# # use set to get rid of duplicate/unnecessary entries
+		# files_by_date = set()
+		# for stamp in sorted(data.files_by_stamp.keys()):
+		# 	files_by_date.add('%s %d' % (datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d'), data.files_by_stamp[stamp]))
 
-		# use set to get rid of duplicate/unnecessary entries
-		files_by_date = set()
-		for stamp in sorted(data.files_by_stamp.keys()):
-			files_by_date.add('%s %d' % (datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d'), data.files_by_stamp[stamp]))
+		for yyMM in sorted(data.files_by_month.keys()):
+			files_by_month_series["data"].append({"x": yyMM, "y": data.files_by_month[yyMM]})
 
-		fg = open(path + '/files_by_date.dat', 'w')
-		for line in sorted(list(files_by_date)):
-			fg.write('%s\n' % line)
-		#for stamp in sorted(data.files_by_stamp.keys()):
-		#	fg.write('%s %d\n' % (datetime.datetime.fromtimestamp(stamp).strftime('%Y-%m-%d'), data.files_by_stamp[stamp]))
-		fg.close()
-			
-		files_content.append('<img src="files_by_date.png" alt="Files by Date">')
+		files_by_month_config = {
+			**chart_default_config,
+			"chart": {**chart_default_config["chart"], "type": 'line'},
+			"series": [files_by_month_series],
+			"markers": {"size": 0,"hover": {"sizeOffset": 6}},
+			"xaxis": {
+				**chart_default_config["xaxis"], 
+				"labels": {
+					**chart_default_config["xaxis"]["labels"] , 
+					"show" : False
+					}}
+		}
+
+		files_html.addChart(files_by_month_config, name='chartFilesByMonth', title='File count by month', className="xl:col-span-12")
+
 
 		#files_content.append('<h2>Average file size by date</h2>')
 
 		# Files :: Extensions
-		files_content.append(html_header(2, 'Extensions'))
-		files_content.append('<table class="sortable" id="ext"><tr><th>Extension</th><th>Files (%)</th><th>Lines (%)</th><th>Lines/file</th></tr>')
+		files_extensions_series = {"name": 'Extensions', "color": "#3C50E0", "data": []}
+		files_extensions_content = []
+		files_extensions_content.append('<table class="sortable" id="ext"><tr><th>Extension</th><th>Files (%)</th><th>Lines (%)</th><th>Lines/file</th></tr>')
 		for ext in sorted(data.extensions.keys()):
 			files = data.extensions[ext]['files']
 			lines = data.extensions[ext]['lines']
@@ -1343,10 +1388,23 @@ class HTMLReportCreator(ReportCreator):
 				loc_percentage = (100.0 * lines) / data.getTotalLOC()
 			except ZeroDivisionError:
 				loc_percentage = 0
-			files_content.append('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d (%.2f%%)</td><td>%d</td></tr>' % (ext, files, (100.0 * files) / data.getTotalFiles(), lines, loc_percentage, lines / files))
-		files_content.append('</table>')
+			files_extensions_content.append('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d (%.2f%%)</td><td>%d</td></tr>' % (ext, files, (100.0 * files) / data.getTotalFiles(), lines, loc_percentage, lines / files))
+			files_extensions_series["data"].append({"x": ext, "y": files})
+		files_extensions_content.append('</table>')
 
-		files_html.create(files_content)
+		files_extensions_config = {
+			"chart": {**chart_default_config["chart"], "type": 'treemap'},
+			"series": [files_extensions_series],
+		}
+
+		files_html.addChart(files_extensions_config, name='chartFilesByExtensions', title='Extensions treemap', className="xl:col-span-12")
+
+		files_html.addCard(files_extensions_content, title='Extensions', className="xl:col-span-4")
+
+
+		files_html.add('</div>')
+
+		files_html.create()
 
 		###
 		# lines.html
@@ -1354,22 +1412,53 @@ class HTMLReportCreator(ReportCreator):
 		lines_content=[]
 		lines_html = html.HTML(path=f'{path}/lines.html', title='Lines', version= getversion())
 
-		lines_content.append('<dl>\n')
-		lines_content.append('<dt>Total lines</dt><dd>%d</dd>' % data.getTotalLOC())
-		lines_content.append('</dl>\n')
+		lines_html.add('<div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5 mb-6">')
+		lines_html.cardItemStat(title='Total LoC', count=data.getTotalLOC())
+		lines_html.add('</div>')
 
-		lines_content.append(html_header(2, 'Lines of Code'))
-		lines_content.append('<img src="lines_of_code.png" alt="Lines of Code">')
+		lines_html.add('<div class="grid grid-cols-12 gap-4 md:gap-6 2xl:gap-7.5">')
 
-		fg = open(path + '/lines_of_code.dat', 'w')
-		for stamp in sorted(data.changes_by_date.keys()):
-			fg.write('%d %d\n' % (stamp, data.changes_by_date[stamp]['lines']))
-		fg.close()
 
-		# Weekly activity
+		lines_by_year_series = {"name": 'Lines', "color": "#3C50E0", "data": []}
+
+		for year in sorted(data.changes_by_year.keys()):
+			lines_by_year_series["data"].append({"x": year, "y": data.changes_by_year[year]['lines']})
+
+
+		lines_by_year_config = {
+			**chart_default_config,
+			"chart": {**chart_default_config["chart"], "type": 'line'},
+			"series": [lines_by_year_series],
+			"markers": {"size": 0,"hover": {"sizeOffset": 6}},
+			"xaxis": {
+				**chart_default_config["xaxis"], 
+				"labels": {
+					**chart_default_config["xaxis"]["labels"] , 
+					"show" : False
+					}}
+		}
+
+		lines_html.addChart(lines_by_year_config, name='chartLinesOfCodeByYear', title='Lines of Code by Year', className="xl:col-span-6")
+
+		lines_by_month_series = {"name": 'Lines', "color": "#3C50E0", "data": []}
+
+		for yyMM in sorted(data.changes_by_month.keys()):
+			lines_by_month_series["data"].append({"x": yyMM, "y": data.changes_by_month[yyMM]['lines']})
+
+		lines_by_month_config = {
+			**lines_by_year_config,
+			"series": [lines_by_month_series],
+		}
+
+		lines_html.addChart(lines_by_month_config, name='chartLinesByMonth', title='Lines of Code by Month', className="xl:col-span-6")
+
+
+
+
+		# Lines :: Weekly activity
 		WEEKS = 32
-		lines_content.append(html_header(2, 'Weekly activity'))
-		lines_content.append('<p>Last %d weeks</p>' % WEEKS)
+		# lines_content.append(html_header(2, 'Weekly activity'))
+		# lines_content.append('<p>Last %d weeks</p>' % WEEKS)
 
 		# generate weeks to show (previous N weeks from now)
 		now = datetime.datetime.now()
@@ -1380,174 +1469,145 @@ class HTMLReportCreator(ReportCreator):
 			weeks.insert(0, stampcur.strftime('%Y-%W'))
 			stampcur -= deltaweek
 
-		# top row: commits & bar
-		lines_content.append('<table class="noborders"><tr>')
+		lines_per_weekly_serie = {"name": "LoC", "color": "#1A56DB", "data": []}
 		for i in range(0, WEEKS):
-			commits = 0
-			if weeks[i] in data.lineactivity_by_year_week:
-				commits = data.lineactivity_by_year_week[weeks[i]]
+			lines = data.lineactivity_by_year_week[weeks[i]] if weeks[i] in data.lineactivity_by_year_week else 0
+			lines_per_weekly_serie['data'].append({"x": f'{WEEKS-i}', "y": lines})
+		
+		lines_per_weekly_config = {
+			**chart_default_config,
+			"series": [lines_per_weekly_serie]
+		}
 
-			percentage = 0
-			if weeks[i] in data.lineactivity_by_year_week:
-				percentage = float(data.lineactivity_by_year_week[weeks[i]]) / data.lineactivity_by_year_week_peak
-			height = max(1, int(200 * percentage))
-			lines_content.append('<td style="text-align: center; vertical-align: bottom">%d<div style="display: block; background-color: red; width: 20px; height: %dpx"></div></td>' % (commits, height))
+		lines_html.addChart(lines_per_weekly_config, name='chartLinesWeeklyActivity', title=f'Weekly activity <span class="text-xs font-medium">Last {WEEKS} weeks</span>', className="")		
 
-		# bottom row: year/week
-		lines_content.append('</tr><tr>')
-		for i in range(0, WEEKS):
-			lines_content.append('<td>%s</td>' % (WEEKS - i))
-		lines_content.append('</tr></table>')
-
-		# Hour of Day
-		lines_content.append(html_header(2, 'Hour of Day'))
+		# Lines :: Hour of Day
 		hour_of_day = data.getLineActivityByHourOfDay()
-		lines_content.append('<table><tr><th>Hour</th>')
-		for i in range(0, 24):
-			lines_content.append('<th>%d</th>' % i)
-		lines_content.append('</tr>\n<tr><th>Lines</th>')
-		fp = open(path + '/line_hour_of_day.dat', 'w')
-		for i in range(0, 24):
-			if i in hour_of_day:
-				r = 127 + int((float(hour_of_day[i]) / data.lineactivity_by_hour_of_day_busiest) * 128)
-				lines_content.append('<td style="background-color: rgb(%d, 0, 0)">%d</td>' % (r, hour_of_day[i]))
-				fp.write('%d %d\n' % (i, hour_of_day[i]))
-			else:
-				lines_content.append('<td>0</td>')
-				fp.write('%d 0\n' % i)
-		fp.close()
-		lines_content.append('</tr>\n<tr><th>%</th>')
-		totallines = data.getTotalLines()
-		for i in range(0, 24):
-			if i in hour_of_day:
-				r = 127 + int((float(hour_of_day[i]) / data.lineactivity_by_hour_of_day_busiest) * 128)
-				lines_content.append('<td style="background-color: rgb(%d, 0, 0)">%.2f</td>' % (r, (100.0 * hour_of_day[i]) / totallines))
-			else:
-				lines_content.append('<td>0.00</td>')
-		lines_content.append('</tr></table>')
-		lines_content.append('<img src="line_hour_of_day.png" alt="Hour of Day" />')
-		fg = open(path + '/line_hour_of_day.dat', 'w')
-		for i in range(0, 24):
-			if i in hour_of_day:
-				fg.write('%d %d\n' % (i + 1, hour_of_day[i]))
-			else:
-				fg.write('%d 0\n' % (i + 1))
-		fg.close()
 
-		# Day of Week
-		lines_content.append(html_header(2, 'Day of Week'))
+		lines_per_hours_day_serie = {"name": "LoC", "color": "#1A56DB", "data": []}
+
+		for i in range(0, 24):
+			lines = hour_of_day[i] if i in hour_of_day else 0
+			lines_per_hours_day_serie["data"].append({"x": f'{i}', "y": lines})
+
+		lines_per_hours_day_config = {
+			**chart_default_config, 
+			"series": [lines_per_hours_day_serie]
+		}
+		
+		lines_html.addChart(lines_per_hours_day_config, name='chartLinesHourOfDay', title='Hour of Day', className="")
+
+		# Lines :: Day of Week
 		day_of_week = data.getLineActivityByDayOfWeek()
-		lines_content.append('<div class="vtable"><table>')
-		lines_content.append('<tr><th>Day</th><th>Total (%)</th></tr>')
-		fp = open(path + '/line_day_of_week.dat', 'w')
+
+		lines_per_day_week_serie= {"name": "LoC", "color": "#1A56DB", "data": []}
+
 		for d in range(0, 7):
-			commits = 0
-			if d in day_of_week:
-				commits = day_of_week[d]
-			fp.write('%d %s %d\n' % (d + 1, WEEKDAYS[d], commits))
-			lines_content.append('<tr>')
-			lines_content.append('<th>%s</th>' % (WEEKDAYS[d]))
-			if d in day_of_week:
-				lines_content.append('<td>%d (%.2f%%)</td>' % (day_of_week[d], (100.0 * day_of_week[d]) / totallines))
-			else:
-				lines_content.append('<td>0</td>')
-			lines_content.append('</tr>')
-		lines_content.append('</table></div>')
-		lines_content.append('<img src="line_day_of_week.png" alt="Day of Week" />')
-		fp.close()
+			lines = day_of_week[d] if d in day_of_week else 0
+			lines_per_day_week_serie["data"].append({"x": WEEKDAYS[d], "y": lines})
 
-		# Hour of Week
-		lines_content.append(html_header(2, 'Hour of Week'))
-		lines_content.append('<table>')
+		lines_per_day_week_config = {
+			**chart_default_config,
+			"series": [lines_per_day_week_serie]
+		}
+		
+		lines_html.addChart(lines_per_day_week_config, name='chartLinesDayofWeek', title='Day of Week', className="xl:col-span-4")
 
-		lines_content.append('<tr><th>Weekday</th>')
-		for hour in range(0, 24):
-			lines_content.append('<th>%d</th>' % (hour))
-		lines_content.append('</tr>')
+
+		# Lines :: Hour of Week
+		lines_hour_of_week_series = []
 
 		for weekday in range(0, 7):
-			lines_content.append('<tr><th>%s</th>' % (WEEKDAYS[weekday]))
+			lines_hour_of_week_series.append({"name": WEEKDAYS[weekday], "data": []})
 			for hour in range(0, 24):
 				try:
-					commits = data.lineactivity_by_hour_of_week[weekday][hour]
+					lines = data.lineactivity_by_hour_of_week[weekday][hour]
 				except KeyError:
-					commits = 0
-				if commits != 0:
-					lines_content.append('<td')
-					r = 127 + int((float(commits) / data.lineactivity_by_hour_of_week_busiest) * 128)
-					lines_content.append(' style="background-color: rgb(%d, 0, 0)"' % r)
-					lines_content.append('>%d</td>' % commits)
-				else:
-					lines_content.append('<td></td>')
-			lines_content.append('</tr>')
+					lines = 0
+				
+				lines_hour_of_week_series[weekday]["data"].append({"x": f'{hour}', "y": lines})
 
-		lines_content.append('</table>')
+		lines_hour_of_week_series.reverse()
 
-		# Month of Year
-		lines_content.append(html_header(2, 'Month of Year'))
-		lines_content.append('<div class="vtable"><table>')
-		lines_content.append('<tr><th>Month</th><th>Lines (%)</th></tr>')
-		fp = open (path + '/line_month_of_year.dat', 'w')
+		lines_hour_of_week_config = {
+			"series": lines_hour_of_week_series,
+			"chart": {**chart_default_config["chart"], "type": 'heatmap'},
+      		"dataLabels": chart_default_config["dataLabels"],
+			"colors": ["#3C50E0"],
+			"xaxis": chart_default_config["xaxis"],
+			"yaxis": chart_default_config["yaxis"],
+		}
+
+		lines_html.addChart(lines_hour_of_week_config, name='chartLinesHourOfWeek', title='Hour of Week', className="xl:col-span-8")
+	
+
+
+		# Lines :: Month of Year
+		lines_per_month_of_year_series= {"name": "LoC", "color": "#1A56DB", "data": []}
+		
 		for mm in range(1, 13):
-			commits = 0
-			if mm in data.lineactivity_by_month_of_year:
-				commits = data.lineactivity_by_month_of_year[mm]
-			lines_content.append('<tr><td>%d</td><td>%d (%.2f %%)</td></tr>' % (mm, commits, (100.0 * commits) / data.getTotalLines()))
-			fp.write('%d %d\n' % (mm, commits))
-		fp.close()
-		lines_content.append('</table></div>')
-		lines_content.append('<img src="line_month_of_year.png" alt="Month of Year" />')
+			lines = data.lineactivity_by_month_of_year[mm] if mm in data.lineactivity_by_month_of_year else 0
+			lines_per_month_of_year_series["data"].append({"x": f'{mm}', "y": lines, "percentage": (100.0 * lines) /data.getTotalLines()})
 
-		# Lines by year/month
-		lines_content.append(html_header(2, 'Lines by year/month'))
-		lines_content.append('<div class="vtable"><table><tr><th>Month</th><th>Commits</th><th>Lines added</th><th>Lines removed</th></tr>')
-		for yymm in reversed(sorted(data.commits_by_month.keys())):
-			lines_content.append('<tr><td>%s</td><td>%d</td><td>%d</td><td>%d</td></tr>' % (yymm, data.commits_by_month.get(yymm,0), data.lines_added_by_month.get(yymm,0), data.lines_removed_by_month.get(yymm,0)))
-		lines_content.append('</table></div>')
-		lines_content.append('<img src="line_commits_by_year_month.png" alt="Commits by year/month" />')
-		fg = open(path + '/line_commits_by_year_month.dat', 'w')
+		lines_per_month_of_year_config = {
+			**chart_default_config,
+			"series": [lines_per_month_of_year_series]
+		}
+
+		lines_html.addChart(lines_per_month_of_year_config, name='chartLinesMonthOfYear', title='Month of Year', className="xl:col-span-5")
+
+
+		# Lines :: Lines by year/month
+		lines_per_year_month_serie = []
+		
 		for yymm in sorted(data.commits_by_month.keys()):
-			fg.write('%s %s\n' % (yymm, data.lines_added_by_month.get(yymm, 0) + data.lines_removed_by_month.get(yymm, 0)))
-		fg.close()
+			lines_per_year_month_serie.append({"x": f'{yymm}', "y": data.lines_added_by_month.get(yymm, 0) + data.lines_removed_by_month.get(yymm, 0)})
 
-		# Lines by year
-		lines_content.append(html_header(2, 'Lines by Year'))
-		lines_content.append('<div class="vtable"><table><tr><th>Year</th><th>Commits (% of all)</th><th>Lines added</th><th>Lines removed</th></tr>')
-		for yy in reversed(sorted(data.commits_by_year.keys())):
-			lines_content.append('<tr><td>%s</td><td>%d (%.2f%%)</td><td>%d</td><td>%d</td></tr>' % (yy, data.commits_by_year.get(yy,0), (100.0 * data.commits_by_year.get(yy,0)) / data.getTotalCommits(), data.lines_added_by_year.get(yy,0), data.lines_removed_by_year.get(yy,0)))
-		lines_content.append('</table></div>')
-		lines_content.append('<img src="line_commits_by_year.png" alt="Commits by Year" />')
-		fg = open(path + '/line_commits_by_year.dat', 'w')
+		lines_per_year_month_config = {
+			**chart_default_config,
+			"series": [{
+			"name": "Commits",
+			"color": "#1A56DB",
+			"data": lines_per_year_month_serie}],
+			"xaxis": {
+				**chart_default_config["xaxis"], 
+				"labels": {
+					**activity_per_year_month_config["xaxis"]["labels"] , 
+					"show" : False
+					}}}
+
+		lines_html.addChart(lines_per_year_month_config, name='chartCommitsByYearMonth', title='Lines by year/month', className="xl:col-span-7")
+
+
+		# Lines :: Lines by year
+		lines_by_year_serie= {"name": "Lines", "color": "#1A56DB", "data": []}
+
 		for yy in sorted(data.commits_by_year.keys()):
-			fg.write('%d %d\n' % (yy, data.lines_added_by_year.get(yy,0) + data.lines_removed_by_year.get(yy,0)))
-		fg.close()
+			lines_by_year_serie["data"].append({"x": f'{yy}', "y": data.lines_added_by_year.get(yy,0) - data.lines_removed_by_year.get(yy,0)})
 
-		# Commits by timezone
-		lines_content.append(html_header(2, 'Commits by Timezone'))
-		lines_content.append('<table><tr>')
-		lines_content.append('<th>Timezone</th><th>Commits</th>')
-		max_commits_on_tz = max(data.commits_by_timezone.values())
-		for i in sorted(data.commits_by_timezone.keys(), key = lambda n : int(n)):
-			commits = data.commits_by_timezone[i]
-			r = 127 + int((float(commits) / max_commits_on_tz) * 128)
-			lines_content.append('<tr><th>%s</th><td style="background-color: rgb(%d, 0, 0)">%d</td></tr>' % (i, r, commits))
-		lines_content.append('</tr></table>')
+		lines_by_year_config = {
+			**chart_default_config,
+			"series": [lines_by_year_serie]
+			}
+
+		lines_html.addChart(lines_by_year_config, name='chartLinesByYear', title='Lines by Year', className="xl:col-span-6")
+
+
+		lines_html.add('</div>')
 
 		lines_html.create(lines_content)
 
 		###
 		# tags.html
-		tags_content = []
 		tags_html = html.HTML(path=f'{path}/tags.html', title='Tags', version= getversion())
 
-		tags_content.append('<dl>')
-		tags_content.append('<dt>Total tags</dt><dd>%d</dd>' % len(data.tags))
-		if len(data.tags) > 0:
-			tags_content.append('<dt>Average commits per tag</dt><dd>%.2f</dd>' % (1.0 * data.getTotalCommits() / len(data.tags)))
-		tags_content.append('</dl>')
+		tags_html.add('<div class="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-6 xl:grid-cols-4 2xl:gap-7.5 mb-6">')
+		tags_html.cardItemStat(title='Total tags', count=len(data.tags))
+		tags_html.cardItemStat(title='Average commits per tag', count=f'{(1.0 * data.getTotalCommits() / len(data.tags)):.2f}')
+		tags_html.add('</div>')
 
-		tags_content.append('<table class="tags">')
-		tags_content.append('<tr><th>Name</th><th>Date</th><th>Commits</th><th>Authors</th></tr>')
+		tags_table_content = ['<table class="tags">']
+		tags_table_content.append('<tr><th>Name</th><th>Date</th><th>Commits</th><th>Authors</th></tr>')
 		# sort the tags by date desc
 		tags_sorted_by_date_desc = [el[1] for el in reversed(sorted([(el[1]['date'], el[0]) for el in list(data.tags.items())]))]
 		for tag in tags_sorted_by_date_desc:
@@ -1555,310 +1615,13 @@ class HTMLReportCreator(ReportCreator):
 			self.authors_by_commits = getkeyssortedbyvalues(data.tags[tag]['authors'])
 			for i in reversed(self.authors_by_commits):
 				authorinfo.append('%s (%d)' % (i, data.tags[tag]['authors'][i]))
-			tags_content.append('<tr><td>%s</td><td>%s</td><td>%d</td><td>%s</td></tr>' % (tag, data.tags[tag]['date'], data.tags[tag]['commits'], ', '.join(authorinfo)))
-		tags_content.append('</table>')
+			tags_table_content.append('<tr><td>%s</td><td>%s</td><td>%d</td><td>%s</td></tr>' % (tag, data.tags[tag]['date'], data.tags[tag]['commits'], ', '.join(authorinfo)))
+		tags_table_content.append('</table>')
 
-		tags_html.create(tags_content)
+		tags_html.addCard(tags_table_content, title='Tags information')
 
-		self.createGraphs(path)
+		tags_html.create()
 	
-	def createGraphs(self, path):
-		print('Generating graphs...')
-
-		# hour of day
-		f = open(path + '/hour_of_day.plot', 'w')
-		f.write(GNUPLOT_COMMON)
-		f.write(
-"""
-set output 'hour_of_day.png'
-unset key
-set xrange [0.5:24.5]
-set yrange [0:]
-set xtics 4
-set grid y
-set ylabel "Commits"
-plot 'hour_of_day.dat' using 1:2:(0.5) w boxes fs solid
-""")
-		f.close()
-
-		# day of week
-		f = open(path + '/day_of_week.plot', 'w')
-		f.write(GNUPLOT_COMMON)
-		f.write(
-"""
-set output 'day_of_week.png'
-unset key
-set xrange [0.5:7.5]
-set yrange [0:]
-set xtics 1
-set grid y
-set ylabel "Commits"
-plot 'day_of_week.dat' using 1:3:(0.5):xtic(2) w boxes fs solid
-""")
-		f.close()
-
-		# Domains
-		f = open(path + '/domains.plot', 'w')
-		f.write(GNUPLOT_COMMON)
-		f.write(
-"""
-set output 'domains.png'
-unset key
-unset xtics
-set yrange [0:]
-set grid y
-set ylabel "Commits"
-plot 'domains.dat' using 2:3:(0.5) with boxes fs solid, '' using 2:3:1 with labels rotate by 45 offset 0,1
-""")
-		f.close()
-
-		# Month of Year
-		f = open(path + '/month_of_year.plot', 'w')
-		f.write(GNUPLOT_COMMON)
-		f.write(
-"""
-set output 'month_of_year.png'
-unset key
-set xrange [0.5:12.5]
-set yrange [0:]
-set xtics 1
-set grid y
-set ylabel "Commits"
-plot 'month_of_year.dat' using 1:2:(0.5) w boxes fs solid
-""")
-		f.close()
-
-		# commits_by_year_month
-		f = open(path + '/commits_by_year_month.plot', 'w')
-		f.write(GNUPLOT_COMMON)
-		f.write(
-"""
-set output 'commits_by_year_month.png'
-unset key
-set yrange [0:]
-set xdata time
-set timefmt "%Y-%m"
-set format x "%Y-%m"
-set xtics rotate
-set bmargin 5
-set grid y
-set ylabel "Commits"
-plot 'commits_by_year_month.dat' using 1:2:(0.5) w boxes fs solid
-""")
-		f.close()
-
-		# commits_by_year
-		f = open(path + '/commits_by_year.plot', 'w')
-		f.write(GNUPLOT_COMMON)
-		f.write(
-"""
-set output 'commits_by_year.png'
-unset key
-set yrange [0:]
-set xtics 1 rotate
-set grid y
-set ylabel "Commits"
-set yrange [0:]
-plot 'commits_by_year.dat' using 1:2:(0.5) w boxes fs solid
-""")
-		f.close()
-
-		# Files by date
-		f = open(path + '/files_by_date.plot', 'w')
-		f.write(GNUPLOT_COMMON)
-		f.write(
-"""
-set output 'files_by_date.png'
-unset key
-set yrange [0:]
-set xdata time
-set timefmt "%Y-%m-%d"
-set format x "%Y-%m-%d"
-set grid y
-set ylabel "Files"
-set xtics rotate
-set ytics autofreq
-set bmargin 6
-plot 'files_by_date.dat' using 1:2 w steps
-""")
-		f.close()
-
-		# Lines of Code
-		f = open(path + '/lines_of_code.plot', 'w')
-		f.write(GNUPLOT_COMMON)
-		f.write(
-"""
-set output 'lines_of_code.png'
-unset key
-set yrange [0:]
-set xdata time
-set timefmt "%s"
-set format x "%Y-%m-%d"
-set grid y
-set ylabel "Lines"
-set xtics rotate
-set bmargin 6
-plot 'lines_of_code.dat' using 1:2 w lines
-""")
-		f.close()
-
-		# Lines of Code Added per author
-		f = open(path + '/lines_of_code_by_author.plot', 'w')
-		f.write(GNUPLOT_COMMON)
-		f.write(
-"""
-set terminal png transparent size 640,480
-set output 'lines_of_code_by_author.png'
-set key left top
-set yrange [0:]
-set xdata time
-set timefmt "%s"
-set format x "%Y-%m-%d"
-set grid y
-set ylabel "Lines"
-set xtics rotate
-set bmargin 6
-plot """
-)
-		i = 1
-		plots = []
-		for a in self.authors_to_plot:
-			i = i + 1
-			author = a.replace("\"", "\\\"").replace("`", "")
-			plots.append("""'lines_of_code_by_author.dat' using 1:%d title "%s" w lines""" % (i, author))
-		f.write(", ".join(plots))
-		f.write('\n')
-
-		f.close()
-
-		# hour of day
-		f = open(path + '/line_hour_of_day.plot', 'w')
-		f.write(GNUPLOT_COMMON)
-		f.write(
-"""
-set output 'line_hour_of_day.png'
-unset key
-set xrange [0.5:24.5]
-set xtics 4
-set grid y
-set ylabel "Lines"
-plot 'line_hour_of_day.dat' using 1:2:(0.5) w boxes fs solid
-""")
-		f.close()
-
-		# day of week
-		f = open(path + '/line_day_of_week.plot', 'w')
-		f.write(GNUPLOT_COMMON)
-		f.write(
-"""
-set output 'line_day_of_week.png'
-unset key
-set xrange [0.5:7.5]
-set xtics 1
-set grid y
-set ylabel "Lines"
-plot 'line_day_of_week.dat' using 1:3:(0.5):xtic(2) w boxes fs solid
-""")
-		f.close()
-
-		# Domains
-#		f = open(path + '/domains.plot', 'w')
-#		f.write(GNUPLOT_COMMON)
-#		f.write(
-#"""
-#set output 'domains.png'
-#unset key
-#unset xtics
-#set yrange [0:]
-#set grid y
-#set ylabel "Commits"
-#plot 'domains.dat' using 2:3:(0.5) with boxes fs solid, '' using 2:3:1 with labels rotate by 45 offset 0,1
-#""")
-#		f.close()
-
-		# Month of Year
-		f = open(path + '/line_month_of_year.plot', 'w')
-		f.write(GNUPLOT_COMMON)
-		f.write(
-"""
-set output 'line_month_of_year.png'
-unset key
-set xrange [0.5:12.5]
-set xtics 1
-set grid y
-set ylabel "Lines"
-plot 'line_month_of_year.dat' using 1:2:(0.5) w boxes fs solid
-""")
-		f.close()
-
-		# commits_by_year_month
-		f = open(path + '/line_commits_by_year_month.plot', 'w')
-		f.write(GNUPLOT_COMMON)
-		f.write(
-"""
-set output 'line_commits_by_year_month.png'
-unset key
-set xdata time
-set timefmt "%Y-%m"
-set format x "%Y-%m"
-set xtics rotate
-set bmargin 5
-set grid y
-set ylabel "Lines"
-plot 'line_commits_by_year_month.dat' using 1:2:(0.5) w boxes fs solid
-""")
-		f.close()
-
-		# commits_by_year
-		f = open(path + '/line_commits_by_year.plot', 'w')
-		f.write(GNUPLOT_COMMON)
-		f.write(
-"""
-set output 'line_commits_by_year.png'
-unset key
-set xtics 1 rotate
-set grid y
-set ylabel "Lines"
-set yrange [0:]
-plot 'line_commits_by_year.dat' using 1:2:(0.5) w boxes fs solid
-""")
-		f.close()
-
-		# Commits per author
-		f = open(path + '/commits_by_author.plot', 'w')
-		f.write(GNUPLOT_COMMON)
-		f.write(
-"""
-set terminal png transparent size 640,480
-set output 'commits_by_author.png'
-set key left top
-set yrange [0:]
-set xdata time
-set timefmt "%s"
-set format x "%Y-%m-%d"
-set grid y
-set ylabel "Commits"
-set xtics rotate
-set bmargin 6
-plot """
-)
-		i = 1
-		plots = []
-		for a in self.authors_to_plot:
-			i = i + 1
-			author = a.replace("\"", "\\\"").replace("`", "")
-			plots.append("""'commits_by_author.dat' using 1:%d title "%s" w lines""" % (i, author))
-		f.write(", ".join(plots))
-		f.write('\n')
-
-		f.close()
-
-		os.chdir(path)
-		files = glob.glob(path + '/*.plot')
-		for f in files:
-			out = getpipeoutput([gnuplot_cmd + ' "%s"' % f])
-			if len(out) > 0:
-				print(out)
 	
 def usage():
 	text = """
@@ -1905,10 +1668,6 @@ class GitStats:
 			pass
 		if not os.path.isdir(outputpath):
 			print('FATAL: Output path is not a directory or does not exist')
-			sys.exit(1)
-
-		if not getgnuplotversion():
-			print('gnuplot not found')
 			sys.exit(1)
 
 		print('Output path: %s' % outputpath)

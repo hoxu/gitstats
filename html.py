@@ -10,8 +10,12 @@ class HTML(object):
         self.title = title
         self.styles = styles
         self.version = version
+        self.content = []
 
-    def create(self, content):
+    def add(self, content):
+        self.content.append(content)
+
+    def create(self, content = []):
         f = open(self.path, 'w')
         head = self.getHeader(title=self.title)
         body = self.getBody(content, title=self.title)
@@ -42,6 +46,9 @@ class HTML(object):
     def getBody(self, content: List[str], title: str) -> str:
         sidebar = self.getSideBar()
         topBar = self.getTopBar(title=title)
+        if len(self.content) > 0 :
+            content = [*self.content, *content]
+
         content = '\n'.join(content)
         return f'''
 <body x-data="{{ page: 'main', 'loaded': false, 'darkMode': true, 'stickyMenu': false, 'sidebarToggle': false, 'scrollTop': false }}"
@@ -108,7 +115,7 @@ class HTML(object):
 	</div>
 </div>'''
 
-        return f'''
+        self.add(f'''
 <div class="rounded-sm border border-stroke bg-white px-7.5 py-6 shadow-default dark:border-strokedark dark:bg-boxdark">
 	<div class="flex flex-col">
 		<div class="flex-1 p-6">
@@ -130,7 +137,7 @@ class HTML(object):
 			</div>
 		</div>
 	</div>
-</div>'''
+</div>''')
 
     def cardItemStat(self, count: str = '$3.456K', title: str = 'Total views', stat: str = None, arrow: str = 'up', icon=None) -> str:
 
@@ -152,7 +159,7 @@ class HTML(object):
 	<path d="M11 10.9219C9.38438 10.9219 8.07812 9.61562 8.07812 8C8.07812 6.38438 9.38438 5.07812 11 5.07812C12.6156 5.07812 13.9219 6.38438 13.9219 8C13.9219 9.61562 12.6156 10.9219 11 10.9219ZM11 6.625C10.2437 6.625 9.625 7.24375 9.625 8C9.625 8.75625 10.2437 9.375 11 9.375C11.7563 9.375 12.375 8.75625 12.375 8C12.375 7.24375 11.7563 6.625 11 6.625Z" fill=""></path>
 </svg>'''
 
-        return f'''
+        self.add(f'''
 <div class="rounded-sm border border-stroke bg-white px-7.5 py-6 shadow-default dark:border-strokedark dark:bg-boxdark">
 	<div class="flex h-11.5 w-11.5 items-center justify-center rounded-full bg-meta-2 dark:bg-meta-4">
 		{icon}
@@ -166,7 +173,7 @@ class HTML(object):
 
 		{stat_html}
 	</div>
-</div>'''
+</div>''')
 
     def getSideBar(self) -> str:
         menu = ''.join([f'''
@@ -411,7 +418,7 @@ class HTML(object):
     def addChart(self, config: Dict, name: str = None, title: str = 'Chart', className: str=None):
         if name is None:
             name = f'chart_{int(time.time())}'
-        return self.addCard([f'<div id="{name}" class="-ml-5"></div>'], title=title, className=className, extra=f'''
+        self.addCard([f'<div id="{name}" class="-ml-5"></div>'], title=title, className=className, extra=f'''
 <script>
     document.addEventListener("DOMContentLoaded", () => {{
         const chartSelector = document.querySelectorAll("#{name}");
@@ -428,7 +435,7 @@ class HTML(object):
     
     def addCard(self, content, title: str = 'Chart', className: str=None, extra: str=None):
         content = '\n'.join(content)
-        return f'''
+        self.add(f'''
 <div
   class="col-span-12 rounded-sm border border-stroke bg-white px-5 pb-5 pt-7.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 {className or ""}">
   <div>
@@ -438,4 +445,4 @@ class HTML(object):
   </div>
   <div>{content}</div>
   {extra or ""}
-</div>'''
+</div>''')
