@@ -1,0 +1,97 @@
+{
+  "series": [
+    {
+      "data": []
+    }
+  ],
+  "colors": ["#3C50E0"],
+  "chart": {
+    "fontFamily": "Satoshi, sans-serif",
+    "type": "bar",
+    "height": 350,
+    "toolbar": {
+      "show": false
+    }
+  },
+  "plotOptions": {
+    "bar": {
+      "horizontal": false,
+      "columnWidth": "55%",
+      "endingShape": "rounded",
+      "borderRadius": 2
+    },
+    "heatmap": {
+      "enableShades": false
+    }
+  },
+  "dataLabels": {
+    "enabled": false
+  },
+  "stroke": {
+    "show": true,
+    "width": 4,
+    "colors": ["transparent"]
+  },
+  "xaxis": {
+    "categories": [],
+    "floating": false,
+    "labels": {
+      "show": true,
+      "style": {
+        "fontFamily": "Inter, sans-serif",
+        "cssClass": "text-xs font-normal !fill-body dark:!fill-bodydark"
+      }
+    },
+    "axisBorder": {
+      "show": false
+    },
+    "axisTicks": {
+      "show": false
+    }
+  },
+  "legend": {
+    "show": true,
+    "position": "top",
+    "horizontalAlign": "left",
+    "fontFamily": "Satoshi",
+    "markers": {
+      "radius": 99
+    }
+  },
+  "yaxis": {
+    "title": false,
+    "labels": {
+      "show": true,
+      "style": {
+        "fontFamily": "Inter, sans-serif",
+        "cssClass": "text-xs font-normal !fill-body dark:!fill-bodydark"
+      }
+    }
+  },
+  "grid": {
+    "show": false,
+    "strokeDashArray": 4,
+    "padding": {
+      "left": 2,
+      "right": 2,
+      "top": -14
+    },
+    "yaxis": {
+      "lines": {
+        "show": false
+      }
+    }
+  },
+  "fill": {
+    "opacity": 1
+  },
+
+  "tooltip": {
+    "shared": true,
+    "intersect": false,
+    "x": {
+      "show": false
+    },
+    "y": {}
+  }
+}

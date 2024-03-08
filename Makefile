@@ -1,7 +1,7 @@
 PREFIX=/usr/local
 BINDIR=$(PREFIX)/bin
 RESOURCEDIR=$(PREFIX)/share/gitstats
-RESOURCES=gitstats.css sortable.js *.gif
+RESOURCES=gitstats.css sortable.js *.gif tailwind.json html.py
 BINARIES=gitstats
 VERSION=$(shell git describe 2>/dev/null || git rev-parse --short HEAD 2>/dev/null || date +%Y-%m-%d)
 SEDVERSION=perl -pi -e 's/VERSION = 0/VERSION = "$(VERSION)"/' --
